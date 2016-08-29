@@ -4,3 +4,6 @@
 [submodule "java-ilp-core"]
 	path = java-ilp-core
 	url = https://github.com/interledger/java-ilp-core
+[submodule "java-ilp-ledger-simple"]
+	path = java-ilp-ledger-simple
+	url = https://github.com/everis-innolab/java-ilp-ledger-simple.git

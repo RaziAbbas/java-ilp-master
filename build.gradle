@@ -15,8 +15,11 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
-dependencies {
-    
+dependencies {    
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
 }
 
 //Maven compatibility task:
@@ -35,6 +38,7 @@ task writePom << {
                 "maven.compiler.source" "1.6"
                 "maven.compiler.target" "1.6"
                 "checkstyle.config.location" "google_checks.xml"
+                "checkstyle.consoleOutput" "true"
             }
             licenses {
                 license {
