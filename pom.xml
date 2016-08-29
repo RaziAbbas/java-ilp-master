@@ -25,7 +25,6 @@
   <modules>
     <module>java-crypto-conditions</module>
     <module>java-ilp-core</module>
-    <module>java-ilp-ledger-simple</module>
   </modules>
   <properties>
     <checkstyle.consoleOutput>true</checkstyle.consoleOutput>
