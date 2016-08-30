@@ -6,6 +6,7 @@
   <artifactId>java-ilp-master</artifactId>
   <version>0.1.0</version>
   <packaging>pom</packaging>
+  <name>java-ilp-master</name>
   <description>Interledger Java parent project</description>
   <inceptionYear>2016</inceptionYear>
   <licenses>
@@ -25,6 +26,7 @@
   <modules>
     <module>java-crypto-conditions</module>
     <module>java-ilp-core</module>
+    <module>java-ilp-ledger-simple</module>
   </modules>
   <properties>
     <checkstyle.consoleOutput>true</checkstyle.consoleOutput>

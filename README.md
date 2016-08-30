@@ -7,9 +7,10 @@ This project serves as an umbrella for all java-related projects, ensuring all q
 
 #### Install:
 
-Just clone and get all submodules up-to-date:
+Just clone, init and get all submodules up-to-date:
 
 ``` 
+git submodule init
 git submodule foreach git pull origin master
 
 ```

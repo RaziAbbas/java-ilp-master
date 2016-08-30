@@ -27,11 +27,13 @@ task writePom << {
     pom {
         project {
             packaging 'pom'
+            name project.name
             description project.description                        
             inceptionYear '2016'  
             modules {
                 module "java-crypto-conditions"
                 module "java-ilp-core"
+                module "java-ilp-ledger-simple"
             }
             properties {
                 "project.build.sourceEncoding" "UTF-8"
