@@ -1,13 +1,26 @@
-Java ILP master repository [![Join the chat at https://gitter.im/interledger/Lobby](https://badges.gitter.im/interledger/java.svg)](https://gitter.im/interledger/java) [![Build Status](https://travis-ci.org/everis-innolab/java-ilp-master.svg?branch=master)](https://travis-ci.org/everis-innolab/java-ilp-master)
-========================================================
+# Java ILP master repository [![gitter][gitter-image]][gitter-url] [![Ci][CI-image]][CI-url] 
 
-This project serves as an umbrella for all java-related projects, ensuring all quality rules (eg: checkstyle) and common usages applies.
+[gitter]: "Join the chat"
+[gitter-image]: https://badges.gitter.im/interledger/java.svg
+[gitter-url]: https://gitter.im/interledger/java
+
+[CI]: "Build Status"
+[CI-image]: https://travis-ci.org/everis-innolab/java-ilp-master.svg?branch=master
+[CI-url]: https://travis-ci.org/everis-innolab/java-ilp-master
+
+> This project serves as an umbrella for all java-related projects, ensuring all quality rules (eg: checkstyle) and common usages applies.
 
 
+## Usage
 
-#### Install:
+### Step 1: Clone repo
 
-Just clone, init and get all submodules up-to-date:
+``` sh
+git clone https://github.com/interledger/java-ilp-master
+
+cd java-ilp-master
+```
+### Step 2: init and get all submodules up-to-date
 
 ``` 
 git submodule init
@@ -15,28 +28,29 @@ git submodule foreach git pull origin master
 
 ```
 
-#### Build:
+### Step 2: Install
+
 Main build system is gradle based, but there is a task -writePom- in order to get a maven pom file. That pom file is also provided already in this and child subprojects, but issuing a ***gradle writePom*** will update all pom's. On every change to [gradle.build](gradle.build) don't forget to execute the *writePom* task.
 
 
-Gradle:
+#### Gradle:
 ``` 
 gradle clean install check
 
 ```
 
-Maven: 
+#### Maven: 
 ``` 
 mvn clean install checkstyle:check
 
 ```
 
-Contributors
----------------
+## Contributors
+
 Any contribution is very much appreciated! 
 [![Join the chat at https://gitter.im/interledger/Lobby](https://badges.gitter.im/interledger/java.svg)](https://gitter.im/interledger/java)
 
 
-License
----------------
+## License
+
 This code is released under the Apache 2.0 License. Please see [LICENSE](LICENSE) for the full text.
