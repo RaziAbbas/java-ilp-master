@@ -1,10 +1,8 @@
-# Java ILP master repository [![gitter][gitter-image]][gitter-url] [![Ci][CI-image]][CI-url] 
+# Java ILP master repository [![gitter][gitter-image]][gitter-url] [![CI][CI-image]][CI-url] 
 
-[gitter]: "Join the chat"
 [gitter-image]: https://badges.gitter.im/interledger/java.svg
 [gitter-url]: https://gitter.im/interledger/java
 
-[CI]: "Build Status"
 [CI-image]: https://travis-ci.org/everis-innolab/java-ilp-master.svg?branch=master
 [CI-url]: https://travis-ci.org/everis-innolab/java-ilp-master
 
@@ -47,9 +45,7 @@ mvn clean install checkstyle:check
 
 ## Contributors
 
-Any contribution is very much appreciated! 
-[![Join the chat at https://gitter.im/interledger/Lobby](https://badges.gitter.im/interledger/java.svg)](https://gitter.im/interledger/java)
-
+Any contribution is very much appreciated! [![gitter][gitter-image]][gitter-url]
 
 ## License
 
