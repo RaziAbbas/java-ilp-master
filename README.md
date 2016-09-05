@@ -26,7 +26,7 @@ git submodule foreach git pull origin master
 
 ```
 
-### Step 2: Install
+### Step 3: Install
 
 Main build system is gradle based, but there is a task -writePom- in order to get a maven pom file. That pom file is also provided already in this and child subprojects, but issuing a ***gradle writePom*** will update all pom's. On every change to [gradle.build](gradle.build) don't forget to execute the *writePom* task.
 
