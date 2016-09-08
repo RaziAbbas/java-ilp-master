@@ -1,5 +1,11 @@
 #Travis CI (https://travis-ci.com)
 language: java
+script:
+  - ./gradlew clean install check
+  - mvn clean install checkstyle:check
+jdk:
+  - oraclejdk6
+  - openjdk6
 
 notifications:
   webhooks:
