@@ -24,8 +24,20 @@ cd java-ilp-master
 git submodule init
 git submodule update
 git submodule foreach git pull origin master
+```
+
+Note: The build.gradle / pom.xml expect a directory layout similar to:ç
 
 ```
+ .../java-ilp-master:
+     +- /java-crypto-conditions
+     +- /java-ilp-common
+     +- /java-ilp-common-api
+     +- /java-ilp-core
+     +- /java-ilp-ledger-api
+     +- /java-ilp-ledger-simple
+```
+
 
 ### Step 3: Install
 
@@ -33,6 +45,8 @@ Main build system is gradle based, but there is a task -writePom- in order to ge
 
 
 #### Gradle:
+required gradle version: 3.1
+
 ``` 
 gradle clean install check
 
