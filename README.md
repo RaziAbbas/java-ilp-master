@@ -26,7 +26,7 @@ git submodule update
 git submodule foreach git pull origin master
 ```
 
-Note: The build.gradle / pom.xml expect a directory layout similar to:ç
+Note: The build.gradle / pom.xml expect a directory layout similar to:
 
 ```
  .../java-ilp-master:
