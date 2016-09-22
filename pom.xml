@@ -4,10 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.interledger</groupId>
   <artifactId>java-ilp-master</artifactId>
-  <version>0.1.0</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>java-ilp-master</name>
-  <description>Interledger Java parent project</description>
+  <description>Interledger Java parent project REF: https://github.com/everis-innolab/java-ilp-master/README.md</description>
   <inceptionYear>2016</inceptionYear>
   <licenses>
     <license>
@@ -21,19 +21,20 @@
       <id>mrmx</id>
       <name>Manuel Polo</name>
       <email>mistermx@gmail.com</email>
-      <organizationUrl>http://www.everis.com</organizationUrl>
     </developer>
     <developer>
       <id>earizon</id>
-      <name>Enrique Arizón Benito</name>
-      <email>enrique.arizon.benito@everis.com</email>
-      <organizationUrl>http://www.everis.com</organizationUrl>
+      <name>Enrique Arizon Benito</name>
+      <email></email>
     </developer>
   </developers>
   <modules>
     <module>java-crypto-conditions</module>
     <module>java-ilp-core</module>
+    <module>java-ilp-common</module>
+    <module>java-ilp-common-api</module>
     <module>java-ilp-ledger-simple</module>
+    <module>java-ilp-ledger-api</module>
   </modules>
   <properties>
     <checkstyle.consoleOutput>true</checkstyle.consoleOutput>
