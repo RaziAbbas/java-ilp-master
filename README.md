@@ -24,15 +24,47 @@ cd java-ilp-master
 git submodule init
 git submodule update
 git submodule foreach git pull origin master
+```
+
+Note: The build.gradle / pom.xml expect a directory layout similar to:
 
 ```
+ .../java-ilp-master:
+     +- /java-crypto-conditions
+     +- /java-ilp-common
+     +- /java-ilp-common-api
+     +- /java-ilp-core
+     +- /java-ilp-ledger-api
+     +- /java-ilp-ledger-simple
+```
+
 
 ### Step 3: Install
 
-Main build system is gradle based, but there is a task -writePom- in order to get a maven pom file. That pom file is also provided already in this and child subprojects, but issuing a ***gradle writePom*** will update all pom's. On every change to [gradle.build](gradle.build) don't forget to execute the *writePom* task.
+Either use gradle:
+```
+    $ gradle install
+```
+or maven:
+```
+    $ gradle writePom # <- Optional if poms are not up-to-date with gradle (someone forgot to update/commit poms)
+    $ mvn install
+```
+Note: executing gradle writePom in java-ilp-master will automatically update all poms in child projects.
 
+On every change to [gradle.build](gradle.build) don't forget to execute the *writePom* task.
+
+### Step 4: Execute java-ilp-ledger 
+With maven: (TODO: gradle execution and manual execution pending)
+```
+     $ mvn install # (if not yet done)
+     $ cd java-ilp-ledger-api  
+     $ ./mvn_launch_server.sh
+```
 
 #### Gradle:
+required gradle version: 3.1
+
 ``` 
 gradle clean install check
 
