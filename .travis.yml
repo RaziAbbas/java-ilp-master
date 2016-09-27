@@ -4,8 +4,8 @@ script:
   - ./gradlew clean install check
   - mvn clean install checkstyle:check
 jdk:
-  - oraclejdk7
-  - openjdk7
+  - oraclejdk8
+  - openjdk8
 
 notifications:
   webhooks:
