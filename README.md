@@ -24,6 +24,8 @@ cd java-ilp-master
 git submodule init
 git submodule update
 git submodule foreach git pull origin master
+git submodule foreach git checkout master
+
 ```
 
 Note: The build.gradle / pom.xml expect a directory layout similar to:
