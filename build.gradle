@@ -15,9 +15,6 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
-dependencies {    
-}
-
 task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
 }
