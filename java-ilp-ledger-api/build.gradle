@@ -1,0 +1,83 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+
+group = 'org.interledger'
+version = java_ilp_ledger_api_version
+description = "Interledger Java Reference Ledger API"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': description,
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile     project(':java-ilp-common-api')
+    compile     project(':java-ilp-ledger-simple')
+    testCompile "junit:junit:${junit_version}"
+    testCompile "org.hamcrest:hamcrest-core:${hamcrest_core_version}"
+}
+
+task launchServer(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'org.interledger.ilp.ledger.api.Main'
+
+  // arguments to pass to the application
+  // args 'appArg1'
+}
+
+//Maven compatibility task:
+task writePom << {
+    pom {
+        project {
+            packaging 'jar'
+            name project.name
+            description project.description                        
+            inceptionYear '2016'  
+            properties {
+                "project.build.sourceEncoding" "UTF-8"
+                "maven.compiler.source" "1.8"
+                "maven.compiler.target" "1.8"
+                "checkstyle.config.location" "../google_checks.xml"
+                "checkstyle.consoleOutput" "true"
+            }
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }  
+            developers {
+                developer {
+                    id "mrmx"
+                    name "Manuel Polo"
+                    email "mistermx@gmail.com"                    
+                    organizationUrl "http://www.everis.com"
+                }
+            }
+            reporting  {
+                plugins {
+                    plugin {
+                        groupId "org.apache.maven.plugins"
+                        artifactId "maven-checkstyle-plugin"
+                        version "2.17"
+                    }
+                }
+            }
+            
+        }        
+    }.writeTo("pom.xml")
+}

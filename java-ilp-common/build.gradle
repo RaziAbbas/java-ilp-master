@@ -1,0 +1,76 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+
+group = 'org.interledger'
+version = java_ilp_common_version
+description = "ILP common"
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': description,
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile     "com.google.guava:guava:${guava_version}"
+    compile     "org.apache.commons:commons-lang3:${commons_lang3_version}"
+    compile     "org.slf4j:slf4j-api:${slf4j_api_version}"
+    compile     "com.typesafe:config:${typesafe_config_version}"
+    testCompile "junit:junit:${junit_version}"
+    testCompile "org.slf4j:slf4j-simple:${slf4j_simple_version}"
+}
+
+//Maven compatibility task:
+task writePom << {
+    pom {
+        project {
+            packaging 'jar'
+            name project.name
+            description project.description                        
+            inceptionYear '2016'  
+            properties {
+                "project.build.sourceEncoding" "UTF-8"
+                "maven.compiler.source" "1.6"
+                "maven.compiler.target" "1.6"
+                "checkstyle.config.location" "../google_checks.xml"
+                "checkstyle.consoleOutput" "true"
+            }
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }  
+            developers {
+                developer {
+                    id "mrmx"
+                    name "Manuel Polo"
+                    email "mistermx@gmail.com"                    
+                    organizationUrl "http://www.everis.com"
+                }
+            }
+            reporting  {
+                plugins {
+                    plugin {
+                        groupId "org.apache.maven.plugins"
+                        artifactId "maven-checkstyle-plugin"
+                        version "2.17"
+                    }
+                }
+            }
+            
+        }        
+    }.writeTo("pom.xml")
+}

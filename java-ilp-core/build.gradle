@@ -1,0 +1,66 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin: 'checkstyle'
+
+group = 'org.interledger'
+version = java_ilp_core_version
+description = 'Interledger Protocol Core'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+checkstyle {
+    configFile file('../google_checks.xml')
+    toolVersion '7.1'
+    showViolations = true
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': description,
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "https://jitpack.io" }    
+}
+
+dependencies {
+    compile project(':java-crypto-conditions')
+}
+
+//Maven compatibility task:
+task writePom << {    
+    pom {
+        project {
+            inceptionYear '2016'    
+            properties {
+                "project.build.sourceEncoding" "UTF-8"
+                "maven.compiler.source" "1.6"
+                "maven.compiler.target" "1.6"
+                "checkstyle.config.location" "../google_checks.xml"
+                "checkstyle.consoleOutput" "true"
+            }            
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            reporting  {
+                plugins {
+                    plugin {
+                        groupId "org.apache.maven.plugins"
+                        artifactId "maven-checkstyle-plugin"
+                        version "2.17"
+                    }                   
+                }
+            }
+        }
+    }.writeTo("pom.xml")
+}
