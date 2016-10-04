@@ -19,6 +19,22 @@ task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
 }
 
+/*
+dependencies {    
+    [   "java-crypto-conditions", \
+        "java-ilp-core",
+        "java-ilp-common",
+        "java-ilp-common-api",
+        "java-ilp-ledger-simple",
+        "java-ilp-ledger-api"
+    ].each { dep -> 
+        def name = ":$dep"        
+        println "Compile $name"        
+        compile project(name)        
+        println "Compiled $name"
+    }
+}*/
+
 //Maven compatibility task:
 task writePom << {
     pom {

@@ -1,5 +1,6 @@
 #Travis CI (https://travis-ci.com)
 language: java
+install: true
 script:
   - ./gradlew clean install check
   - mvn clean install checkstyle:check
