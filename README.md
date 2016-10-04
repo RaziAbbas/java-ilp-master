@@ -18,30 +18,9 @@ git clone https://github.com/interledger/java-ilp-master
 
 cd java-ilp-master
 ```
-### Step 2: init and get all submodules up-to-date
-
-``` 
-git submodule init
-git submodule update
-git submodule foreach git pull origin master
-git submodule foreach git checkout master
-
-```
-
-Note: The build.gradle / pom.xml expect a directory layout similar to:
-
-```
- .../java-ilp-master:
-     +- /java-crypto-conditions
-     +- /java-ilp-common
-     +- /java-ilp-common-api
-     +- /java-ilp-core
-     +- /java-ilp-ledger-api
-     +- /java-ilp-ledger-simple
-```
 
 
-### Step 3: Install
+### Step 2: Install
 
 Either use gradle:
 ```
@@ -56,7 +35,7 @@ Note: executing gradle writePom in java-ilp-master will automatically update all
 
 On every change to [gradle.build](gradle.build) don't forget to execute the *writePom* task.
 
-### Step 4: Execute java-ilp-ledger 
+### Step 3: Execute java-ilp-ledger 
 With maven: (TODO: gradle execution and manual execution pending)
 ```
      $ mvn install # (if not yet done)
@@ -65,10 +44,9 @@ With maven: (TODO: gradle execution and manual execution pending)
 ```
 
 #### Gradle:
-required gradle version: 3.1
 
 ``` 
-gradle clean install check
+./gradlew clean install check
 
 ```
 
