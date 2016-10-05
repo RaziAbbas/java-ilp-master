@@ -145,10 +145,9 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
 
     private Map<String, EndpointHandler> publish(Router router, List<EndpointHandler> handlers) {
         Map<String, EndpointHandler> endpoints = new LinkedHashMap<>();
-        String path;
         for (EndpointHandler handler : handlers) {
             endpoints.put(handler.getName(), handler);
-            path = handlerPath(handler);
+            String path = handlerPath(handler);
             checkProtectedEndpoint(router, handler, path);
             for (HttpMethod httpMethod : handler.getHttpMethods()) {
                 log.debug("publishing {} endpoint {} at {}", httpMethod, handler, getEndpointUrl(path));

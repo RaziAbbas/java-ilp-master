@@ -38,6 +38,13 @@ task launchServer(type: JavaExec) {
   // args 'appArg1'
 }
 
+task launchTestWebSocket(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'org.interledger.ilp.ledger.api.TestWebSocket'
+
+}
+
 //Maven compatibility task:
 task writePom << {
     pom {

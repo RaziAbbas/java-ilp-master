@@ -33,7 +33,7 @@ public interface LedgerTransfer {
      *
      * @return a decimal amount, represented as a string
      */
-    String getAmount();
+    String getSourceAmount();
 
     /**
      * Get the data to be sent.

@@ -65,7 +65,8 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         String ledgerName = config.getString(DEFAULT_LEDGER_NAME, LEDGER, NAME);
         String currencyCode = config.getString(LEDGER, CURRENCY, CODE);
         LedgerInfo ledgerInfo = LedgerInfoFactory.from(currencyCode);
-        ledger = LedgerFactory.getInstance().create(ledgerInfo, ledgerName);
+        LedgerFactory.initialize(ledgerInfo, ledgerName);
+        ledger = LedgerFactory.getLedger();
         //TODO move getLedgerAccountManager to Ledger interface?
         try {
             ledgerAccountManager = ((LedgerAccountManagerAware) ledger).getLedgerAccountManager();
