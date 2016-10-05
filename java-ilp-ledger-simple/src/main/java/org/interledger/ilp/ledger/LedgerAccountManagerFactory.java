@@ -5,19 +5,18 @@ import org.interledger.ilp.ledger.impl.SimpleLedgerAccountManager;
 
 /**
  * Ledger factory.
- * 
+ *
  * @author mrmx
  */
 public class LedgerAccountManagerFactory {
-	private static SimpleLedgerAccountManager singleton;
 
-	public static LedgerAccountManager getAccountManagerSingleton() {
-		if (singleton!=null) return singleton;
-		singleton = new SimpleLedgerAccountManager();
-		return singleton;
-	}
+    private static final SimpleLedgerAccountManager instance = new SimpleLedgerAccountManager();
+
+    public static LedgerAccountManager getLedgerAccountManagerSingleton() {
+        return instance;
+    }
+    
+    public static LedgerAccountManager createLedgerAccountManager() {
+        return new SimpleLedgerAccountManager();
+    }
 }
-    
-    
-    
-
