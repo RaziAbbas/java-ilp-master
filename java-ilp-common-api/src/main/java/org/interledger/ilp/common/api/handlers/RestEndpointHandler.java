@@ -1,12 +1,13 @@
 package org.interledger.ilp.common.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
-import org.interledger.ilp.common.api.util.JsonBuilder;
+import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.api.util.VertxUtils;
 
 /**
@@ -71,7 +72,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     }
 
     protected Supplier<JsonObject> buildJSONWith(Object... pairs) {
-        return JsonBuilder.create().with(pairs);
+        return JsonObjectBuilder.create().with(pairs);
     }
 
     protected void response(RoutingContext context, HttpResponseStatus responseStatus) {

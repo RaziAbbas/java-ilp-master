@@ -77,6 +77,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         boolean pubSsl = config.getBoolean(ssl, SERVER, PUBLIC, USE_HTTPS);
         serverOptions = new HttpServerOptions().setHost(host).setPort(port);
         if (ssl) {
+            log.debug("Using SSL");
             //FIXME http://vertx.io/docs/vertx-core/java/#ssl
             String keyFile = config.getString(SERVER, TLS_KEY);
             String certFile = config.getString(SERVER, TLS_CERT);
@@ -145,9 +146,10 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
 
     private Map<String, EndpointHandler> publish(Router router, List<EndpointHandler> handlers) {
         Map<String, EndpointHandler> endpoints = new LinkedHashMap<>();
+        String path;
         for (EndpointHandler handler : handlers) {
             endpoints.put(handler.getName(), handler);
-            String path = handlerPath(handler);
+            path = handlerPath(handler);
             checkProtectedEndpoint(router, handler, path);
             for (HttpMethod httpMethod : handler.getHttpMethods()) {
                 log.debug("publishing {} endpoint {} at {}", httpMethod, handler, getEndpointUrl(path));

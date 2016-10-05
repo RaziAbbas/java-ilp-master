@@ -1,46 +1,78 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.json.Json;
+//import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
-import org.interledger.ilp.common.api.handlers.EndpointHandler;
+
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+
+import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
+import org.interledger.ilp.core.LedgerTransfer;
+import org.interledger.ilp.ledger.account.LedgerAccount;
+import org.interledger.ilp.ledger.account.LedgerAccountManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Health handler
  *
- * @author mrmx
+ * @author earizon
  */
-public class TransferHandler extends RestEndpointHandler {
+public class TransferHandler extends RestEndpointHandler implements ProtectedResource {
 
-    public TransferHandler() {
-        super("transfer");
-    }
+    private static final Logger log = LoggerFactory.getLogger(AccountHandler.class);
+    private LedgerAccountManager ledgerAccountManager; // FIXME: TODO Convert to Singleton to avoid internal member
+    private final static String PARAM_UUID_OR_FILTER = "UUID_OR_filter";
+	// GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
+	// GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
+	// GET      /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
 
-    public static EndpointHandler create() {
-        return new TransferHandler();
-    }
+	// PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
+	// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
     
+    public TransferHandler() {
+        super("transfer", "transfers/:" + PARAM_UUID_OR_FILTER);
+        accept(GET,POST);
+    }
+
+    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
+        this.ledgerAccountManager = ledgerAccountManager;
+        return this;
+    }
+
+    public static TransferHandler create() {
+        return new TransferHandler(); // TODO: return singleton?
+    }
+
     @Override
     protected void handleGet(RoutingContext context) {
-		// FIXME: TODO: Implement
-		// GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
-		// GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
-		// GET /transfers/9e97a403-f604-44de-9223-4ec36aa466d9/state 
-		// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
-		// GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204/state?type=sha256 
-    	throw new RuntimeException("Not implemented");
+        String path = context.request().path();
+        log.debug("deleteme path:"+path);
+        System.out.println("deleteme path:"+path);
+        // FIXME: TODO: Implement
+        // GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
+        // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
+        // GET /transfers/9e97a403-f604-44de-9223-4ec36aa466d9/state 
+        // GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
+        // GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204/state?type=sha256 
+//        LedgerAccount account = ledgerAccountManager.create(accountName);
+        LedgerTransfer transfer;
+        response(context, HttpResponseStatus.CREATED, 
+                buildJSON("result", Json.encode(transfer)));
         // response(context,HttpResponseStatus.OK,buildJSONWith("status","OK"));
     }
 
 
     @Override
     protected void handlePut(RoutingContext context) {
-    	// FIXME:TODO: Implement
-		// PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
-		// PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
-		// PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-    	
-    	throw new RuntimeException("Not implemented");
+         // FIXME:TODO: Implement
+         // PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
+         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
+         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
+         throw new RuntimeException("Not implemented");
     }
 
 }
@@ -163,4 +195,53 @@ public class TransferHandler extends RestEndpointHandler {
  *     {"id":"InvalidModificationError","message":"Transfer may not be modified in this way","invalidDiffs":[{"kind":"E","path":["credits",0,"rejection_message"],"lhs":"ZXJyb3IgMQ==","rhs":"ZXJyb3IgMg=="}]}
  *     {"id":"UnauthorizedError","message":"Invalid attempt to reject credit"}
  * 
- */ 
+ */
+
+///*
+//// REF: https://github.com/interledger/five-bells-ledger/blob/master/src/sql/sqlite3/create.sql
+//create table if not exists "L_LU_TRANSFER_STATUS" (
+//  "STATUS_ID" integer not null primary key,
+//  "NAME" varchar(20) not null,
+//  "DESCRIPTION" varchar(255) null
+//);
+//
+//
+//create table if not exists "L_TRANSFERS" (
+//  "TRANSFER_ID" integer not null primary key,
+//  "TRANSFER_UUID" char(36) not null unique,
+//  "LEDGER" varchar(1024),
+//  "ADDITIONAL_INFO" text,
+//  "STATUS_ID" integer not null,
+//  "REJECTION_REASON_ID" integer,
+//  "EXECUTION_CONDITION" text,
+//  "CANCELLATION_CONDITION" text,
+//  "EXPIRES_DTTM" datetime,
+//  "PROPOSED_DTTM" datetime,
+//  "PREPARED_DTTM" datetime,
+//  "EXECUTED_DTTM" datetime,
+//  "REJECTED_DTTM" datetime,
+//  FOREIGN KEY("REJECTION_REASON_ID") REFERENCES "L_LU_REJECTION_REASON"
+//    ("REJECTION_REASON_ID"),
+//  FOREIGN KEY("STATUS_ID") REFERENCES "L_LU_TRANSFER_STATUS" ("STATUS_ID")
+//);
+//
+//create table if not exists "L_TRANSFER_ADJUSTMENTS"
+//(
+//  "TRANSFER_ADJUSTMENT_ID" integer not null primary key,
+//  "TRANSFER_ID" integer not null,
+//  "ACCOUNT_ID" integer not null,
+//  "DEBIT_CREDIT" varchar(10) not null,
+//  "AMOUNT" float DEFAULT 0 not null,
+//  "IS_AUTHORIZED" boolean default 0 not null,
+//  "IS_REJECTED" boolean default 0 not null,
+//  "REJECTION_MESSAGE" text,
+//  "MEMO" varchar(4000) null,
+//  FOREIGN KEY("TRANSFER_ID") REFERENCES "L_TRANSFERS" ("TRANSFER_ID"),
+//  FOREIGN KEY("ACCOUNT_ID") REFERENCES "L_ACCOUNTS" ("ACCOUNT_ID")
+//);
+//
+//create table if not exists "L_FULFILLMENTS" (
+//"FULFILLMENT_ID" integer not null primary key,
+//"TRANSFER_ID" integer,
+//"CONDITION_FULFILLMENT" text
+//);
