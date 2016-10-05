@@ -59,7 +59,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         // GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
         // GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204/state?type=sha256 
 //        LedgerAccount account = ledgerAccountManager.create(accountName);
-        LedgerTransfer transfer;
+        LedgerTransfer transfer = null;
         response(context, HttpResponseStatus.CREATED, 
                 buildJSON("result", Json.encode(transfer)));
         // response(context,HttpResponseStatus.OK,buildJSONWith("status","OK"));

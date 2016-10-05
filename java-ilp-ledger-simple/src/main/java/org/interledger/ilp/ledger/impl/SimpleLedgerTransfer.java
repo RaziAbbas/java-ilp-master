@@ -30,7 +30,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer{
 	}
 
 	@Override
-	public String getSourceAmount() {
+	public String getAmount() {
 		// TODO Auto-generated method stub
 		return null;
 	}
