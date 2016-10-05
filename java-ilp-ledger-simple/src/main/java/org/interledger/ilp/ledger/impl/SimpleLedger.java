@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.impl;
 
 import javax.money.MonetaryAmount;
+
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
@@ -11,7 +12,7 @@ import org.interledger.ilp.core.exceptions.InsufficientAmountException;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerInfoFactory;
-import org.interledger.ilp.ledger.MoneyUtils;
+//import org.interledger.ilp.ledger.MoneyUtils;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.account.LedgerAccountManagerAware;
@@ -51,12 +52,12 @@ public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
 
     public void send(LedgerTransfer transfer) {
     	LedgerAccountManager accountManager = LedgerAccountManagerFactory.getAccountManagerSingleton();
-        LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount());
-        LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount());
+        LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount().URI);
+        LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount().URI);
         if (to.equals(from)) {
             throw new RuntimeException("accounts are the same");
         }
-        MonetaryAmount amount = MoneyUtils.toMonetaryAmount(transfer.getAmount(), info.getCurrencyCode());
+        MonetaryAmount amount = transfer.getAmount();
         if (from.getBalance().isGreaterThanOrEqualTo(amount)) {
             from.debit(amount);
             to.credit(amount);

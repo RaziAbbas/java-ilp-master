@@ -1,5 +1,7 @@
 package org.interledger.ilp.core;
 
+import javax.money.MonetaryAmount;
+
 public interface LedgerTransfer {
 
     /**
@@ -7,21 +9,21 @@ public interface LedgerTransfer {
      *
      * @return the Interledger Packet Header
      */
-    InterledgerPacketHeader getHeader();
+    InterledgerPacketHeader getHeader(); // FIXME: Really needed?
 
     /**
      * Get the local account that funds are being debited from.
      *
      * @return local account identifier
      */
-    String getFromAccount();
+    AccountURI getFromAccount();
 
     /**
      * Get the local account that funds are being debited from.
      *
      * @return local account identifier
      */
-    String getToAccount();
+    AccountURI getToAccount();
 
     /**
      * Get the transfer amount.
@@ -33,7 +35,7 @@ public interface LedgerTransfer {
      *
      * @return a decimal amount, represented as a string
      */
-    String getAmount();
+    MonetaryAmount getAmount();
 
     /**
      * Get the data to be sent.
@@ -70,5 +72,27 @@ public interface LedgerTransfer {
      * @return a buffer containing the data
      */
     String getNoteToSelf();
+    
+    TransferStatus getTransferStatus(); 
+
+    public DTTM getDTTM_prepared();
+
+    public void setDTTM_prepared(DTTM dTTM_prepared);
+
+    public DTTM getDTTM_executed();
+
+    public void setDTTM_executed(DTTM dTTM_executed);
+
+    public DTTM getDTTM_rejected();
+
+    public void setDTTM_rejected(DTTM dTTM_rejected);
+
+    public DTTM getDTTM_expires();
+
+    public DTTM getDTTM_proposed();
+    
+    public ConditionURI getURIExecutionCondition();
+
+    public ConditionURI getURICancelationCondition();
 
 }

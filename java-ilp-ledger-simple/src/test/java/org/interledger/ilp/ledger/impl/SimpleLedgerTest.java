@@ -1,9 +1,13 @@
 package org.interledger.ilp.ledger.impl;
 
 import org.interledger.cryptoconditions.Fulfillment;
+import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.ConditionURI;
+import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.LedgerTransferRejectedReason;
+import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.core.events.LedgerEventHandler;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.account.LedgerAccount;
@@ -48,11 +52,12 @@ public class SimpleLedgerTest {
         LedgerAccount bob = new SimpleLedgerAccount("bob", CURRENCY.code()).setBalance(100);
         instance.getLedgerAccountManager().addAccount(alice);
         instance.getLedgerAccountManager().addAccount(bob);
-        LedgerTransfer transfer = LedgerTransferBuilder.instance()
-                .from(alice)
-                .destination("bob@test")
-                .amount(Money.of(10, CURRENCY.code()))
-                .build();
+        LedgerTransfer transfer = 
+                new SimpleLedgerTransfer(new AccountURI(alice.getName()), new AccountURI("bob@test"), 
+                    Money.of(10, CURRENCY.code()), new ConditionURI("cc:execution"),
+                    new ConditionURI("cc:cancelation"),
+                    new DTTM(""), new DTTM(""),
+                    "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED );
         instance.send(transfer);
         assertEquals(90, instance.getLedgerAccountManager().getAccountByName("alice").getBalanceAsNumber().intValue());
         assertEquals(110, instance.getLedgerAccountManager().getAccountByName("bob").getBalanceAsNumber().intValue());
