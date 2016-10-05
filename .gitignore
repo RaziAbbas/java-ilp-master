@@ -5,9 +5,9 @@
 hs_err_pid*
 /bin/
 /.gradle/
-/build/
+**/build/
 /.nb-gradle/
-/target/
+**/target/
 .classpath
 .project
 .settings/*

@@ -60,14 +60,14 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     }
 
     protected void handlePost(RoutingContext context) {
-    	LedgerInfo ledgerInfo = LedgerFactory.getLedger().getInfo();
+    	LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
         String accountName = getAccountName(context);
         JsonObject requestBody = getBodyAsJson(context);
         Double balance = requestBody.getDouble(PARAM_BALANCE, 100d);
         ledgerInfo.getCurrencyCode();
 
         log.debug("Put account {} balance: {}{}", accountName, balance, ledgerInfo.getCurrencyCode());
-        LedgerAccount account = LedgerAccountManagerFactory.getAccountManagerSingleton().create(accountName);
+        LedgerAccount account = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().create(accountName);
         account.setBalance(balance);
         response(context, HttpResponseStatus.CREATED,
                 buildJSON("result", Json.encode(account)));
@@ -77,7 +77,7 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
         String accountName = getAccountName(context);
         log.debug("Get account {}", accountName);
         try {
-            return LedgerAccountManagerFactory.getAccountManagerSingleton().getAccountByName(accountName);
+            return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountByName(accountName);
         } catch (AccountNotFoundException ex) {
             throw new RestEndpointException(HttpResponseStatus.NOT_FOUND, ex.getMessage());
         }

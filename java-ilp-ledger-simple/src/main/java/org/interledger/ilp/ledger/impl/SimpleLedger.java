@@ -50,7 +50,7 @@ public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
     }
 
     public void send(LedgerTransfer transfer) {
-    	LedgerAccountManager accountManager = LedgerAccountManagerFactory.getAccountManagerSingleton();
+    	LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount());
         LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount());
         if (to.equals(from)) {
@@ -80,6 +80,6 @@ public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
 	@Override
 	public LedgerAccountManager getLedgerAccountManager() {
 		// FIXME: Remove getLedgerAccountManager here and in parent interface
-		return LedgerAccountManagerFactory.getAccountManagerSingleton();
+		return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
 	}
 }
