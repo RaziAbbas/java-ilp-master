@@ -2,7 +2,6 @@ package org.interledger.ilp.ledger.account;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.money.MonetaryAmount;
-
 import org.interledger.ilp.core.AccountURI;
 
 /**
@@ -11,7 +10,7 @@ import org.interledger.ilp.core.AccountURI;
  * @author mrmx
  */
 public interface LedgerAccount {
-
+    
     AccountURI getName();
 
     String getCurrencyCode();

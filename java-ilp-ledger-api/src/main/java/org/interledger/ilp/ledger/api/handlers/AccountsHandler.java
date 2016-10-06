@@ -25,7 +25,7 @@ public class AccountsHandler extends RestEndpointHandler implements ProtectedRes
 
     @Override
     protected void handleGet(RoutingContext context) {
-        checkAuth(context, "role:admin");
+        checkAuth(context, "admin");
     }
 
     @Override
