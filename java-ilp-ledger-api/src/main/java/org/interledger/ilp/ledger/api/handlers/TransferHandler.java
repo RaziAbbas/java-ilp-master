@@ -49,12 +49,30 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         String path = context.request().path();
         log.debug("deleteme path:"+path);
         System.out.println("deleteme path:"+path);
-        // FIXME: TODO: Implement
-        // GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
-        // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
-        // GET /transfers/9e97a403-f604-44de-9223-4ec36aa466d9/state 
-        // GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
-        // GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204/state?type=sha256 
+        /*
+         * PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
+         * Authorization: Basic YWxpY2U6YWxpY2U=
+         * {"id":"http://localhost/transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204",
+         * "ledger":"http://localhost",
+         * "debits":[
+         *      {"account":"http://localhost/accounts/alice","amount":"50"},
+         *      {"account":"http://localhost/accounts/candice","amount":"20"}],
+         * "credits":[
+         *      {"account":"http://localhost/accounts/bob","amount":"30"},
+         *      {"account":"http://localhost/accounts/dave","amount":"40"}],
+         *      "execution_condition":"cc:0:3:Xk14jPQJs7vrbEZ9FkeZPGBr0YqVzkpOYjFp_tIZMgs:7",
+         * "expires_at":"2015-06-16T00:00:01.000Z",
+         * "state":"prepared"}
+         *     HTTP/1.1 201 Created
+         *     {"id":"http://localhost/transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204","ledger":"http://localhost","debits":[{"account":"http://localhost/accounts/alice","amount":"50"},{"account":"http://localhost/accounts/candice","amount":"20"}],"credits":[{"account":"http://localhost/accounts/bob","amount":"30"},{"account":"http://localhost/accounts/dave","amount":"40"}],"execution_condition":"cc:0:3:Xk14jPQJs7vrbEZ9FkeZPGBr0YqVzkpOYjFp_tIZMgs:7","expires_at":"2015-06-16T00:00:01.000Z","state":"proposed","timeline":{"proposed_at":"2015-06-16T00:00:00.000Z"}}
+         * 
+         * FIXME: TODO: Implement
+         * GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
+         * GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
+         * GET /transfers/9e97a403-f604-44de-9223-4ec36aa466d9/state 
+         * GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
+         * GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204/state?type=sha256 
+         */
 //        LedgerAccount account = ledgerAccountManager.create(accountName);
         LedgerTransfer transfer = null;
         response(context, HttpResponseStatus.CREATED, 
