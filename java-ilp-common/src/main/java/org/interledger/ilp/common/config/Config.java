@@ -105,6 +105,16 @@ public class Config {
     }
 
     /**
+     * Checks that a key is defined.
+     *
+     * @param key
+     * @return {@code true} if key is found, {@code false} otherwise.
+     */
+    public boolean hasKey(String... key) {
+        return configuration.hasKey(ObjectConfigKey.of(key));
+    }
+    
+    /**
      * Checks that a key is defined or throws a {@code RequiredKeyException}.
      * This method should be more efficient due to the fact that no value
      * evaluation and/or conversions will be performed.
