@@ -14,7 +14,6 @@ import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.AccountNotFoundException;
 import org.interledger.ilp.ledger.account.LedgerAccount;
-import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +32,6 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     public AccountHandler() {
         super("account", "accounts/:" + PARAM_NAME);
         accept(GET, POST);
-    }
-
-    public AccountHandler with(LedgerAccountManager ledgerAccountManager) {
-//    	it (this.ledgerAccountManager)
-//        this.ledgerAccountManager = ledgerAccountManager;
-        return this;
     }
 
     public static AccountHandler create() {
