@@ -12,6 +12,7 @@ import org.interledger.ilp.common.config.Config;
 import static org.interledger.ilp.common.config.Key.*;
 import org.interledger.ilp.common.config.core.Configurable;
 import org.interledger.ilp.common.config.core.ConfigurationException;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerFactory;
@@ -107,7 +108,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         log.info("Preparing development environment");
         List<String> accounts = config.getStringList(Dev.accounts);
         for(String accountName : accounts) {
-            LedgerAccount account = ledgerAccountManager.create(accountName);
+            LedgerAccount account = ledgerAccountManager.create(new AccountURI(accountName));
             ledgerAccountManager.addAccount(account);
         }
     }

@@ -1,6 +1,8 @@
 package org.interledger.ilp.ledger.impl;
 
 import java.util.Collection;
+
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
@@ -20,6 +22,9 @@ public class SimpleLedgerAccountManagerTest {
 
     LedgerAccountManager instance;
 
+    AccountURI aliceURI = new AccountURI("https://ledger1/accounts/alice");
+    AccountURI bobURI   = new AccountURI("https://ledger2/accounts/alice");
+
     @Before
     public void setUp() {
         LedgerFactory.initialize(LedgerInfoFactory.from(Currencies.EURO), "test-ledger");
@@ -33,10 +38,9 @@ public class SimpleLedgerAccountManagerTest {
     @Test
     public void testCreate() {
         System.out.println("create");
-        String name = "alice";
-        LedgerAccount result = instance.create(name);
+        LedgerAccount result = instance.create(aliceURI);
         assertNotNull(result);
-        assertEquals(name, result.getName());
+        assertEquals(aliceURI, result.getName());
         assertEquals("EUR", result.getCurrencyCode());
     }
 
@@ -47,8 +51,8 @@ public class SimpleLedgerAccountManagerTest {
     public void testAddAccounts() {
         System.out.println("addAccounts");
         assertEquals(0, instance.getTotalAccounts());
-        instance.addAccount(new SimpleLedgerAccount("alice", "EUR"));
-        instance.addAccount(new SimpleLedgerAccount("bob", "EUR"));
+        instance.addAccount(new SimpleLedgerAccount(new AccountURI("https://ledger1/accounts/alice"), "EUR"));
+        instance.addAccount(new SimpleLedgerAccount(new AccountURI("https://ledger1/accounts/bob"), "EUR"));
         assertEquals(2, instance.getTotalAccounts());
     }
 
@@ -59,7 +63,7 @@ public class SimpleLedgerAccountManagerTest {
     public void testAddAccount() {
         System.out.println("addAccount");
         assertEquals(0, instance.getTotalAccounts());
-        instance.addAccount(new SimpleLedgerAccount("alice", "EUR"));
+        instance.addAccount(new SimpleLedgerAccount(aliceURI, "EUR"));
         assertEquals(1, instance.getTotalAccounts());
     }
 
@@ -69,11 +73,11 @@ public class SimpleLedgerAccountManagerTest {
     @Test
     public void testGetAccountByName() {
         System.out.println("getAccountByName");
-        LedgerAccount bob = instance.create("bob");
+        LedgerAccount bob = instance.create(bobURI);
         instance.addAccount(bob);
-        instance.addAccount(instance.create("alice"));
+        instance.addAccount(instance.create(aliceURI));
         assertEquals(2, instance.getTotalAccounts());
-        LedgerAccount result = instance.getAccountByName("bob");
+        LedgerAccount result = instance.getAccountByName(bobURI);
         assertEquals(bob, result);
     }
 
@@ -83,9 +87,9 @@ public class SimpleLedgerAccountManagerTest {
     @Test
     public void testGetAccounts() {
         System.out.println("testGetAccounts");
-        LedgerAccount bob = instance.create("bob");
+        LedgerAccount bob = instance.create(bobURI);
         instance.addAccount(bob);
-        instance.addAccount(instance.create("alice"));
+        instance.addAccount(instance.create(aliceURI));
         assertEquals(2, instance.getTotalAccounts());
         Collection<LedgerAccount> result = instance.getAccounts(1, 1);
         assertEquals(2, result.size());

@@ -7,6 +7,7 @@ import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.LedgerTransferRejectedReason;
+import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.core.events.LedgerEventHandler;
 import org.interledger.ilp.ledger.Currencies;
@@ -26,6 +27,9 @@ public class SimpleLedgerTest {
 
     Currencies CURRENCY = Currencies.EURO;
     SimpleLedger instance;
+    
+    AccountURI aliceURI = new AccountURI("https://ledger1/accounts/alice");
+    AccountURI bobURI   = new AccountURI("https://ledger2/accounts/bob");
 
     @Before
     public void setUp() {
@@ -49,19 +53,22 @@ public class SimpleLedgerTest {
     // @Test
     public void testSend() {
         System.out.println("send");
-        LedgerAccount alice = new SimpleLedgerAccount("alice", CURRENCY.code()).setBalance(100);
-        LedgerAccount bob = new SimpleLedgerAccount("bob", CURRENCY.code()).setBalance(100);
+        TransferID transferID = new TransferID("3a2a1d9e-8640-4d2d-b06c-84f2cd613204");
+
+        LedgerAccount alice = new SimpleLedgerAccount(aliceURI, CURRENCY.code()).setBalance(100);
+        LedgerAccount bob   = new SimpleLedgerAccount(bobURI  , CURRENCY.code()).setBalance(100);
         instance.getLedgerAccountManager().addAccount(alice);
         instance.getLedgerAccountManager().addAccount(bob);
         LedgerTransfer transfer = 
-                new SimpleLedgerTransfer(new AccountURI(alice.getName()), new AccountURI("bob@test"), 
+                new SimpleLedgerTransfer(transferID, 
+                    alice.getName(), new AccountURI("bob@test"), 
                     Money.of(10, CURRENCY.code()), new ConditionURI("cc:execution"),
                     new ConditionURI("cc:cancelation"),
                     new DTTM(""), new DTTM(""),
                     "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED );
         instance.send(transfer);
-        assertEquals(90, instance.getLedgerAccountManager().getAccountByName("alice").getBalanceAsNumber().intValue());
-        assertEquals(110, instance.getLedgerAccountManager().getAccountByName("bob").getBalanceAsNumber().intValue());
+        assertEquals(90, instance.getLedgerAccountManager().getAccountByName(aliceURI).getBalanceAsNumber().intValue());
+        assertEquals(110, instance.getLedgerAccountManager().getAccountByName(bobURI).getBalanceAsNumber().intValue());
     }
 
     /**

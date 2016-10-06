@@ -7,18 +7,22 @@ import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
 import org.interledger.ilp.core.LedgerTransfer;
+import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
+import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 
 public class SimpleLedgerTransfer implements LedgerTransfer {
     final InterledgerPacketHeader ph = null; // FIXME. Really needed?
     // TODO:(0) Use URI instead of string
+    final TransferID transferID;
     final LedgerAccount fromAccount;
     final AccountURI fromAccountURI;
     final AccountURI toAccountURI;
     final MonetaryAmount ammount;
-    final ConditionURI URIExecutionCondition;
-    final ConditionURI URICancelationCondition;
+    // URI encoded execution & cancelation crypto-conditions
+    final ConditionURI URIExecutionCond;
+    final ConditionURI URICancelationCond;
     final DTTM DTTM_expires ;
     final DTTM DTTM_proposed;
 
@@ -30,33 +34,47 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     DTTM DTTM_executed = DTTM.future;
     DTTM DTTM_rejected = DTTM.future;
 
-    SimpleLedgerTransfer(AccountURI fromAccount, AccountURI toAccount, 
-        MonetaryAmount ammount, ConditionURI URIExecutionCondition, 
-        ConditionURI URICancelationCondition, DTTM DTTM_expires, DTTM DTTM_proposed,
+    SimpleLedgerTransfer(TransferID transferID, AccountURI fromAccount, AccountURI toAccount, 
+        MonetaryAmount ammount, ConditionURI URIExecutionCond, 
+        ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
         String data, String noteToSelf, TransferStatus transferStatus ){
-        this.fromAccountURI = fromAccount;
-        this.toAccountURI   = toAccount  ;
-        this.ammount     = ammount    ;
-        this.data        = data       ;
-        this.noteToSelf  = noteToSelf ;
-        this.URIExecutionCondition = URIExecutionCondition;
-        this.URICancelationCondition = URICancelationCondition;
-        this.DTTM_expires = DTTM_expires;
-        this.DTTM_proposed = DTTM_proposed;
-        this.transferStatus = transferStatus;
-        
+        if (fromAccount.ledger.equals(toAccount.ledger)) {
+            throw new RuntimeException("assert exception: "
+                    + "SimpleLedgerTransfer does not handle local transfers. Only transfers "
+                    + "from local ledger to external ones");
+        }
+        // FIXME: TODO: If fromAccount.ledger != "our ledger" throw RuntimeException.
+        this.transferID         = transferID        ;
+        this.fromAccountURI     = fromAccount       ;
+        this.toAccountURI       = toAccount         ;
+        this.ammount            = ammount           ;
+        this.data               = data              ;
+        this.noteToSelf         = noteToSelf        ;
+        this.URIExecutionCond   = URIExecutionCond  ;
+        this.URICancelationCond = URICancelationCond;
+        this.DTTM_expires       = DTTM_expires      ;
+        this.DTTM_proposed      = DTTM_proposed     ;
+        this.transferStatus     = transferStatus    ;
+
         /*
          *  Parse AccountURI to fetch local account
          *  AccountURI will be similar to http://localLedger/account/"accountId" ->
          *  we need the "accountId" to fetch the correct local "from" Account
          */
-        
-        this.fromAccount = null; // FIXME. TODO:
+
+        this.fromAccount = LedgerAccountManagerFactory.
+                getLedgerAccountManagerSingleton().
+                    getAccountByName(fromAccountURI);
     }
 
     @Override
     public InterledgerPacketHeader getHeader() {
         return ph;
+    }
+
+    @Override
+    public TransferID getTransferID() {
+        return transferID;
     }
 
     @Override
@@ -92,12 +110,12 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     
     @Override
     public ConditionURI getURIExecutionCondition() {
-        return URIExecutionCondition;
+        return URIExecutionCond;
     }
 
     @Override
     public ConditionURI getURICancelationCondition() {
-        return URICancelationCondition;
+        return URICancelationCond;
     }
 
     @Override

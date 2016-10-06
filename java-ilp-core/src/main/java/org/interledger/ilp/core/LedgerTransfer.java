@@ -10,6 +10,11 @@ public interface LedgerTransfer {
      * @return the Interledger Packet Header
      */
     InterledgerPacketHeader getHeader(); // FIXME: Really needed?
+    
+    /*
+     * Get the transfer Unique ID
+     */
+    TransferID getTransferID();
 
     /**
      * Get the local account that funds are being debited from.

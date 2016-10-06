@@ -52,8 +52,8 @@ public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
 
     public void send(LedgerTransfer transfer) {
     	LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-        LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount().URI);
-        LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount().URI);
+        LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount());
+        LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount());
         if (to.equals(from)) {
             throw new RuntimeException("accounts are the same");
         }

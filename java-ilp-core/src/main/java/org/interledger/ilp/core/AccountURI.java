@@ -15,4 +15,12 @@ public class AccountURI {
         this.ledger = URI.substring(0, idx0);
         this.accoundId = URI.substring(idx1);
     }
+    
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof AccountURI))return false;
+        return URI.equals(((AccountURI)other).URI);
+    }
 }

@@ -1,9 +1,11 @@
 package org.interledger.ilp.ledger.impl;
 
 import java.util.Currency;
+
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
-import org.apache.commons.lang.StringUtils;
+//import org.apache.commons.lang.StringUtils;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.ledger.MoneyUtils;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.javamoney.moneta.Money;
@@ -15,28 +17,25 @@ import org.javamoney.moneta.Money;
  */
 public class SimpleLedgerAccount implements LedgerAccount {
 
-    private final String name;
+    private final AccountURI name;
     private final String currencyCode;
     private MonetaryAmount balance;
 
-    public SimpleLedgerAccount(String name, Currency currency) {
+    public SimpleLedgerAccount(AccountURI name, Currency currency) {
         this(name, currency.getCurrencyCode());
     }
 
-    public SimpleLedgerAccount(String name, CurrencyUnit currencyUnit) {
+    public SimpleLedgerAccount(AccountURI name, CurrencyUnit currencyUnit) {
         this(name, currencyUnit.getCurrencyCode());
     }
 
-    public SimpleLedgerAccount(String name, String currencyCode) {
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("empty account name");
-        }
+    public SimpleLedgerAccount(AccountURI name, String currencyCode) {
         this.name = name;
         this.currencyCode = currencyCode;
     }
 
     @Override
-    public String getName() {
+    public AccountURI getName() {
         return name;
     }
 
@@ -112,7 +111,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
         if(obj == this) {
             return true;
         }
-        return name.equalsIgnoreCase(((SimpleLedgerAccount)obj).getName());
+        return name.URI.equalsIgnoreCase(((SimpleLedgerAccount)obj).getName().URI);
     }
     
     @Override
