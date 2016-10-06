@@ -30,22 +30,20 @@ public class AuthHandlerFactory {
     public static AuthHandler create(Config config) {
         Config authConfig = config.getConfig(Auth.class);
         authConfig.debug();
-        Provider provider = authConfig.getEnum(Provider.class);        
+        Provider provider = authConfig.getEnum(Provider.class);                 
         AuthProvider authProvider = null;
         AuthHandler authHandler = null;
         switch(provider) {
             case Basic:
                 authProvider = new SimpleAuthProvider();
+                String realm = authConfig.getString("ILP Ledger API",Auth.realm);
+                authHandler = BasicAuthHandler.create(authProvider,realm);                
                 break;
             default: // Jdbc, Shiro, break;
                 throw new ConfigurationException("authProvider not defined for provider "+provider);
         }
         authConfig.apply(authProvider);
-        log.debug("Created {} authProvider using {} impl",provider,authProvider.getClass().getSimpleName());
-        
-        String realm = authConfig.getString("ILP Ledger API",Auth.realm);
-        authHandler = BasicAuthHandler.create(authProvider,realm);
-        
+        log.debug("Created {} authProvider using {} impl",provider,authProvider.getClass().getSimpleName());                
         return authHandler;
     }
 }

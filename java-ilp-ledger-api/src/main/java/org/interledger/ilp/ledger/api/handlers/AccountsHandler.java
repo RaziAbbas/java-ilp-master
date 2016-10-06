@@ -25,8 +25,11 @@ public class AccountsHandler extends RestEndpointHandler implements ProtectedRes
 
     @Override
     protected void handleGet(RoutingContext context) {
-//        User user = context.user();
-        //TODO check admin roles
+        checkAuth(context, "role:admin");
+    }
+
+    @Override
+    protected void handleAuthorized(RoutingContext context) {
         JsonObject request = VertxUtils.getBodyAsJson(context);
         int page = request.getInteger("page", 1);
         int pageSize = request.getInteger("pageSize", 10);
