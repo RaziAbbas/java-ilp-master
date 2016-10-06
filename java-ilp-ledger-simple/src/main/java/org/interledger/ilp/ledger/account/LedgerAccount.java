@@ -25,6 +25,9 @@ public interface LedgerAccount {
 
     Number getBalanceAsNumber();
 
+    // FIXME: credit & debit not needed must be associated 
+    //  to transactions, not Accounts. Accounts must keep only
+    // the balance.
     LedgerAccount credit(Number amount);
 
     LedgerAccount credit(MonetaryAmount amount);

@@ -32,6 +32,7 @@ repositories {
 dependencies {
     compile project(':java-crypto-conditions')
     compile "org.javamoney:moneta:${moneta_version}"
+    testCompile "junit:junit:${junit_version}"
 }
 
 //Maven compatibility task:

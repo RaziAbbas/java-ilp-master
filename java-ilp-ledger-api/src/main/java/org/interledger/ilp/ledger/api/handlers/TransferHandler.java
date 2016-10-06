@@ -11,8 +11,6 @@ import static io.vertx.core.http.HttpMethod.POST;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.LedgerTransfer;
-import org.interledger.ilp.ledger.account.LedgerAccount;
-import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +22,6 @@ import org.slf4j.LoggerFactory;
 public class TransferHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(AccountHandler.class);
-    private LedgerAccountManager ledgerAccountManager; // FIXME: TODO Convert to Singleton to avoid internal member
     private final static String PARAM_UUID_OR_FILTER = "UUID_OR_filter";
 	// GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
 	// GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
@@ -38,10 +35,10 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         accept(GET,POST);
     }
 
-    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
-        this.ledgerAccountManager = ledgerAccountManager;
-        return this;
-    }
+//    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
+//        this.ledgerAccountManager = ledgerAccountManager;
+//        return this;
+//    }
 
     public static TransferHandler create() {
         return new TransferHandler(); // TODO: return singleton?

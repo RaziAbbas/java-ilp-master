@@ -8,32 +8,34 @@ import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferStatus;
+import org.interledger.ilp.ledger.account.LedgerAccount;
 
 public class SimpleLedgerTransfer implements LedgerTransfer {
     final InterledgerPacketHeader ph = null; // FIXME. Really needed?
     // TODO:(0) Use URI instead of string
-    final AccountURI fromAccount;
-    final AccountURI toAccount;
+    final LedgerAccount fromAccount;
+    final AccountURI fromAccountURI;
+    final AccountURI toAccountURI;
     final MonetaryAmount ammount;
     final ConditionURI URIExecutionCondition;
     final ConditionURI URICancelationCondition;
     final DTTM DTTM_expires ;
     final DTTM DTTM_proposed;
 
-    String data;
-    String noteToSelf;
+    String data = "";
+    String noteToSelf = "";
     
     TransferStatus transferStatus;
-    DTTM DTTM_prepared;
-    DTTM DTTM_executed;
-    DTTM DTTM_rejected;
+    DTTM DTTM_prepared = DTTM.future;
+    DTTM DTTM_executed = DTTM.future;
+    DTTM DTTM_rejected = DTTM.future;
 
     SimpleLedgerTransfer(AccountURI fromAccount, AccountURI toAccount, 
-        MonetaryAmount ammount, ConditionURI URIExecutionCondition, ConditionURI URICancelationCondition,
-        DTTM DTTM_expires, DTTM DTTM_proposed,
+        MonetaryAmount ammount, ConditionURI URIExecutionCondition, 
+        ConditionURI URICancelationCondition, DTTM DTTM_expires, DTTM DTTM_proposed,
         String data, String noteToSelf, TransferStatus transferStatus ){
-        this.fromAccount = fromAccount;
-        this.toAccount   = toAccount  ;
+        this.fromAccountURI = fromAccount;
+        this.toAccountURI   = toAccount  ;
         this.ammount     = ammount    ;
         this.data        = data       ;
         this.noteToSelf  = noteToSelf ;
@@ -41,6 +43,15 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         this.URICancelationCondition = URICancelationCondition;
         this.DTTM_expires = DTTM_expires;
         this.DTTM_proposed = DTTM_proposed;
+        this.transferStatus = transferStatus;
+        
+        /*
+         *  Parse AccountURI to fetch local account
+         *  AccountURI will be similar to http://localLedger/account/"accountId" ->
+         *  we need the "accountId" to fetch the correct local "from" Account
+         */
+        
+        this.fromAccount = null; // FIXME. TODO:
     }
 
     @Override
@@ -50,12 +61,12 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
 
     @Override
     public AccountURI getFromAccount() {
-        return fromAccount;
+        return fromAccountURI;
     }
     
     @Override
     public AccountURI getToAccount() {
-        return toAccount;
+        return toAccountURI;
     }
 
     @Override
