@@ -45,12 +45,19 @@ public class ConfigTest {
     }
 
     @Test
-    public void testHasKey() {
-        System.out.println("testHasKey");
+    public void testHasKeyEnum() {
+        System.out.println("testHasKeyEnum");
         assertFalse(config.hasKey(Key.NOT_FOUND));
         assertTrue(config.hasKey(Key.string));
     }
 
+    @Test
+    public void testHasKeyString() {
+        System.out.println("testHasKeyString");
+        assertFalse(config.hasKey("key","not","found"));
+        assertTrue(config.hasKey("key","string"));
+    }
+    
     @Test(expected = RequiredKeyException.class)
     public void testRequireKeyWithNoKey() {
         System.out.println("testRequireKeyWithNoKey");
