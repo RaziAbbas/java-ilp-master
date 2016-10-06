@@ -25,6 +25,7 @@ import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.impl.SimpleLedgerTransfer;
+import org.interledger.ilp.ledger.impl.SimpleLedgerTransferManager;
 import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
     }
 
     @Override
-    protected void handleGet(RoutingContext context) {
+    protected void handlePut(RoutingContext context) {
         String path = context.request().path();
         log.debug("deleteme path:"+path);
         System.out.println("deleteme path:"+path);
@@ -92,13 +93,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          *     "timeline":{"proposed_at":"2015-06-16T00:00:00.000Z"}
          *     }
          */
-        TransferID tranferID = new TransferID(context.request().getParam(PARAM_UUID_OR_FILTER));
+        TransferID transferID = new TransferID(context.request().getParam(PARAM_UUID_OR_FILTER));
         // FIXME: Check first if the Transaction exists. Otherwise create it.
-        boolean transactionExists = false;
-        if (transactionExists /* => create now*/) {
-            // FIXME: Implement: Check existing transaction match PUT data and return.
-            return;
-        }
+
         JsonObject requestBody = getBodyAsJson(context);
         String state = requestBody.getString("state");
         if (state == null) { state = "proposed"; }
@@ -132,17 +129,28 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         DTTM DTTM_proposed = DTTM.getNow();
         String data = ""; // Not used
         String noteToSelf = ""; // Not used
-        LedgerTransfer transfer = new SimpleLedgerTransfer(tranferID, fromURI, toURI, 
+        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, fromURI, toURI, 
                 debit0_ammount, URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
                 data, noteToSelf, TransferStatus.PROPOSED );
-
-        response(context, HttpResponseStatus.CREATED, 
-                buildJSON("result", Json.encode(transfer) /* FIXME: Check response*/ ));
+        SimpleLedgerTransferManager tm = SimpleLedgerTransferManager.getSingletonInstance();
+        boolean isNewTransfer = !tm.transferExists(transferID);
+        LedgerTransfer existingTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
+        if (!isNewTransfer){
+            if (
+                 ! existingTransfer.     getAmount().equals(receivedTransfer.getAmount()     )
+              || ! existingTransfer.getFromAccount().equals(receivedTransfer.getFromAccount()) 
+              || ! existingTransfer.  getToAccount().equals(receivedTransfer.  getToAccount())
+               ) {
+                throw new RuntimeException("Wrong data");
+            }
+        }
+        response(context,
+                isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
+                buildJSON("result", Json.encode(isNewTransfer ? receivedTransfer : existingTransfer)));
     }
 
-
     @Override
-    protected void handlePut(RoutingContext context) {
+    protected void handleGet(RoutingContext context) {
          // FIXME:TODO: Implement
          // PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
          // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
@@ -220,7 +228,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
  * PUT /transfers/155dff3f-4915-44df-a707-acc4b527bcbdbogus HTTP/1.1
  * {"ledger":"http://localhost","debits":[{"account":"http://localhost/accounts/alice","amount":"10","authorized":true}],"credits":[{"account":"http://localhost/accounts/bob","amount":"10"}],"state":"executed"}
  *    {"id":"ExpiredTransferError","message":"Cannot modify transfer after expires_at date"}
- *    {"id":"InsufficientFundsError","message":"Sender has insufficient funds.","owner":"alice"}
+ *    {"id":"InsufficientFundsError","message":"Sender has insufficient fund)s.","owner":"alice"}
  *    {"id":"InvalidBodyError","message":"Body did not match schema Transfer","validationErrors":[{"message":"String does not match pattern: ^[-+]?[0-9]*[.]?[0-9]+([eE][-+]?[0-9]+)?$","params":{"pattern":"^[-+]?[0-9]*[.]?[0-9]+([eE][-+]?[0-9]+)?$"},"code":202,"dataPath":"/debits/0/amount","schemaPath":"/allOf/0/properties/debits/items/properties/amount/pattern","subErrors":null,"stack":" ...."}]}
  *    {"id":"InvalidModificationError","message":"Transfer may not be modified in this way","invalidDiffs":[{"kind":"A","path":["debits"],"index":1,"item":{"kind":"D","lhs":{"account":"candice","amount":"10"}}},{"kind":"E","path":["credits",0,"amount"],"lhs":"20","rhs":"10"}]}
  *    {"id":"InvalidModificationError","message":"Transfer may not be modified in this way","invalidDiffs":[{"kind":"D","path":["expires_at"],"lhs":"2015-06-16T00:00:01.000Z"}]}
