@@ -36,4 +36,8 @@ public class SimpleLedgerTransferManager /* FIXME TODO implements LedgerTransfer
         return result;
     }
     
+    public boolean transferExists(TransferID transferId) {
+        return transferMap.containsKey(transferId);
+    }
+    
 }
