@@ -2,7 +2,7 @@ package org.interledger.ilp.ledger.impl;
 
 import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
@@ -17,8 +17,8 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     // TODO:(0) Use URI instead of string
     final TransferID transferID;
     final LedgerAccount fromAccount;
-    final AccountURI fromAccountURI;
-    final AccountURI toAccountURI;
+    final AccountUri fromAccountURI;
+    final AccountUri toAccountURI;
     final MonetaryAmount ammount;
     // URI encoded execution & cancelation crypto-conditions
     final ConditionURI URIExecutionCond;
@@ -34,7 +34,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     DTTM DTTM_executed = DTTM.future;
     DTTM DTTM_rejected = DTTM.future;
 
-    public SimpleLedgerTransfer(TransferID transferID, AccountURI fromAccount, AccountURI toAccount, 
+    public SimpleLedgerTransfer(TransferID transferID, AccountUri fromAccount, AccountUri toAccount, 
         MonetaryAmount ammount, ConditionURI URIExecutionCond, 
         ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
         String data, String noteToSelf, TransferStatus transferStatus ){
@@ -57,8 +57,8 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         this.transferStatus     = transferStatus    ;
 
         /*
-         *  Parse AccountURI to fetch local account
-         *  AccountURI will be similar to http://localLedger/account/"accountId" ->
+         *  Parse AccountUri to fetch local account
+         *  AccountUri will be similar to http://localLedger/account/"accountId" ->
          *  we need the "accountId" to fetch the correct local "from" Account
          */
 
@@ -78,12 +78,12 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     }
 
     @Override
-    public AccountURI getFromAccount() {
+    public AccountUri getFromAccount() {
         return fromAccountURI;
     }
     
     @Override
-    public AccountURI getToAccount() {
+    public AccountUri getToAccount() {
         return toAccountURI;
     }
 

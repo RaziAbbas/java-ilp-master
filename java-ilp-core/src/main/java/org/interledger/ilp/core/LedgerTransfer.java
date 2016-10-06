@@ -21,14 +21,14 @@ public interface LedgerTransfer {
      *
      * @return local account identifier
      */
-    AccountURI getFromAccount();
+    AccountUri getFromAccount();
 
     /**
      * Get the local account that funds are being debited from.
      *
      * @return local account identifier
      */
-    AccountURI getToAccount();
+    AccountUri getToAccount();
 
     /**
      * Get the transfer amount.

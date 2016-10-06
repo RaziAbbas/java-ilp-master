@@ -1,7 +1,7 @@
 package org.interledger.ilp.ledger.impl;
 
 import org.interledger.cryptoconditions.Fulfillment;
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.LedgerInfo;
@@ -28,8 +28,8 @@ public class SimpleLedgerTest {
     Currencies CURRENCY = Currencies.EURO;
     SimpleLedger instance;
     
-    AccountURI aliceURI = new AccountURI("https://ledger1/accounts/alice");
-    AccountURI bobURI   = new AccountURI("https://ledger2/accounts/bob");
+    AccountUri aliceURI = new AccountUri("https://ledger1/accounts/alice");
+    AccountUri bobURI   = new AccountUri("https://ledger2/accounts/bob");
 
     @Before
     public void setUp() {
@@ -61,7 +61,7 @@ public class SimpleLedgerTest {
         instance.getLedgerAccountManager().addAccount(bob);
         LedgerTransfer transfer = 
                 new SimpleLedgerTransfer(transferID, 
-                    alice.getName(), new AccountURI("bob@test"), 
+                    alice.getAccountUri(), new AccountUri("bob@test"), 
                     Money.of(10, CURRENCY.code()), new ConditionURI("cc:execution"),
                     new ConditionURI("cc:cancelation"),
                     new DTTM(""), new DTTM(""),

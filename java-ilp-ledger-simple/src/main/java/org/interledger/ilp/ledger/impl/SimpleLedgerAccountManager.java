@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.AccountNotFoundException;
 import org.interledger.ilp.ledger.account.LedgerAccount;
@@ -17,24 +17,24 @@ import org.interledger.ilp.ledger.account.LedgerAccountManager;
  */
 public class SimpleLedgerAccountManager implements LedgerAccountManager {
 
-    private Map<AccountURI, LedgerAccount> accountMap;
+    private Map<AccountUri, LedgerAccount> accountMap;
 
     public SimpleLedgerAccountManager() {
-        accountMap = new HashMap<AccountURI, LedgerAccount>();
+        accountMap = new HashMap<AccountUri, LedgerAccount>();
     }
 
     @Override
-    public LedgerAccount create(AccountURI name) {
+    public LedgerAccount create(AccountUri name) {
         return new SimpleLedgerAccount(name, LedgerFactory.getDefaultLedger().getInfo().getCurrencyCode());
     }
 
     @Override
     public void addAccount(LedgerAccount account) {
-        accountMap.put(account.getName(), account);
+        accountMap.put(account.getAccountUri(), account);
     }
 
     @Override
-    public LedgerAccount getAccountByName(AccountURI name) throws AccountNotFoundException {
+    public LedgerAccount getAccountByName(AccountUri name) throws AccountNotFoundException {
         if (!accountMap.containsKey(name)) {
             throw new AccountNotFoundException(name.toString());
         }

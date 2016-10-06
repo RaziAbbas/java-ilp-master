@@ -1,13 +1,13 @@
 package org.interledger.ilp.core;
 
-public class AccountURI {
+public class AccountUri {
     public final String URI;
     public final String ledger;
     public final String accoundId;
     
     private final String ACCOUNT_DELIMITER = "/accounts/";
 
-    public AccountURI(String URI) {
+    public AccountUri(String URI) {
         // FIXME: Check URI format
         int idx0 = URI.indexOf(ACCOUNT_DELIMITER),
             idx1 = idx0 + ACCOUNT_DELIMITER.length();
@@ -20,7 +20,7 @@ public class AccountURI {
     public boolean equals(Object other) {
         if (other == null) return false;
         if (other == this) return true;
-        if (!(other instanceof AccountURI))return false;
-        return URI.equals(((AccountURI)other).URI);
+        if (!(other instanceof AccountUri))return false;
+        return URI.equals(((AccountUri)other).URI);
     }
 }

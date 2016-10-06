@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
@@ -55,7 +55,7 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
 
     protected void handlePost(RoutingContext context) {
     	LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
-        AccountURI accountName = getAccountName(context);
+        AccountUri accountName = getAccountName(context);
         JsonObject requestBody = getBodyAsJson(context);
         Double balance = requestBody.getDouble(PARAM_BALANCE, 100d);
         ledgerInfo.getCurrencyCode();
@@ -68,7 +68,7 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     }
 
     private static LedgerAccount getAccountByName(RoutingContext context) {
-        AccountURI accountName = getAccountName(context);
+        AccountUri accountName = getAccountName(context);
         log.debug("Get account {}", accountName);
         try {
             return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountByName(accountName);
@@ -78,11 +78,11 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
 
     }
 
-    private static AccountURI getAccountName(RoutingContext context) {
+    private static AccountUri getAccountName(RoutingContext context) {
         String accountName = context.request().getParam(PARAM_NAME);
         if (StringUtils.isBlank(accountName)) {
             throw new RestEndpointException(HttpResponseStatus.NOT_FOUND, accountName);
         }
-        return new AccountURI(accountName);
+        return new AccountUri(accountName);
     }
 }

@@ -1,8 +1,9 @@
 package org.interledger.ilp.ledger.account;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.money.MonetaryAmount;
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 
 /**
  * This interface defines a ledger account.
@@ -11,7 +12,10 @@ import org.interledger.ilp.core.AccountURI;
  */
 public interface LedgerAccount {
     
-    AccountURI getName();
+    String getName();
+    
+    @JsonIgnore
+    AccountUri getAccountUri();
 
     String getCurrencyCode();
 

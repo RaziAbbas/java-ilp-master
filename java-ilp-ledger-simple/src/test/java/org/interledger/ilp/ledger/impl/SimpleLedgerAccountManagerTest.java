@@ -2,7 +2,7 @@ package org.interledger.ilp.ledger.impl;
 
 import java.util.Collection;
 
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
@@ -22,8 +22,8 @@ public class SimpleLedgerAccountManagerTest {
 
     LedgerAccountManager instance;
 
-    AccountURI aliceURI = new AccountURI("https://ledger1/accounts/alice");
-    AccountURI bobURI   = new AccountURI("https://ledger2/accounts/alice");
+    AccountUri aliceURI = new AccountUri("https://ledger1/accounts/alice");
+    AccountUri bobURI   = new AccountUri("https://ledger2/accounts/alice");
 
     @Before
     public void setUp() {
@@ -40,7 +40,7 @@ public class SimpleLedgerAccountManagerTest {
         System.out.println("create");
         LedgerAccount result = instance.create(aliceURI);
         assertNotNull(result);
-        assertEquals(aliceURI, result.getName());
+        assertEquals(aliceURI, result.getAccountUri());
         assertEquals("EUR", result.getCurrencyCode());
     }
 
@@ -51,8 +51,8 @@ public class SimpleLedgerAccountManagerTest {
     public void testAddAccounts() {
         System.out.println("addAccounts");
         assertEquals(0, instance.getTotalAccounts());
-        instance.addAccount(new SimpleLedgerAccount(new AccountURI("https://ledger1/accounts/alice"), "EUR"));
-        instance.addAccount(new SimpleLedgerAccount(new AccountURI("https://ledger1/accounts/bob"), "EUR"));
+        instance.addAccount(new SimpleLedgerAccount(new AccountUri("https://ledger1/accounts/alice"), "EUR"));
+        instance.addAccount(new SimpleLedgerAccount(new AccountUri("https://ledger1/accounts/bob"), "EUR"));
         assertEquals(2, instance.getTotalAccounts());
     }
 

@@ -1,11 +1,9 @@
 package org.interledger.ilp.ledger.impl;
 
 import java.util.Currency;
-
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
-//import org.apache.commons.lang.StringUtils;
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.ledger.MoneyUtils;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.javamoney.moneta.Money;
@@ -17,28 +15,35 @@ import org.javamoney.moneta.Money;
  */
 public class SimpleLedgerAccount implements LedgerAccount {
 
-    private final AccountURI name;
+    private final AccountUri accountUri;
+    private final String name;
     private final String currencyCode;
     private MonetaryAmount balance;
 
-    public SimpleLedgerAccount(AccountURI name, Currency currency) {
-        this(name, currency.getCurrencyCode());
+    public SimpleLedgerAccount(AccountUri accountUri, Currency currency) {
+        this(accountUri, currency.getCurrencyCode());
     }
 
-    public SimpleLedgerAccount(AccountURI name, CurrencyUnit currencyUnit) {
-        this(name, currencyUnit.getCurrencyCode());
+    public SimpleLedgerAccount(AccountUri accountUri, CurrencyUnit currencyUnit) {
+        this(accountUri, currencyUnit.getCurrencyCode());
     }
 
-    public SimpleLedgerAccount(AccountURI name, String currencyCode) {
-        this.name = name;
+    public SimpleLedgerAccount(AccountUri accountUri, String currencyCode) {
+        this.accountUri = accountUri;
         this.currencyCode = currencyCode;
+        this.name = accountUri.accoundId;
+    }    
+    
+    @Override
+    public AccountUri getAccountUri() {
+        return accountUri;
     }
 
     @Override
-    public AccountURI getName() {
+    public String getName() {
         return name;
     }
-
+    
     @Override
     public String getCurrencyCode() {
         return currencyCode;
@@ -111,13 +116,13 @@ public class SimpleLedgerAccount implements LedgerAccount {
         if(obj == this) {
             return true;
         }
-        return name.URI.equalsIgnoreCase(((SimpleLedgerAccount)obj).getName().URI);
+        return accountUri.URI.equalsIgnoreCase(((SimpleLedgerAccount)obj).getAccountUri().URI);
     }
     
     @Override
     public String toString() {
         return "Account["
-                + "name:" + name
+                + "name:" + accountUri
                 + " balance:" + balance
                 + "]";
     }

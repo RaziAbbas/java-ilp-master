@@ -16,7 +16,7 @@ import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
-import org.interledger.ilp.core.AccountURI;
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.LedgerInfo;
@@ -107,7 +107,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             throw new RuntimeException("Transactions from multiple source debits not implemented");
         }
         JsonObject debit0 = debits.getJsonObject(0); 
-        AccountURI fromURI = new AccountURI(debit0.getString("account"));
+        AccountUri fromURI = new AccountUri(debit0.getString("account"));
         //  {"account":"http://localhost/accounts/alice","amount":"50"},
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
@@ -119,7 +119,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         if (credits.size()>1) {
             throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
         }
-        AccountURI toURI  = new AccountURI(credits.getString(0));
+        AccountUri toURI  = new AccountUri(credits.getString(0));
         ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
         String cancelation_condition = requestBody.getString("cancelation_condition");
         

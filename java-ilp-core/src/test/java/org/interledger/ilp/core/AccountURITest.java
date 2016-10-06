@@ -12,7 +12,7 @@ public class AccountURITest {
         final String ledger = "https://ilp.ledger.com";
         final String accountId = "alice";
         final String URI = ledger + "/accounts/" + accountId;
-        AccountURI accURI = new AccountURI(URI);
+        AccountUri accURI = new AccountUri(URI);
         assertEquals(""+ledger    + " == " + accURI.ledger   , ledger, accURI.ledger);
         assertEquals(""+accountId + " == " + accURI.accoundId, accountId, accURI.accoundId);
     }
