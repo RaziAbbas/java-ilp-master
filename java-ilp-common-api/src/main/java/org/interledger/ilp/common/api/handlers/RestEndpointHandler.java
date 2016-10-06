@@ -18,8 +18,9 @@ import org.slf4j.LoggerFactory;
  * @author mrmx
  */
 public abstract class RestEndpointHandler extends EndpointHandler {
+
     private static final Logger log = LoggerFactory.getLogger(RestEndpointHandler.class);
-    
+
     private final static String PARAM_ENCODE_PLAIN_JSON = "plainjson";
     private final static String MIME_JSON_WITH_ENCODING = "application/json; charset=utf-8";
 
@@ -51,6 +52,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                     break;
             }
         } catch (RestEndpointException rex) {
+            log.debug("RestEndpointException", rex);
             response(context, rex.getResponseStatus(), rex.getResponse());
         } catch (Throwable t) {
             response(context, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
@@ -85,8 +87,8 @@ public abstract class RestEndpointHandler extends EndpointHandler {
      */
     protected void checkAuth(RoutingContext context, String authority) {
         User user = context.user();
-        if(user == null) {
-            log.warn("No user present in request in checkAuth with {}",authority);
+        if (user == null) {
+            log.warn("No user present in request in checkAuth with {}", authority);
             forbidden(context);
         } else {
             user.isAuthorised(authority, res -> {
@@ -120,6 +122,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     }
 
     protected void response(RoutingContext context, HttpResponseStatus responseStatus, Throwable t) {
+        log.debug("Response error", t);
         response(context,
                 responseStatus,
                 buildJSON(responseStatus.codeAsText(),
