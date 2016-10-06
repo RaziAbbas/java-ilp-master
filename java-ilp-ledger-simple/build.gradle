@@ -23,7 +23,8 @@ repositories {
 }
 
 dependencies {
-    compile     "org.interledger:java-ilp-core:${java_ilp_core_version}"
+    compile     project(':java-crypto-conditions')
+    compile     project(':java-ilp-core')
     compile     "org.javamoney:moneta:${moneta_version}"
     compile     "commons-lang:commons-lang:${commons_lang_version}"
     compile     "com.fasterxml.jackson.core:jackson-annotations:${jackson_annotations_version}"
