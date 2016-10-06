@@ -34,7 +34,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     DTTM DTTM_executed = DTTM.future;
     DTTM DTTM_rejected = DTTM.future;
 
-    SimpleLedgerTransfer(TransferID transferID, AccountURI fromAccount, AccountURI toAccount, 
+    public SimpleLedgerTransfer(TransferID transferID, AccountURI fromAccount, AccountURI toAccount, 
         MonetaryAmount ammount, ConditionURI URIExecutionCond, 
         ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
         String data, String noteToSelf, TransferStatus transferStatus ){
