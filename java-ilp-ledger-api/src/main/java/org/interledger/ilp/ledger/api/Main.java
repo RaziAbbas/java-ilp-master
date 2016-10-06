@@ -86,8 +86,8 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         return Arrays.asList(
                 HealthHandler.create(),
                 ConnectorsHandler.create(),
-                AccountsHandler.create().with(ledgerAccountManager),
-                AccountHandler.create().with(ledgerAccountManager)
+                AccountsHandler.create(),
+                AccountHandler.create()
         );
     }
 
