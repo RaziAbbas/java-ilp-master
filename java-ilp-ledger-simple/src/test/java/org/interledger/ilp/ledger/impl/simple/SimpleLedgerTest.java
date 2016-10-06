@@ -1,5 +1,8 @@
-package org.interledger.ilp.ledger.impl;
+package org.interledger.ilp.ledger.impl.simple;
 
+import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;

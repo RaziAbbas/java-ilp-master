@@ -1,4 +1,4 @@
-package org.interledger.ilp.ledger.impl;
+package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.Collection;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package org.interledger.ilp.ledger.impl;
+package org.interledger.ilp.ledger.impl.simple;
 
 import org.apache.commons.lang.StringUtils;
 
