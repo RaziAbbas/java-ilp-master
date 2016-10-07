@@ -16,7 +16,7 @@ public class IndexHandler implements Handler<RoutingContext> {
     private final JsonResultHandler handler;
 
     IndexHandler() {
-        index = new HashMap<>();                        
+        index = new HashMap<>();
         handler = new JsonResultHandler(index);
     }
 

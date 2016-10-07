@@ -48,6 +48,19 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 	// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
     
     public TransferHandler() {
+        // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
+        // router.put('/transfers/:id/fulfillment', transfers.putFulfillment)
+        // router.get('/transfers/:id/fulfillment', transfers.getFulfillment)
+        // router.put('/transfers/:id/rejection',
+        //   passport.authenticate(['basic', 'http-signature', 'client-cert'], { session: false }),
+        //   transfers.putRejection)
+        // router.get('/transfers/:id', transfers.getResource)
+        // router.get('/transfers/byExecutionCondition/:execution_condition', transfers.getResourcesByExecutionCondition)
+        // router.get('/transfers/:id/state', transfers.getStateResource)
+        // _makeWebsocketRouter () {
+        //  router.get('/accounts/:name/transfers',
+        //          passport.authenticate(['basic', 'http-signature', 'client-cert', 'anonymous'], { session: false }),
+        //          accounts.subscribeTransfers)
         super("transfer", "transfers/:" + PARAM_UUID_OR_FILTER);
         accept(GET,POST);
     }
