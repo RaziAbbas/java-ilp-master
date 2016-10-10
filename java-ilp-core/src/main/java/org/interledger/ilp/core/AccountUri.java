@@ -11,7 +11,7 @@ public class AccountUri {
         if(!accountUri.endsWith("/")) {
             accountUri += "/";
         }
-        this.uri += accountUri + accountId;        
+        this.uri = accountUri + accountId;        
         this.accountId = accountId;
     }
 
@@ -35,4 +35,15 @@ public class AccountUri {
         if (!(other instanceof AccountUri))return false;
         return uri.equals(((AccountUri)other).uri);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("[");        
+        sb.append("uri:").append(uri);
+        sb.append("]");
+        return sb.toString();
+    }
+    
+    
 }

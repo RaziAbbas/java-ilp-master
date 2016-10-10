@@ -22,16 +22,19 @@ import org.junit.Test;
 public class SimpleLedgerAccountManagerTest {
 
     LedgerAccountManager instance;
+    
+    final static String URI_LEDGER_A = "https://ledger1.example/accounts";
+    final static String URI_LEDGER_B = "https://ledger2.example/accounts";
 
-    AccountUri aliceURI = new AccountUri("https://ledger1/accounts", "alice");
-    AccountUri bobURI = new AccountUri("https://ledger2/accounts", "bob");
+    AccountUri aliceURI = new AccountUri(URI_LEDGER_A, "alice");
+    AccountUri bobURI = new AccountUri(URI_LEDGER_B, "bob");
     
 
     @BeforeClass
     public static void init() {
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
             .setCurrency(Currencies.EURO)
-            .setBaseUri("https://ledger.example")
+            .setBaseUri(URI_LEDGER_A)
             .build();        
         LedgerFactory.initialize(ledgerInfo, "test-ledger");
     }
