@@ -34,6 +34,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
     public SimpleLedgerAccount(String name, String currencyCode) {
         this.name = name;
         this.currencyCode = currencyCode;
+        this.balance = Money.of(0, currencyCode);
         this.minimumAllowedBalance = Money.of(0, currencyCode);
         this.active = true;
     }
