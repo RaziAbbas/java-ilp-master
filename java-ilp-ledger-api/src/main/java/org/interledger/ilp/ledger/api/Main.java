@@ -17,12 +17,12 @@ import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.LedgerInfoBuilder;
-import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.api.handlers.AccountHandler;
 import org.interledger.ilp.ledger.api.handlers.AccountsHandler;
 import org.interledger.ilp.ledger.api.handlers.ConnectorsHandler;
 import org.interledger.ilp.ledger.api.handlers.HealthHandler;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,11 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
 
     //Development configuration namespace:
     enum Dev {
-        accounts
+        uri,
+        accounts,
+        balance,
+        admin,disabled,
+        connector
     }
 
     // TODO: Move to the ledger-simple. The main is not part of the (reusable) API.
@@ -63,8 +67,16 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         ilpPrefix = config.getString(LEDGER, ILP, PREFIX);
         String ledgerName = config.getString(DEFAULT_LEDGER_NAME, LEDGER, NAME);
         String currencyCode = config.getString(LEDGER, CURRENCY, CODE);                
+        String baseUri = getServerPublicURL().toString();
+        //Development config
+        Optional<Config> devConfig = config.getOptionalConfig(Dev.class);
+        if (devConfig.isPresent()) {
+            Config dev = devConfig.get();
+            //Override baseUri to match 5-bells integration tests:
+            baseUri = dev.getString(baseUri, Dev.uri);        
+        }
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
-                .setBaseUri(getServerPublicURL())
+                .setBaseUri(baseUri)
                 .setCurrencyCodeAndSymbol(currencyCode)
                 //TODO precission and scale
                 .build()
@@ -72,7 +84,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         LedgerFactory.initialize(ledgerInfo, ledgerName);
         ledger = LedgerFactory.getDefaultLedger();        
         //Development config
-        Optional<Config> devConfig = config.getOptionalConfig(Dev.class);
         if (devConfig.isPresent()) {
             configureDevelopmentEnvirontment(devConfig.get());
         }
@@ -106,7 +117,14 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         List<String> accounts = config.getStringList(Dev.accounts);
         LedgerAccountManager ledgerAccountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         for(String accountName : accounts) {
-            LedgerAccount account = ledgerAccountManager.create(accountName);
+            SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);                        
+            Config accountConfig = config.getConfig(accountName);
+            account.setBalance(accountConfig.getInt(0, Dev.balance));
+            if(accountConfig.getBoolean(false, Dev.admin)) {
+                account.setAdmin(true);
+            }
+            account.setDisabled(accountConfig.getBoolean(false, Dev.disabled));
+            account.setConnector(accountConfig.getString((String)null, Dev.connector));
             ledgerAccountManager.addAccount(account);            
         }
     }

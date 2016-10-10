@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.account;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.money.MonetaryAmount;
 
@@ -10,6 +11,12 @@ import javax.money.MonetaryAmount;
  *
  * @author mrmx
  */
+@JsonInclude(JsonInclude.Include.NON_ABSENT)
+/*
+@JsonPropertyOrder({ 
+    "id", "name", "balance", "connector", "is_admin" , "is_disabled", 
+    "minimum_allowed_balance",
+})*/
 public interface LedgerAccount {
 
     String getId();
@@ -40,10 +47,13 @@ public interface LedgerAccount {
     String getBalanceAsString();
     
     @JsonProperty("is_admin")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     Boolean isAdmin();
 
-    @JsonProperty("is_active")
-    boolean isActive();
+    @JsonProperty("is_disabled")
+    boolean isDisabled();
+    
+    String getConnector();
     
     // FIXME: credit & debit not needed must be associated 
     //  to transactions, not Accounts. Accounts must keep only

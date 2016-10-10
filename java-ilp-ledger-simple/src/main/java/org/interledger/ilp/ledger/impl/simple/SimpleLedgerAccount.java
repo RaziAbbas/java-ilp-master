@@ -21,7 +21,9 @@ public class SimpleLedgerAccount implements LedgerAccount {
     private final String currencyCode;
     private MonetaryAmount balance;
     private MonetaryAmount minimumAllowedBalance;
-    private boolean admin, active;
+    private Boolean admin;
+    private boolean disabled;
+    private String connector;
 
     public SimpleLedgerAccount(String name, Currency currency) {
         this(name, currency.getCurrencyCode());
@@ -36,12 +38,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
         this.currencyCode = currencyCode;
         this.balance = Money.of(0, currencyCode);
         this.minimumAllowedBalance = Money.of(0, currencyCode);
-        this.active = true;
-    }
-
-    public LedgerAccount setAdmin(boolean admin) {
-        this.admin = admin;
-        return this;
+        this.disabled = false;
     }
 
     @Override
@@ -54,19 +51,24 @@ public class SimpleLedgerAccount implements LedgerAccount {
         return name;
     }
 
+    public LedgerAccount setAdmin(boolean admin) {
+        this.admin = admin;
+        return this;
+    }
+
     @Override
     public Boolean isAdmin() {
         return admin;
     }
 
-    public LedgerAccount setActive(boolean active) {
-        this.active = active;
+    public LedgerAccount setDisabled(boolean disabled) {
+        this.disabled = disabled;
         return this;
     }
 
     @Override
-    public boolean isActive() {
-        return active;
+    public boolean isDisabled() {
+        return disabled;
     }
 
     @Override
@@ -117,6 +119,15 @@ public class SimpleLedgerAccount implements LedgerAccount {
     @Override
     public String getBalanceAsString() {
         return getBalance().getNumber().toString();
+    }
+
+    public void setConnector(String connector) {
+        this.connector = connector;
+    }
+
+    @Override
+    public String getConnector() {
+        return connector;
     }
 
     public SimpleLedgerAccount credit(String amount) {

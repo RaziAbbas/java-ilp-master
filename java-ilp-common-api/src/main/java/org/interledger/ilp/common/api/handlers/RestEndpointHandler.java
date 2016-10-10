@@ -51,10 +51,11 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                 default: // CONNECT, DELETE, HEAD, OPTIONS, OTHER, PATCH, TRACE:
                     break;
             }
-        } catch (RestEndpointException rex) {
-            log.debug("RestEndpointException", rex);
+        } catch (RestEndpointException rex) {            
+            log.debug("RestEndpointException {} -> {}",rex.getResponseStatus(),rex.getResponse());
             response(context, rex.getResponseStatus(), rex.getResponse());
         } catch (Throwable t) {
+            log.debug("Handle exception", t);
             response(context, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
     }

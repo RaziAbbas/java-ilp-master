@@ -80,7 +80,7 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     private static String getAccountName(RoutingContext context) {
         String accountName = context.request().getParam(PARAM_NAME);
         if (StringUtils.isBlank(accountName)) {
-            throw new RestEndpointException(HttpResponseStatus.NOT_FOUND, accountName);
+            throw new RestEndpointException(HttpResponseStatus.BAD_REQUEST, accountName);
         }
         return accountName;
     }

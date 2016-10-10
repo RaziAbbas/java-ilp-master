@@ -1,8 +1,8 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerFactory;
@@ -19,7 +19,7 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     private Map<String, LedgerAccount> accountMap;
 
     public SimpleLedgerAccountManager() {
-        accountMap = new HashMap<String, LedgerAccount>();
+        accountMap = new TreeMap<String, LedgerAccount>();
     }
     
     @Override
