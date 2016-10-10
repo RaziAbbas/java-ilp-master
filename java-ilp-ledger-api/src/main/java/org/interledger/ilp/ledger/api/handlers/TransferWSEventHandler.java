@@ -48,7 +48,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
     private static final Logger log = LoggerFactory.getLogger(TransferWSEventHandler.class);
 
     // TODO: RECHECK key (ilp Connector SocketAddress)
-    private static Map<SocketAddress /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID = new HashMap<SocketAddress, String>();
+    private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID = new HashMap<String, String>();
 
 	// GET /accounts/alice/transfers -> Upgrade to websocket
 
@@ -80,8 +80,8 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
     }
 
     private static void registerServerWebSocket(ServerWebSocket sws) {
-        SocketAddress ilpConnectorIP = sws.remoteAddress();
-        String handlerID = sws.binaryHandlerID();
+        String ilpConnectorIP = sws.remoteAddress().host();
+        String handlerID = sws.textHandlerID(); // | binaryHandlerID
 
         server2WSHandlerID.put(ilpConnectorIP, handlerID);
         sws.frameHandler/* bytes read from the connector */(/*WebSocketFrame*/frame -> {
@@ -98,19 +98,20 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
             }
         });
         
-        sws.handler/*data sent from the internal vertX components through the event-Bus */(new Handler<Buffer>() {
-            @Override
-            public void handle(final Buffer data) {
-                String sData = new String(data.getBytes());
-                log.debug("received '"+sData+"' from internal *Manager:");
-                sws.writeFinalTextFrame(sData);
-                log.debug("message forwarded to ilp connector through websocket");
-            }
-        });
+//        sws.handler/*data sent from the internal vertX components through the event-Bus */(new Handler<Buffer>() {
+//            @Override
+//            public void handle(final Buffer data) {
+//                String sData = data.toString();
+//                log.debug("received '"+sData+"' from internal *Manager:");
+//                sws.writeFinalTextFrame(sData);
+//                log.debug("message forwarded to ilp connector through websocket");
+//            }
+//        });
+        
         
     }
     
-    public static String getServerWebSocketHandlerID(SocketAddress connectorIP) {
+    public static String getServerWebSocketHandlerID(String connectorIP) {
         if (!server2WSHandlerID.containsKey(connectorIP)) {
             throw new RuntimeException("No ws connection exists to ilp-connector "+connectorIP);
         }

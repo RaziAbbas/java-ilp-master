@@ -2,8 +2,6 @@ package org.interledger.ilp.ledger.api;
 
 import com.google.common.base.Optional;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
 import java.util.Arrays;
 import java.util.List;

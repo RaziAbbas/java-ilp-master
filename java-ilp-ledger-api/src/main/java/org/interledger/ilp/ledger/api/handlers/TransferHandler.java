@@ -2,6 +2,7 @@ package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpRequest;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -12,10 +13,13 @@ import io.vertx.ext.web.RoutingContext;
 
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
+
 
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
+import javax.xml.ws.Response;
 
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
@@ -41,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class TransferHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(TransferHandler.class);
-    private final static String PARAM_UUID_OR_FILTER = "UUID_OR_filter";
+    private final static String transferUUID= "transferUUID";
 
 	// GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
 	// GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
@@ -64,8 +68,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         //  router.get('/accounts/:name/transfers',
         //          passport.authenticate(['basic', 'http-signature', 'client-cert', 'anonymous'], { session: false }),
         //          accounts.subscribeTransfers)
-        super("transfer", "transfers/:" + PARAM_UUID_OR_FILTER);
-        accept(GET,POST);
+        super("transfer", "transfers/:" + transferUUID);
+        accept(GET,POST, PUT);
     }
 
 //    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
@@ -80,11 +84,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 
     @Override
     protected void handlePut(RoutingContext context) {
-        
+        log.debug(this.getClass().getName() + "invoqued ");
         HttpServerRequest request = context.request();
-        String path = request.path();
-        log.debug("deleteme path:"+path);
-        SocketAddress ilpConnectorIP = request.remoteAddress();
+        String ilpConnectorIP = request.remoteAddress().host();
         String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
@@ -112,9 +114,12 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          *     "timeline":{"proposed_at":"2015-06-16T00:00:00.000Z"}
          *     }
          */
-        TransferID transferID = new TransferID(context.request().getParam(PARAM_UUID_OR_FILTER));
-        context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID); // FIXME: deleteme line
-
+        TransferID transferID = new TransferID(context.request().getParam(transferUUID));
+        boolean deleteme = true; if (deleteme/*FIXME: TODO:(0) deleteme all this if block */) {
+            context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
+            response(context,HttpResponseStatus.CREATED ); // deleteme line
+            if (true) return; // deleteme line
+        }
         // FIXME: Check first if the Transaction exists. Otherwise create it.
 
         JsonObject requestBody = getBodyAsJson(context);

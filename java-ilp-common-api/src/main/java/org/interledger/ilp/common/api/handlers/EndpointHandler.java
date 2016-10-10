@@ -21,7 +21,7 @@ public abstract class EndpointHandler implements Handler<RoutingContext> {
 
     private static final Logger log = LoggerFactory.getLogger(EndpointHandler.class);
 
-    private final String name, uri;
+    private final String name, uri; 
     private URL url;
     private Set<HttpMethod> httpMethods;
 
@@ -30,7 +30,7 @@ public abstract class EndpointHandler implements Handler<RoutingContext> {
     }
 
     public EndpointHandler(String name, String uri) {
-        this.name = name;
+        this.name = name; // TODO: Replace name by this.getClass.getName()
         this.uri = uri;
         httpMethods = new HashSet<>();
     }
