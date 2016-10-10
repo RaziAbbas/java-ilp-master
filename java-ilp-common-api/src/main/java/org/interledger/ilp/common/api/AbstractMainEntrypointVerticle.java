@@ -6,7 +6,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.AuthHandler;
@@ -28,7 +27,6 @@ import org.interledger.ilp.common.api.handlers.EndpointHandler;
 import org.interledger.ilp.common.api.handlers.IndexHandler;
 import org.interledger.ilp.common.config.Config;
 import static org.interledger.ilp.common.config.Key.*;
-import org.interledger.ilp.common.api.handlers.WebSocketEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,13 +104,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         int requestBodyLimit = config.getInt(2, SERVER, REQUEST, LIMIT);
         router.route()
                 .handler(BodyHandler.create().setBodyLimit(requestBodyLimit * 1024));
-        
-        // GET requests similar to /accounts/alice/transfers must be handler by the WebSocketEventHandler
-        router.route(prefixUri+"accounts/*/transfers").handler(routingContext -> {
-            ServerWebSocket websocket = routingContext.request().upgrade();
-            String ilpConnectorAddess = routingContext.request().remoteAddress().toString();
-            WebSocketEventHandler.getWebSocketEventHandler(ilpConnectorAddess).handle(websocket);
-        });
+
         if (config.getBoolean(false, SERVER, DEBUG)) {
             log.info("Enabled request debug");
             router.route("/*").handler(LoggerHandler.create(true, LoggerFormat.DEFAULT));
