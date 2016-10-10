@@ -1,6 +1,9 @@
 package org.interledger.ilp.ledger.api;
 
 import com.google.common.base.Optional;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +49,8 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     private String ilpPrefix;
     private Ledger ledger;
     private LedgerAccountManager ledgerAccountManager;
+    
+
 
     //Development configuration namespace:
     enum Dev {
@@ -55,6 +60,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     // TODO: Move to the ledger-simple. The main is not part of the (reusable) API.
     public static void main(String[] args) {
         VertxRunner.run(Main.class);
+        
     }
 
     @Override

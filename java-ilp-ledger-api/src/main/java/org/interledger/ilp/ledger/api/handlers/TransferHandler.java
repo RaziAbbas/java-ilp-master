@@ -1,9 +1,12 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpRequest;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.SocketAddress;
 //import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
 
@@ -24,6 +27,7 @@ import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
+import org.interledger.ilp.ledger.api.Main;
 import org.interledger.ilp.ledger.impl.SimpleLedgerTransfer;
 import org.interledger.ilp.ledger.impl.SimpleLedgerTransferManager;
 import org.javamoney.moneta.Money;
@@ -71,15 +75,18 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 //    }
 
     public static TransferHandler create() {
+        
         return new TransferHandler(); // TODO: return singleton?
     }
 
     @Override
     protected void handlePut(RoutingContext context) {
-        String path = context.request().path();
+        
+        HttpServerRequest request = context.request();
+        String path = request.path();
         log.debug("deleteme path:"+path);
-        System.out.println("deleteme path:"+path);
-
+        SocketAddress ilpConnectorIP = request.remoteAddress();
+        String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -107,6 +114,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          *     }
          */
         TransferID transferID = new TransferID(context.request().getParam(PARAM_UUID_OR_FILTER));
+        context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID); // FIXME: deleteme line
+
+        EventBus eb = Main.vertx.eventBus();
         // FIXME: Check first if the Transaction exists. Otherwise create it.
 
         JsonObject requestBody = getBodyAsJson(context);

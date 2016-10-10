@@ -79,7 +79,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
         registerServerWebSocket(sws);
     }
 
-    public static void registerServerWebSocket(ServerWebSocket sws) {
+    private static void registerServerWebSocket(ServerWebSocket sws) {
         SocketAddress ilpConnectorIP = sws.remoteAddress();
         String handlerID = sws.binaryHandlerID();
 
@@ -109,5 +109,13 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
         });
         
     }
+    
+    public static String getServerWebSocketHandlerID(SocketAddress connectorIP) {
+        if (!server2WSHandlerID.containsKey(connectorIP)) {
+            throw new RuntimeException("No ws connection exists to ilp-connector "+connectorIP);
+        }
+        return server2WSHandlerID.get(connectorIP);
+    }
+
 
 }
