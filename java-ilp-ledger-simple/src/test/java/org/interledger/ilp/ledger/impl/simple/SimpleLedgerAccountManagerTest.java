@@ -50,10 +50,12 @@ public class SimpleLedgerAccountManagerTest {
     @Test
     public void testCreate() {
         System.out.println("create");
-        LedgerAccount result = instance.create(aliceURI.getAccountId());
+        LedgerAccount result = instance.create(aliceURI.getAccountId());        
+        System.out.println("result:" + result);
         assertNotNull(result);
         assertEquals(aliceURI, instance.getAccountUri(result));
         assertEquals("EUR", result.getCurrencyCode());
+        assertEquals("Balance",0d, result.getBalance().getNumber().doubleValue(),0d);
     }
 
     /**
@@ -65,7 +67,7 @@ public class SimpleLedgerAccountManagerTest {
         assertEquals(0, instance.getTotalAccounts());
         instance.addAccount(new SimpleLedgerAccount("alice", "EUR"));
         instance.addAccount(new SimpleLedgerAccount("bob", "EUR"));
-        assertEquals(2, instance.getTotalAccounts());
+        assertEquals(2, instance.getTotalAccounts());        
     }
 
     /**
@@ -104,7 +106,8 @@ public class SimpleLedgerAccountManagerTest {
         instance.addAccount(instance.create("alice"));
         assertEquals(2, instance.getTotalAccounts());
         Collection<LedgerAccount> result = instance.getAccounts(1, 1);
-        assertEquals(2, result.size());
+        System.out.println("result:" + result);
+        assertEquals(2, result.size());        
     }
 
 }

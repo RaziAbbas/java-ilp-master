@@ -23,6 +23,7 @@ public interface LedgerAccount {
 
     LedgerAccount setMinimumAllowedBalance(MonetaryAmount balance);
 
+    @JsonIgnore
     MonetaryAmount getMinimumAllowedBalance();
 
     @JsonProperty("minimum_allowed_balance")
@@ -32,6 +33,7 @@ public interface LedgerAccount {
 
     LedgerAccount setBalance(MonetaryAmount balance);
 
+    @JsonIgnore
     MonetaryAmount getBalance();
 
     @JsonProperty("balance")

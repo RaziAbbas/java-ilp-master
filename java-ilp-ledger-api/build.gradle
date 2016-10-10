@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     compile     project(':java-ilp-common-api')
-    compile     project(':java-ilp-ledger-simple')
+    compile     project(':java-ilp-ledger-simple')    
     testCompile "junit:junit:${junit_version}"
     testCompile "org.hamcrest:hamcrest-core:${hamcrest_core_version}"
 }

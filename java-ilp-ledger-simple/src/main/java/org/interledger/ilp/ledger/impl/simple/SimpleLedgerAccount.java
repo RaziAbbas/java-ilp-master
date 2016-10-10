@@ -15,12 +15,13 @@ import org.javamoney.moneta.Money;
  * @author mrmx
  */
 public class SimpleLedgerAccount implements LedgerAccount {
+
     private AccountUri accountUri;
     private final String name;
     private final String currencyCode;
     private MonetaryAmount balance;
     private MonetaryAmount minimumAllowedBalance;
-    private boolean admin,active;
+    private boolean admin, active;
 
     public SimpleLedgerAccount(String name, Currency currency) {
         this(name, currency.getCurrencyCode());
@@ -32,7 +33,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     public SimpleLedgerAccount(String name, String currencyCode) {
         this.name = name;
-        this.currencyCode = currencyCode;        
+        this.currencyCode = currencyCode;
         this.minimumAllowedBalance = Money.of(0, currencyCode);
         this.active = true;
     }
@@ -42,18 +43,11 @@ public class SimpleLedgerAccount implements LedgerAccount {
         return this;
     }
 
-    public AccountUri getAccountUri() {
-        if(accountUri == null) {
-            accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
-        }
-        return accountUri;
-    }
-    
     @Override
     public String getId() {
         return getAccountUri().getUri();
     }
-        
+
     @Override
     public String getName() {
         return name;
@@ -67,13 +61,13 @@ public class SimpleLedgerAccount implements LedgerAccount {
     public LedgerAccount setActive(boolean active) {
         this.active = active;
         return this;
-    }  
+    }
 
     @Override
     public boolean isActive() {
         return active;
-    }       
-    
+    }
+
     @Override
     public String getCurrencyCode() {
         return currencyCode;
@@ -167,14 +161,23 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public String toString() {
-        return "Account["
-                + "name:" + name
-                + " balance:" + balance
-                + "]";
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("[");
+        sb.append("name:").append(getName()).append(",");
+        sb.append("balance:").append(getBalance());
+        sb.append("]");
+        return sb.toString();
+
     }
 
     protected MonetaryAmount toMonetaryAmount(String amount) {
         return MoneyUtils.toMonetaryAmount(amount, currencyCode);
     }
 
+    private AccountUri getAccountUri() {
+        if (accountUri == null) {
+            accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
+        }
+        return accountUri;
+    }
 }
