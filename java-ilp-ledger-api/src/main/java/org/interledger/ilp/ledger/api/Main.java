@@ -12,14 +12,13 @@ import org.interledger.ilp.common.config.Config;
 import static org.interledger.ilp.common.config.Key.*;
 import org.interledger.ilp.common.config.core.Configurable;
 import org.interledger.ilp.common.config.core.ConfigurationException;
-import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.LedgerInfoFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
-import org.interledger.ilp.ledger.account.LedgerAccountManagerAware;
 import org.interledger.ilp.ledger.api.handlers.AccountHandler;
 import org.interledger.ilp.ledger.api.handlers.AccountsHandler;
 import org.interledger.ilp.ledger.api.handlers.ConnectorsHandler;
@@ -42,7 +41,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
 
     private String ilpPrefix;
     private Ledger ledger;
-    private LedgerAccountManager ledgerAccountManager;
 
     //Development configuration namespace:
     enum Dev {
@@ -67,13 +65,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         String currencyCode = config.getString(LEDGER, CURRENCY, CODE);
         LedgerInfo ledgerInfo = LedgerInfoFactory.from(currencyCode);
         LedgerFactory.initialize(ledgerInfo, ledgerName);
-        ledger = LedgerFactory.getDefaultLedger();
-        //TODO move getLedgerAccountManager to Ledger interface?
-        try {
-            ledgerAccountManager = ((LedgerAccountManagerAware) ledger).getLedgerAccountManager();
-        } catch (Exception ex) {
-            throw new ConfigurationException("Preparing ledger instance", ex);
-        }
+        ledger = LedgerFactory.getDefaultLedger();        
         //Development config
         Optional<Config> devConfig = config.getOptionalConfig(Dev.class);
         if (devConfig.isPresent()) {
@@ -105,11 +97,12 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     }
 
     private void configureDevelopmentEnvirontment(Config config) {
-        log.info("Preparing development environment");
+        log.info("Preparing development environment");        
         List<String> accounts = config.getStringList(Dev.accounts);
+        LedgerAccountManager ledgerAccountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         for(String accountName : accounts) {
-            LedgerAccount account = ledgerAccountManager.create(new AccountUri(accountName));
-            ledgerAccountManager.addAccount(account);
+            LedgerAccount account = ledgerAccountManager.create(accountName);
+            ledgerAccountManager.addAccount(account);            
         }
     }
 

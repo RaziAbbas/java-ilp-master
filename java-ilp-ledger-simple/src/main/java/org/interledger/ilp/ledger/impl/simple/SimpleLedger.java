@@ -1,7 +1,6 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import javax.money.MonetaryAmount;
-
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
@@ -12,22 +11,20 @@ import org.interledger.ilp.core.exceptions.InsufficientAmountException;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerInfoFactory;
-//import org.interledger.ilp.ledger.MoneyUtils;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
-import org.interledger.ilp.ledger.account.LedgerAccountManagerAware;
 
 /**
  * Simple in-memory ledger implementation
  *
  * @author mrmx
  */
-public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
+public class SimpleLedger implements Ledger {
 
     private LedgerInfo info;
     private String name;
 //    private LedgerAccountManager accountManager;
-   
+
     public SimpleLedger(Currencies currency, String name) {
         this(LedgerInfoFactory.from(currency), name);
     }
@@ -41,7 +38,6 @@ public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
         this.name = name;
     }
 
-
     public LedgerInfo getInfo() {
         return info;
     }
@@ -51,9 +47,9 @@ public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
     }
 
     public void send(LedgerTransfer transfer) {
-    	LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-        LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount());
-        LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount());
+        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
+        LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount().getAccountId());
+        LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount().getAccountId());
         if (to.equals(from)) {
             throw new RuntimeException("accounts are the same");
         }
@@ -77,10 +73,4 @@ public class SimpleLedger implements Ledger, LedgerAccountManagerAware {
     public void registerEventHandler(LedgerEventHandler<?> handler) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-	@Override
-	public LedgerAccountManager getLedgerAccountManager() {
-		// FIXME: Remove getLedgerAccountManager here and in parent interface
-		return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-	}
 }

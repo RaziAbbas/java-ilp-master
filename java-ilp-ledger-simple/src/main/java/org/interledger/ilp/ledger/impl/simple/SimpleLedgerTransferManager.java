@@ -2,18 +2,12 @@ package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
-//import org.interledger.ilp.ledger.LedgerFactory;
-//import org.interledger.ilp.ledger.account.AccountNotFoundException;
-//import org.interledger.ilp.ledger.account.LedgerAccount;
-//import org.interledger.ilp.ledger.account.LedgerAccountManager;
-
 /**
- * Simple in-memory {@code LedgerAccountManager}.
+ * Simple in-memory {@code SimpleLedgerTransferManager}.
  *
- * @author mrmx
+ * @author earizon
  */
 public class SimpleLedgerTransferManager /* FIXME TODO implements LedgerTransferManager, LedgerTransferManagerFactory */{
 

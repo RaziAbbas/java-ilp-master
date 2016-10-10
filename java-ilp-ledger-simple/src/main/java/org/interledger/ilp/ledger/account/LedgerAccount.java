@@ -3,7 +3,7 @@ package org.interledger.ilp.ledger.account;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.money.MonetaryAmount;
-import org.interledger.ilp.core.AccountUri;
+
 
 /**
  * This interface defines a ledger account.
@@ -11,13 +11,22 @@ import org.interledger.ilp.core.AccountUri;
  * @author mrmx
  */
 public interface LedgerAccount {
-    
+
+    String getId();
+
     String getName();
     
     @JsonIgnore
-    AccountUri getAccountUri();
-
     String getCurrencyCode();
+
+    LedgerAccount setMinimumAllowedBalance(Number balance);
+
+    LedgerAccount setMinimumAllowedBalance(MonetaryAmount balance);
+
+    MonetaryAmount getMinimumAllowedBalance();
+
+    @JsonProperty("minimum_allowed_balance")
+    String getMinimumAllowedBalanceAsString();
 
     LedgerAccount setBalance(Number balance);
 
@@ -27,9 +36,13 @@ public interface LedgerAccount {
 
     @JsonProperty("balance")
     String getBalanceAsString();
+    
+    @JsonProperty("is_admin")
+    Boolean isAdmin();
 
-    Number getBalanceAsNumber();
-
+    @JsonProperty("is_active")
+    boolean isActive();
+    
     // FIXME: credit & debit not needed must be associated 
     //  to transactions, not Accounts. Accounts must keep only
     // the balance.

@@ -37,5 +37,8 @@ public interface LedgerInfo {
      * @return The currency symbol as one or more UTF8 characters.
      */
     String getCurrencySymbol();
+    
+    
+    String getBaseUri();
 
 }

@@ -51,12 +51,13 @@ public class LedgerInfoFactory {
         return new LedgerInfoImpl(precission, scale, currencyCode, currencySymbol);
     }
 
-    public static final class LedgerInfoImpl implements LedgerInfo {
+    static final class LedgerInfoImpl implements LedgerInfo {
 
-        private int precision;
-        private int scale;
-        private String currencyCode;
-        private String currencySymbol;
+        private final int precision;
+        private final int scale;
+        private final String currencyCode;
+        private final String currencySymbol;
+        private String baseUri;
 
         public LedgerInfoImpl(int precision, int scale, String currencyCode, String currencySymbol) {
             this.precision = precision;
@@ -92,6 +93,12 @@ public class LedgerInfoFactory {
         public String getCurrencySymbol() {
             return currencySymbol;
         }
+
+        @Override
+        public String getBaseUri() {
+            return baseUri;
+        }
+        
 
     }
 }
