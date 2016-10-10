@@ -165,7 +165,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
             path = handlerPath(handler);
             checkProtectedEndpoint(router, handler, path);
             for (HttpMethod httpMethod : handler.getHttpMethods()) {
-                log.debug("publishing {} endpoint {} at {}", httpMethod, handler, getEndpointUrl(path));
+                log.debug("publishing {} endpoint {} at {}", httpMethod, handler.getClass().getName(), getEndpointUrl(path));
                 router.route(httpMethod, path).handler(handler);
             }
         }

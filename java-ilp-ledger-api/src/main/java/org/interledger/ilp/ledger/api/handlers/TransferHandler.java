@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TransferHandler extends RestEndpointHandler implements ProtectedResource {
 
-    private static final Logger log = LoggerFactory.getLogger(AccountHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(TransferHandler.class);
     private final static String PARAM_UUID_OR_FILTER = "UUID_OR_filter";
 
 	// GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 

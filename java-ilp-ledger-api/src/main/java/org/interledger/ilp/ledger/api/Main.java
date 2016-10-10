@@ -24,6 +24,9 @@ import org.interledger.ilp.ledger.api.handlers.AccountHandler;
 import org.interledger.ilp.ledger.api.handlers.AccountsHandler;
 import org.interledger.ilp.ledger.api.handlers.ConnectorsHandler;
 import org.interledger.ilp.ledger.api.handlers.HealthHandler;
+import org.interledger.ilp.ledger.api.handlers.TransferHandler;
+import org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +90,9 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 HealthHandler.create(),
                 ConnectorsHandler.create(),
                 AccountsHandler.create(),
-                AccountHandler.create()
+                AccountHandler.create(),
+                TransferHandler.create(),
+                TransferWSEventHandler.create()
         );
     }
 
