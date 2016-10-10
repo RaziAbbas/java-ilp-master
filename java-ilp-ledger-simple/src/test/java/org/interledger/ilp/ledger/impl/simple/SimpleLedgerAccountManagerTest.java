@@ -2,15 +2,17 @@ package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.Collection;
 import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
-import org.interledger.ilp.ledger.LedgerInfoFactory;
+import org.interledger.ilp.ledger.LedgerInfoBuilder;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -21,12 +23,21 @@ public class SimpleLedgerAccountManagerTest {
 
     LedgerAccountManager instance;
 
-    AccountUri aliceURI = new AccountUri("https://ledger1/accounts","alice");
-    AccountUri bobURI   = new AccountUri("https://ledger2/accounts","bob");
+    AccountUri aliceURI = new AccountUri("https://ledger1/accounts", "alice");
+    AccountUri bobURI = new AccountUri("https://ledger2/accounts", "bob");
+    
 
+    @BeforeClass
+    public static void init() {
+        LedgerInfo ledgerInfo = new LedgerInfoBuilder()
+            .setCurrency(Currencies.EURO)
+            .setBaseUri("https://ledger.example")
+            .build();        
+        LedgerFactory.initialize(ledgerInfo, "test-ledger");
+    }
+    
     @Before
-    public void setUp() {
-        LedgerFactory.initialize(LedgerInfoFactory.from(Currencies.EURO), "test-ledger");
+    public void setUp() {        
         instance = LedgerAccountManagerFactory.createLedgerAccountManager();
     }
 

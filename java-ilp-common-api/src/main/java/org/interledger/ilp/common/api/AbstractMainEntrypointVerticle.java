@@ -98,6 +98,10 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         config.apply(this);
     }
 
+    public URL getServerPublicURL() {
+        return serverPublicURL;
+    }
+    
     protected void initRouter(Router router) {
         log.debug("init router");
         int requestBodyLimit = config.getInt(2, SERVER, REQUEST, LIMIT);

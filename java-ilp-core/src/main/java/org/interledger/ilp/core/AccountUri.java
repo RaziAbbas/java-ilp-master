@@ -32,7 +32,7 @@ public class AccountUri {
     public boolean equals(Object other) {
         if (other == null) return false;
         if (other == this) return true;
-        if (!(other instanceof String))return false;
+        if (!(other instanceof AccountUri))return false;
         return uri.equals(((AccountUri)other).uri);
     }
 }

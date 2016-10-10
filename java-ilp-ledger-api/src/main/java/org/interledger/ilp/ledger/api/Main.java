@@ -16,7 +16,7 @@ import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
-import org.interledger.ilp.ledger.LedgerInfoFactory;
+import org.interledger.ilp.ledger.LedgerInfoBuilder;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.api.handlers.AccountHandler;
@@ -62,8 +62,13 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     public void configure(Config config) throws ConfigurationException {
         ilpPrefix = config.getString(LEDGER, ILP, PREFIX);
         String ledgerName = config.getString(DEFAULT_LEDGER_NAME, LEDGER, NAME);
-        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);
-        LedgerInfo ledgerInfo = LedgerInfoFactory.from(currencyCode);
+        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);                
+        LedgerInfo ledgerInfo = new LedgerInfoBuilder()
+                .setBaseUri(getServerPublicURL())
+                .setCurrencyCodeAndSymbol(currencyCode)
+                //TODO precission and scale
+                .build()
+        ;
         LedgerFactory.initialize(ledgerInfo, ledgerName);
         ledger = LedgerFactory.getDefaultLedger();        
         //Development config

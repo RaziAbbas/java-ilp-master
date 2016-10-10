@@ -20,8 +20,8 @@ public class SimpleLedgerAccountTest {
     final String sOtherURI = "http://ledgerOther/accounts/others";
     AccountUri testURI  = new AccountUri(sTestURI,"test");
     AccountUri otherURI = new AccountUri(sOtherURI,"others");
-
-
+    
+    
     @Before
     public void setUp() {
         instance = new SimpleLedgerAccount("test", CURRENCY_CODE);
