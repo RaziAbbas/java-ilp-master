@@ -1,5 +1,6 @@
-package org.interledger.ilp.ledger.impl;
+package org.interledger.ilp.ledger.impl.simple;
 
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import java.util.Collection;
 
 import org.interledger.ilp.core.AccountUri;

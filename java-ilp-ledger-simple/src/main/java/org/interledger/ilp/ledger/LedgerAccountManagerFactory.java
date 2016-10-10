@@ -1,7 +1,7 @@
 package org.interledger.ilp.ledger;
 
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
-import org.interledger.ilp.ledger.impl.SimpleLedgerAccountManager;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccountManager;
 
 /**
  * Ledger factory.

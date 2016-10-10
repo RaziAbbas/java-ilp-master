@@ -27,9 +27,8 @@ import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
-import org.interledger.ilp.ledger.api.Main;
-import org.interledger.ilp.ledger.impl.SimpleLedgerTransfer;
-import org.interledger.ilp.ledger.impl.SimpleLedgerTransferManager;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
 import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +115,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         TransferID transferID = new TransferID(context.request().getParam(PARAM_UUID_OR_FILTER));
         context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID); // FIXME: deleteme line
 
-        EventBus eb = Main.vertx.eventBus();
         // FIXME: Check first if the Transaction exists. Otherwise create it.
 
         JsonObject requestBody = getBodyAsJson(context);

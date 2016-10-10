@@ -2,7 +2,7 @@ package org.interledger.ilp.ledger;
 
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
-import org.interledger.ilp.ledger.impl.SimpleLedger;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
 
 /**
  * Ledger factory.

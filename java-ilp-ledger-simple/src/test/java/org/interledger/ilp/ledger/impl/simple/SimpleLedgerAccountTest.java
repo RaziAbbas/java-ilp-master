@@ -1,7 +1,7 @@
-package org.interledger.ilp.ledger.impl;
+package org.interledger.ilp.ledger.impl.simple;
 
 import org.interledger.ilp.core.AccountUri;
-import org.interledger.ilp.ledger.impl.SimpleLedgerAccount;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import javax.money.MonetaryAmount;
 import org.javamoney.moneta.Money;
 import static org.junit.Assert.*;

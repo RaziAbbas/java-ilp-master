@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 public class AccountHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(AccountHandler.class);
-//    private static LedgerAccountManager ledgerAccountManager;
+    
     private final static String PARAM_NAME = "name";
     private final static String PARAM_BALANCE = "balance";
     

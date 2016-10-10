@@ -1,7 +1,7 @@
-package org.interledger.ilp.ledger.impl;
+package org.interledger.ilp.ledger.impl.simple;
 
-import org.interledger.ilp.ledger.impl.LedgerAddressParserException;
-import org.interledger.ilp.ledger.impl.SimpleLedgerAddressParser;
+import org.interledger.ilp.ledger.impl.simple.LedgerAddressParserException;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAddressParser;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
