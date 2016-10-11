@@ -4,7 +4,7 @@ package org.interledger.ilp.ledger.api.handlers;
 // 
 //import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.ServerWebSocket;
-import io.vertx.core.net.SocketAddress;
+//import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.RoutingContext;
 
 import static io.vertx.core.http.HttpMethod.GET;
@@ -13,7 +13,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 //import javax.money.Monetary;
 //import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.common.api.ProtectedResource;
+//import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 //import org.interledger.ilp.core.AccountUri;
 //import org.interledger.ilp.core.ConditionURI;
@@ -30,16 +30,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
+//import io.vertx.core.buffer.Buffer;
 
-import java.io.IOException;
+//import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 /**
+ * @author earizon
  * TransferWSEventHandler handler
  * Wrapper to HTTP GET request to upgrade it to WebSocketEventHandler 
- *
- * @author earizon
+ * ILP-Connector five-bells-plugins will connect to a URL similar to:
+ * /accounts/alice/transfers
+ * This (GET) request will be upgraded to a webSocket connection in order
+ * to send back internal events (transfer accepted, rejected, ...)
+ * 
+ * Internal java-ilp-ledger components will inform of events to this Handler
+ * using a code similar to:
+ * 
+ *     String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
+ *     context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
  */
 // FIXME: implements ProtectedResource required? 
 //    Note: earizon: I didn't find an easy way to add authentication to the connecting WS "client"

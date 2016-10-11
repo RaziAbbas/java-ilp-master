@@ -4,24 +4,28 @@ import java.util.HashMap;
 import java.util.Map;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
+
+import org.interledger.ilp.ledger.transfer.TransferManager;
 /**
  * Simple in-memory {@code SimpleLedgerTransferManager}.
  *
  * @author earizon
  */
-public class SimpleLedgerTransferManager /* FIXME TODO implements LedgerTransferManager, LedgerTransferManagerFactory */{
+public class SimpleLedgerTransferManager implements TransferManager /* FIXME TODO implements LedgerTransferManager, LedgerTransferManagerFactory */{
 
     private Map<TransferID, LedgerTransfer> transferMap = 
         new HashMap<TransferID, LedgerTransfer>();// In-memory database of pending/executed/cancelled transfers
 
     private static SimpleLedgerTransferManager singleton = new SimpleLedgerTransferManager();
 
-    private SimpleLedgerTransferManager() { }
+    // Make default constructor private to avoid instantiating new classes.
+    private SimpleLedgerTransferManager() {}
 
-    public static SimpleLedgerTransferManager getSingletonInstance() {
+    public static SimpleLedgerTransferManager getSingleton() {
         return singleton;
     }
 
+    @Override
     public LedgerTransfer getTransferById(TransferID transferId) {
         LedgerTransfer result = transferMap.get(transferId);
         if (result == null) {
@@ -30,8 +34,27 @@ public class SimpleLedgerTransferManager /* FIXME TODO implements LedgerTransfer
         return result;
     }
     
+    @Override
     public boolean transferExists(TransferID transferId) {
         return transferMap.containsKey(transferId);
     }
     
+    @Override
+    public void createNewRemoteTransfer(LedgerTransfer newTransfer) {
+        // FIXME: If accounts are both locals the execute and forget.
+        if (transferExists(newTransfer.getTransferID())) {
+            throw new RuntimeException("trying to create new transfer "
+                    + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "
+                    + "Check transfer with SimpleLedgerTransferManager.transferExists before invoquing this function");
+        }
+        transferMap.put(newTransfer.getTransferID(), newTransfer);
+        // FIXME: Notify ilp-connector
+        
+    }
+    
+    @Override
+    public void executeLocalTransfer(LedgerTransfer newTransfer) {
+        // FIXME: Implement
+    }
+
 }

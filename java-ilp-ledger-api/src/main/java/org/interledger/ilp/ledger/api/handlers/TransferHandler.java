@@ -87,7 +87,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         log.debug(this.getClass().getName() + "invoqued ");
         HttpServerRequest request = context.request();
         String ilpConnectorIP = request.remoteAddress().host();
-        String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -115,12 +114,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          *     }
          */
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
-        boolean deleteme = true; if (deleteme/*FIXME: TODO:(0) deleteme all this if block */) {
-            context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
-            response(context,HttpResponseStatus.CREATED ); // deleteme line
-            if (true) return; // deleteme line
-        }
-        // FIXME: Check first if the Transaction exists. Otherwise create it.
 
         JsonObject requestBody = getBodyAsJson(context);
         String state = requestBody.getString("state");
@@ -160,10 +153,12 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, fromURI, toURI, 
                 debit0_ammount, URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
                 data, noteToSelf, TransferStatus.PROPOSED );
-        SimpleLedgerTransferManager tm = SimpleLedgerTransferManager.getSingletonInstance();
+        SimpleLedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
+
         boolean isNewTransfer = !tm.transferExists(transferID);
         LedgerTransfer existingTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
         if (!isNewTransfer){
+            // Check that received json data match existing transaction.
             if (
                  ! existingTransfer.     getAmount().equals(receivedTransfer.getAmount()     )
               || ! existingTransfer.getFromAccount().equals(receivedTransfer.getFromAccount()) 
@@ -171,6 +166,18 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                ) {
                 throw new RuntimeException("Wrong data");
             }
+        } else {
+            tm.createNewRemoteTransfer(receivedTransfer);
+        }
+        try {
+            // FIXME: What's the exact message to send to the connector.
+            String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
+            context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
+        } catch(Exception e) {
+            log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
+            /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
+             *     send to the connector once the (websocket) connection is restablished.
+             */
         }
         response(context,
                 isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
