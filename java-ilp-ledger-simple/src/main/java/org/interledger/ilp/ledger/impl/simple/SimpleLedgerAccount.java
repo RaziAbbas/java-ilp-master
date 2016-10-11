@@ -42,7 +42,6 @@ public class SimpleLedgerAccount implements LedgerAccount {
         this.balance = Money.of(0, currencyCode);
         this.minimumAllowedBalance = Money.of(0, currencyCode);
         this.disabled = false;
-        this.accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
     }
 
     @Override
@@ -193,6 +192,9 @@ public class SimpleLedgerAccount implements LedgerAccount {
     }
 
     private AccountUri getAccountUri() {
+        if (accountUri == null) {
+            accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
+        }
         return accountUri;
     }
 }
