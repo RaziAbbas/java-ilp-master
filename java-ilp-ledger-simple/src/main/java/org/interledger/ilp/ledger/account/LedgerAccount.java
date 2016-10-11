@@ -19,7 +19,8 @@ import javax.money.MonetaryAmount;
 })*/
 public interface LedgerAccount {
 
-    String getId();
+    @JsonProperty("id")
+    String getUri();
 
     String getName();
     

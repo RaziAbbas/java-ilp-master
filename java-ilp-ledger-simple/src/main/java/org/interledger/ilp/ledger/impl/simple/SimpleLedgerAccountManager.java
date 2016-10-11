@@ -15,7 +15,7 @@ import org.interledger.ilp.ledger.account.LedgerAccountManager;
  *
  * @author mrmx
  */
-public class SimpleLedgerAccountManager implements LedgerAccountManager {        
+public class SimpleLedgerAccountManager implements LedgerAccountManager {
     private Map<String, LedgerAccount> accountMap;
 
     public SimpleLedgerAccountManager() {

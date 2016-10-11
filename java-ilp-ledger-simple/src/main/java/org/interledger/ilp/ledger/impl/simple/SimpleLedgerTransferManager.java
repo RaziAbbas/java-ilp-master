@@ -2,9 +2,14 @@ package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.money.MonetaryAmount;
+
+import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
-
+import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
+import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.transfer.TransferManager;
 /**
  * Simple in-memory {@code SimpleLedgerTransferManager}.
@@ -21,7 +26,7 @@ public class SimpleLedgerTransferManager implements TransferManager /* FIXME TOD
     // Make default constructor private to avoid instantiating new classes.
     private SimpleLedgerTransferManager() {}
 
-    public static SimpleLedgerTransferManager getSingleton() {
+    public static TransferManager getSingleton() {
         return singleton;
     }
 
@@ -51,10 +56,14 @@ public class SimpleLedgerTransferManager implements TransferManager /* FIXME TOD
         // FIXME: Notify ilp-connector
         
     }
-    
+
     @Override
-    public void executeLocalTransfer(LedgerTransfer newTransfer) {
-        // FIXME: Implement
+    public void executeLocalTransfer(AccountUri sender, AccountUri recipient, MonetaryAmount amount) {
+        LedgerAccountManager accManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
+        accManager.getAccountByName(sender   .getAccountId()).debit (amount);
+        accManager.getAccountByName(recipient.getAccountId()).credit(amount);
+        
+        
     }
 
 }

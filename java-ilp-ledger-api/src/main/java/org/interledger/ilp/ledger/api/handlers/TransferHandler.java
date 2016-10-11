@@ -33,6 +33,7 @@ import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
+import org.interledger.ilp.ledger.transfer.TransferManager;
 import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,9 +127,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             throw new RuntimeException("Transactions from multiple source debits not implemented");
         }
         JsonObject debit0 = debits.getJsonObject(0); 
-        //FIXME
-        AccountUri fromURI = new AccountUri(debit0.getString("account"),"fixme");
-        //  {"account":"http://localhost/accounts/alice","amount":"50"},
+        // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
+        AccountUri fromURI0 = AccountUri.buildFromURI(debit0.getString("account") /*account URI*/);
+
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
         CurrencyUnit currencyUnit /*local ledger currency */ = Monetary.getCurrency(ledgerInfo.getCurrencyCode());
@@ -139,8 +140,22 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         if (credits.size()>1) {
             throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
         }
-        //FIXME
-        AccountUri toURI  = new AccountUri(credits.getString(0),"fixme");        
+        JsonObject credit0 = credits.getJsonObject(0); 
+//        {"account":"http://localhost/accounts/bob","amount":"30"},
+        AccountUri toURI0  = AccountUri.buildFromURI(credit0.getString("account") /*accountURI */);
+        MonetaryAmount credit0_ammount = Money.of(credit0.getDouble("account") , currencyUnit);
+
+        // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
+        TransferManager tm = SimpleLedgerTransferManager.getSingleton();
+        if (fromURI0.getLedgerUri().equals(toURI0.getLedgerUri())) {
+            if (!debit0_ammount.equals(credit0_ammount)) {
+                throw new RuntimeException("WARN: SECURITY EXCEPTION: "
+              + "debit '" + debit0_ammount.toString()+"' is different to "
+              + "credit '"+credit0_ammount.toString()+"'");
+            }
+            tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
+            return;
+        }
         ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
         String cancelation_condition = requestBody.getString("cancelation_condition");
         
@@ -150,10 +165,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         DTTM DTTM_proposed = DTTM.getNow();
         String data = ""; // Not used
         String noteToSelf = ""; // Not used
-        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, fromURI, toURI, 
+        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, fromURI0, toURI0, 
                 debit0_ammount, URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
                 data, noteToSelf, TransferStatus.PROPOSED );
-        SimpleLedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
 
         boolean isNewTransfer = !tm.transferExists(transferID);
         LedgerTransfer existingTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);

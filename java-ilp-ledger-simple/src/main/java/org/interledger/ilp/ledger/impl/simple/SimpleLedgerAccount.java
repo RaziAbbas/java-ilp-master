@@ -34,15 +34,19 @@ public class SimpleLedgerAccount implements LedgerAccount {
     }
 
     public SimpleLedgerAccount(String name, String currencyCode) {
+        if (name         == null ) throw new RuntimeException("name         null at SimpleLedgerAccount constructor");
+        if (currencyCode == null ) throw new RuntimeException("currencyCode null at SimpleLedgerAccount constructor");
+        
         this.name = name;
         this.currencyCode = currencyCode;
         this.balance = Money.of(0, currencyCode);
         this.minimumAllowedBalance = Money.of(0, currencyCode);
         this.disabled = false;
+        this.accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
     }
 
     @Override
-    public String getId() {
+    public String getUri() { // FIXME: rename to getAccountUri
         return getAccountUri().getUri();
     }
 
@@ -99,20 +103,19 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public SimpleLedgerAccount setBalance(Number balance) {
+        // TODO: FIXME: Check balance > 0
         return setBalance(Money.of(balance, currencyCode));
     }
 
     @Override
     public SimpleLedgerAccount setBalance(MonetaryAmount balance) {
+        // TODO: FIXME: Check balance > 0
         this.balance = balance;
         return this;
     }
 
     @Override
     public MonetaryAmount getBalance() {
-        if (balance == null) {
-            balance = Money.of(0, currencyCode);
-        }
         return balance;
     }
 
@@ -141,11 +144,13 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public SimpleLedgerAccount credit(MonetaryAmount amount) {
+        // TODO: FIXME: Check amount > 0
         setBalance(getBalance().add(amount));
         return this;
     }
 
     public SimpleLedgerAccount debit(String amount) {
+        // TODO: FIXME: Check amount > 0
         return debit(toMonetaryAmount(amount));
     }
 
@@ -156,6 +161,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public SimpleLedgerAccount debit(MonetaryAmount amount) {
+        // TODO: FIXME: Check amount > 0
         setBalance(getBalance().subtract(amount));
         return this;
     }
@@ -168,7 +174,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
         if (obj == this) {
             return true;
         }
-        return getId().equalsIgnoreCase(((SimpleLedgerAccount) obj).getId());
+        return getUri().equalsIgnoreCase(((SimpleLedgerAccount) obj).getUri());
     }
 
     @Override
@@ -187,9 +193,6 @@ public class SimpleLedgerAccount implements LedgerAccount {
     }
 
     private AccountUri getAccountUri() {
-        if (accountUri == null) {
-            accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
-        }
         return accountUri;
     }
 }

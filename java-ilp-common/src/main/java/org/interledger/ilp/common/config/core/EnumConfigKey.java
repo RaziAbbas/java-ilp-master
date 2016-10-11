@@ -12,7 +12,7 @@ public class EnumConfigKey extends ArrayConfigKey<Enum<?>> {
         super(keys);
     }
 
-    public static EnumConfigKey of(Enum... keys) {
+    public static EnumConfigKey of(Enum<?>... keys) {
         return new EnumConfigKey(keys);
     }
 }
