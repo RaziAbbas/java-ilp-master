@@ -10,7 +10,7 @@ public class AccountUri {
     private final String uri;
     private final String ledgerUri;
     private final String accountId;
-    final private static String  ACCOUNTS = "/accounts/";
+    final private static String  ACCOUNTS = "/accounts";
      
     public AccountUri(String ledgerUri, String accountId) {
         if (ledgerUri == null) { throw new RuntimeException("ledgerUri null at AccountUri constructor"); }
@@ -21,7 +21,7 @@ public class AccountUri {
         if(ledgerUri.endsWith("/")) { ledgerUri = ledgerUri.substring(0, ledgerUri.length()-1); }
         this.ledgerUri = ledgerUri;
         this.accountId = accountId;
-        this.uri = ledgerUri + ACCOUNTS + accountId; 
+        this.uri = ledgerUri + ACCOUNTS + "/" + accountId; 
     }
     
     public static AccountUri buildFromURI(String uri) {
@@ -31,7 +31,7 @@ public class AccountUri {
             throw new RuntimeException(uri + "couldn't be parsed as a valid account");
         }
         String ledgerUri = uri.substring( 0, idx);
-        String accountId = uri.substring( idx + ACCOUNTS.length() );
+        String accountId = uri.substring( idx + ACCOUNTS.length() + 1);
         return new AccountUri(ledgerUri, accountId);
     }
 
