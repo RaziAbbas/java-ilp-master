@@ -22,7 +22,7 @@
         </encoder>
     </appender>
 
-    <logger name="org.interledger" level="DEBUG"/>        
+    <logger name="org.interledger" level="DEBUG"/>            
 
     <root level="INFO">          
         <appender-ref ref="STDOUT" />

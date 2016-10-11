@@ -99,6 +99,10 @@ public class SimpleAuthProvider implements Configurable, AuthProvider {
         public String getRole() {
             return role;
         }
+        
+        public boolean hasRole(String role) {
+            return this.role != null && this.role.equalsIgnoreCase(role);
+        }
 
         @Override
         public int hashCode() {

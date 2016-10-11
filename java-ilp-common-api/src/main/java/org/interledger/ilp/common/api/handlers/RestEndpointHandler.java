@@ -26,6 +26,8 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     private final static String UNAUTHORIZED_ERROR_ID = "UnauthorizedError";
     private final static String UNAUTHORIZED_ERROR_MSG = "Unknown or invalid account / password";
+    private final static String FORBIDDEN_ERROR_ID = "ForbiddenError";
+    private final static String FORBIDDEN_ERROR_MSG = "Forbidden";
 
     public RestEndpointHandler(String name) {
         this(name, name);
@@ -51,7 +53,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                 default: // CONNECT, DELETE, HEAD, OPTIONS, OTHER, PATCH, TRACE:
                     break;
             }
-        } catch (RestEndpointException rex) {            
+        } catch (RestEndpointException rex) {               
             log.debug("RestEndpointException {} -> {}",rex.getResponseStatus(),rex.getResponse());
             response(context, rex.getResponseStatus(), rex.getResponse());
         } catch (Throwable t) {
@@ -96,7 +98,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                 if (res.succeeded()) {
                     handleAuthorized(context);
                 } else {
-                    forbidden(context);
+                    unauthorized(context);
                 }
             });
         }
@@ -106,16 +108,20 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         response(context, HttpResponseStatus.NOT_IMPLEMENTED);
     }
 
-    protected Supplier<JsonObject> buildJSON(CharSequence id, CharSequence message) {
+    protected static Supplier<JsonObject> buildJSON(CharSequence id, CharSequence message) {
         return buildJSONWith("id", id, "message", message);
     }
 
-    protected Supplier<JsonObject> buildJSONWith(Object... pairs) {
+    protected static Supplier<JsonObject> buildJSONWith(Object... pairs) {
         return JsonObjectBuilder.create().with(pairs);
     }
 
+    protected void unauthorized(RoutingContext context) {
+        response(context, HttpResponseStatus.UNAUTHORIZED, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
+    }
+    
     protected void forbidden(RoutingContext context) {
-        response(context, HttpResponseStatus.FORBIDDEN, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
+        response(context, HttpResponseStatus.FORBIDDEN, buildJSON(FORBIDDEN_ERROR_ID, FORBIDDEN_ERROR_MSG));
     }
 
     protected void response(RoutingContext context, HttpResponseStatus responseStatus) {
@@ -139,6 +145,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     protected void response(RoutingContext context, HttpResponseStatus responseStatus, JsonObject response) {
         boolean plainEncoding = StringUtils.isNotBlank(context.request().getParam(PARAM_ENCODE_PLAIN_JSON));
         String jsonResponse = plainEncoding ? response.encode() : response.encodePrettily();
+        log.debug("response:\n{}",jsonResponse);
         context.response()
                 .putHeader(HttpHeaders.CONTENT_TYPE, MIME_JSON_WITH_ENCODING)
                 .putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(jsonResponse.length()))
@@ -149,15 +156,19 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     protected static class RestEndpointException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
-        private HttpResponseStatus responseStatus;
+        private HttpResponseStatus responseStatus;        
         private JsonObject response;
-
-        public RestEndpointException(HttpResponseStatus responseStatus, String msg) {
-            this(responseStatus, new JsonObject().put("error", msg));
+        
+        public RestEndpointException(HttpResponseStatus responseStatus, Supplier<JsonObject> response) {
+            this(responseStatus,response.get());            
+        }
+        
+        public RestEndpointException(HttpResponseStatus responseStatus, String response) {
+            this(responseStatus,buildJSON("Error",response));
         }
 
         public RestEndpointException(HttpResponseStatus responseStatus, JsonObject response) {
-            this.responseStatus = responseStatus;
+            this.responseStatus = responseStatus;            
             this.response = response;
         }
 
@@ -167,7 +178,19 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
         public JsonObject getResponse() {
             return response;
-        }
+        }        
+                
     }
+    
+    protected RestEndpointException notFound(CharSequence message) {
+        return new RestEndpointException(
+                HttpResponseStatus.NOT_FOUND,
+                buildJSON("NotFoundError",message)
+        );
+    }
+
+    
+    
+    
 
 }

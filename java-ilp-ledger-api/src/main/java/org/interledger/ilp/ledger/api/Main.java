@@ -1,7 +1,6 @@
 package org.interledger.ilp.ledger.api;
 
 import com.google.common.base.Optional;
-
 import io.vertx.ext.web.Router;
 import java.util.Arrays;
 import java.util.List;
@@ -44,12 +43,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
 
     private String ilpPrefix;
     private Ledger ledger;
-<<<<<<< HEAD
-    private LedgerAccountManager ledgerAccountManager;
-    
-
-=======
->>>>>>> a918024039b2b50b8603abe20a0b0a23146415e1
 
     //Development configuration namespace:
     enum Dev {

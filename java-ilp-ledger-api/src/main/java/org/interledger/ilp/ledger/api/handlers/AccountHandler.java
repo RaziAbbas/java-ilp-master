@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;
 import org.interledger.ilp.common.api.ProtectedResource;
+import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.core.LedgerInfo;
@@ -25,10 +26,10 @@ import org.slf4j.LoggerFactory;
 public class AccountHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(AccountHandler.class);
-    
+
     private final static String PARAM_NAME = "name";
     private final static String PARAM_BALANCE = "balance";
-    
+
     public AccountHandler() {
         super("account", "accounts/:" + PARAM_NAME);
         accept(GET, POST);
@@ -39,6 +40,14 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     }
 
     protected void handleGet(RoutingContext context) {
+        log.debug("Handing get single account");
+        SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
+        String accountName = getAccountName(context);
+        boolean isAdmin = user.hasRole("admin");
+        if (!isAdmin && !accountName.equals(user.getUsername())) {
+            unauthorized(context);
+            return;
+        }
         LedgerAccount account = getAccountByName(context);
         // TODO: Ussually ledgerURL will be a constant that can be fetch from config params.
         //       No need to recalculate each time. Could it be the case that the server is configured with
@@ -48,12 +57,13 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
         JsonObject result = JsonObjectBuilder.create()
                 .from(account)
                 .put("ledger", ledgerURL)
-                .get();        
-        response(context, HttpResponseStatus.OK,result);
+                .get();
+        response(context, HttpResponseStatus.OK, result);
     }
 
     protected void handlePost(RoutingContext context) {
-    	LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+        log.debug("Handing put account");
+        LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
         String accountName = getAccountName(context);
         JsonObject requestBody = getBodyAsJson(context);
         Double balance = requestBody.getDouble(PARAM_BALANCE, 100d);
@@ -66,18 +76,18 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
                 buildJSON("result", Json.encode(account)));
     }
 
-    private static LedgerAccount getAccountByName(RoutingContext context) {
+    private LedgerAccount getAccountByName(RoutingContext context) {
         String accountName = getAccountName(context);
         log.debug("Get account {}", accountName);
         try {
             return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountByName(accountName);
         } catch (AccountNotFoundException ex) {
-            throw new RestEndpointException(HttpResponseStatus.NOT_FOUND, ex.getMessage());
+            throw notFound("Unknown account");
         }
 
     }
 
-    private static String getAccountName(RoutingContext context) {
+    private String getAccountName(RoutingContext context) {
         String accountName = context.request().getParam(PARAM_NAME);
         if (StringUtils.isBlank(accountName)) {
             throw new RestEndpointException(HttpResponseStatus.BAD_REQUEST, accountName);
