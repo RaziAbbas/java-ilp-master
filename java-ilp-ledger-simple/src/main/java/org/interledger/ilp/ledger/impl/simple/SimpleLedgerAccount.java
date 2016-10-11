@@ -4,6 +4,7 @@ import java.util.Currency;
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
 import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.MoneyUtils;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.javamoney.moneta.Money;
@@ -15,38 +16,85 @@ import org.javamoney.moneta.Money;
  */
 public class SimpleLedgerAccount implements LedgerAccount {
 
-    private final AccountUri accountUri;
+    private AccountUri accountUri;
     private final String name;
     private final String currencyCode;
     private MonetaryAmount balance;
+    private MonetaryAmount minimumAllowedBalance;
+    private Boolean admin;
+    private boolean disabled;
+    private String connector;
 
-    public SimpleLedgerAccount(AccountUri accountUri, Currency currency) {
-        this(accountUri, currency.getCurrencyCode());
+    public SimpleLedgerAccount(String name, Currency currency) {
+        this(name, currency.getCurrencyCode());
     }
 
-    public SimpleLedgerAccount(AccountUri accountUri, CurrencyUnit currencyUnit) {
-        this(accountUri, currencyUnit.getCurrencyCode());
+    public SimpleLedgerAccount(String name, CurrencyUnit currencyUnit) {
+        this(name, currencyUnit.getCurrencyCode());
     }
 
-    public SimpleLedgerAccount(AccountUri accountUri, String currencyCode) {
-        this.accountUri = accountUri;
+    public SimpleLedgerAccount(String name, String currencyCode) {
+        this.name = name;
         this.currencyCode = currencyCode;
-        this.name = accountUri.accoundId;
-    }    
-    
+        this.balance = Money.of(0, currencyCode);
+        this.minimumAllowedBalance = Money.of(0, currencyCode);
+        this.disabled = false;
+    }
+
     @Override
-    public AccountUri getAccountUri() {
-        return accountUri;
+    public String getId() {
+        return getAccountUri().getUri();
     }
 
     @Override
     public String getName() {
         return name;
     }
-    
+
+    public LedgerAccount setAdmin(boolean admin) {
+        this.admin = admin;
+        return this;
+    }
+
+    @Override
+    public Boolean isAdmin() {
+        return admin;
+    }
+
+    public LedgerAccount setDisabled(boolean disabled) {
+        this.disabled = disabled;
+        return this;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
     @Override
     public String getCurrencyCode() {
         return currencyCode;
+    }
+
+    @Override
+    public LedgerAccount setMinimumAllowedBalance(Number balance) {
+        return setMinimumAllowedBalance(Money.of(balance, currencyCode));
+    }
+
+    @Override
+    public LedgerAccount setMinimumAllowedBalance(MonetaryAmount balance) {
+        this.minimumAllowedBalance = balance;
+        return this;
+    }
+
+    @Override
+    public MonetaryAmount getMinimumAllowedBalance() {
+        return minimumAllowedBalance;
+    }
+
+    @Override
+    public String getMinimumAllowedBalanceAsString() {
+        return getMinimumAllowedBalance().getNumber().toString();
     }
 
     @Override
@@ -67,17 +115,21 @@ public class SimpleLedgerAccount implements LedgerAccount {
         }
         return balance;
     }
-    
+
     @Override
     public String getBalanceAsString() {
-        return getBalanceAsNumber().toString();
+        return getBalance().getNumber().toString();
+    }
+
+    public void setConnector(String connector) {
+        this.connector = connector;
     }
 
     @Override
-    public Number getBalanceAsNumber() {
-        return getBalance().getNumber();
+    public String getConnector() {
+        return connector;
     }
-    
+
     public SimpleLedgerAccount credit(String amount) {
         return credit(toMonetaryAmount(amount));
     }
@@ -96,7 +148,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
     public SimpleLedgerAccount debit(String amount) {
         return debit(toMonetaryAmount(amount));
     }
-    
+
     @Override
     public SimpleLedgerAccount debit(Number amount) {
         return debit(Money.of(amount, currencyCode));
@@ -110,25 +162,34 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null || !(obj instanceof SimpleLedgerAccount)) {
+        if (obj == null || !(obj instanceof SimpleLedgerAccount)) {
             return false;
         }
-        if(obj == this) {
+        if (obj == this) {
             return true;
         }
-        return accountUri.URI.equalsIgnoreCase(((SimpleLedgerAccount)obj).getAccountUri().URI);
+        return getId().equalsIgnoreCase(((SimpleLedgerAccount) obj).getId());
     }
-    
+
     @Override
     public String toString() {
-        return "Account["
-                + "name:" + accountUri
-                + " balance:" + balance
-                + "]";
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("[");
+        sb.append("name:").append(getName()).append(",");
+        sb.append("balance:").append(getBalance());
+        sb.append("]");
+        return sb.toString();
+
     }
 
     protected MonetaryAmount toMonetaryAmount(String amount) {
         return MoneyUtils.toMonetaryAmount(amount, currencyCode);
     }
 
+    private AccountUri getAccountUri() {
+        if (accountUri == null) {
+            accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
+        }
+        return accountUri;
+    }
 }

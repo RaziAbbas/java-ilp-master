@@ -13,21 +13,19 @@ import org.interledger.ilp.common.config.Config;
 import static org.interledger.ilp.common.config.Key.*;
 import org.interledger.ilp.common.config.core.Configurable;
 import org.interledger.ilp.common.config.core.ConfigurationException;
-import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
-import org.interledger.ilp.ledger.LedgerInfoFactory;
-import org.interledger.ilp.ledger.account.LedgerAccount;
+import org.interledger.ilp.ledger.LedgerInfoBuilder;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
-import org.interledger.ilp.ledger.account.LedgerAccountManagerAware;
 import org.interledger.ilp.ledger.api.handlers.AccountHandler;
 import org.interledger.ilp.ledger.api.handlers.AccountsHandler;
 import org.interledger.ilp.ledger.api.handlers.ConnectorsHandler;
 import org.interledger.ilp.ledger.api.handlers.HealthHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler;
-
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,13 +44,20 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
 
     private String ilpPrefix;
     private Ledger ledger;
+<<<<<<< HEAD
     private LedgerAccountManager ledgerAccountManager;
     
 
+=======
+>>>>>>> a918024039b2b50b8603abe20a0b0a23146415e1
 
     //Development configuration namespace:
     enum Dev {
-        accounts
+        uri,
+        accounts,
+        balance,
+        admin,disabled,
+        connector
     }
 
     // TODO: Move to the ledger-simple. The main is not part of the (reusable) API.
@@ -71,18 +76,24 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     public void configure(Config config) throws ConfigurationException {
         ilpPrefix = config.getString(LEDGER, ILP, PREFIX);
         String ledgerName = config.getString(DEFAULT_LEDGER_NAME, LEDGER, NAME);
-        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);
-        LedgerInfo ledgerInfo = LedgerInfoFactory.from(currencyCode);
-        LedgerFactory.initialize(ledgerInfo, ledgerName);
-        ledger = LedgerFactory.getDefaultLedger();
-        //TODO move getLedgerAccountManager to Ledger interface?
-        try {
-            ledgerAccountManager = ((LedgerAccountManagerAware) ledger).getLedgerAccountManager();
-        } catch (Exception ex) {
-            throw new ConfigurationException("Preparing ledger instance", ex);
-        }
+        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);                
+        String baseUri = getServerPublicURL().toString();
         //Development config
         Optional<Config> devConfig = config.getOptionalConfig(Dev.class);
+        if (devConfig.isPresent()) {
+            Config dev = devConfig.get();
+            //Override baseUri to match 5-bells integration tests:
+            baseUri = dev.getString(baseUri, Dev.uri);        
+        }
+        LedgerInfo ledgerInfo = new LedgerInfoBuilder()
+                .setBaseUri(baseUri)
+                .setCurrencyCodeAndSymbol(currencyCode)
+                //TODO precission and scale
+                .build()
+        ;
+        LedgerFactory.initialize(ledgerInfo, ledgerName);
+        ledger = LedgerFactory.getDefaultLedger();        
+        //Development config
         if (devConfig.isPresent()) {
             configureDevelopmentEnvirontment(devConfig.get());
         }
@@ -114,11 +125,19 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     }
 
     private void configureDevelopmentEnvirontment(Config config) {
-        log.info("Preparing development environment");
+        log.info("Preparing development environment");        
         List<String> accounts = config.getStringList(Dev.accounts);
+        LedgerAccountManager ledgerAccountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         for(String accountName : accounts) {
-            LedgerAccount account = ledgerAccountManager.create(new AccountUri(accountName));
-            ledgerAccountManager.addAccount(account);
+            SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);                        
+            Config accountConfig = config.getConfig(accountName);
+            account.setBalance(accountConfig.getInt(0, Dev.balance));
+            if(accountConfig.getBoolean(false, Dev.admin)) {
+                account.setAdmin(true);
+            }
+            account.setDisabled(accountConfig.getBoolean(false, Dev.disabled));
+            account.setConnector(accountConfig.getString((String)null, Dev.connector));
+            ledgerAccountManager.addAccount(account);            
         }
     }
 

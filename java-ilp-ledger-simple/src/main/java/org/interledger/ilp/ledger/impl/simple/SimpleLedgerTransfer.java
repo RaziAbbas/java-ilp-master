@@ -1,7 +1,6 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import javax.money.MonetaryAmount;
-
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
@@ -38,7 +37,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         MonetaryAmount ammount, ConditionURI URIExecutionCond, 
         ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
         String data, String noteToSelf, TransferStatus transferStatus ){
-        if (fromAccount.ledger.equals(toAccount.ledger)) {
+        if (fromAccount.getLedgerUri().equals(toAccount.getLedgerUri())) {
             throw new RuntimeException("assert exception: "
                     + "SimpleLedgerTransfer does not handle local transfers. Only transfers "
                     + "from local ledger to external ones");
@@ -57,14 +56,14 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         this.transferStatus     = transferStatus    ;
 
         /*
-         *  Parse AccountUri to fetch local account
-         *  AccountUri will be similar to http://localLedger/account/"accountId" ->
+         *  Parse String to fetch local accounturi
+         *  String will be similar to http://localLedger/account/"accountId" ->
          *  we need the "accountId" to fetch the correct local "from" Account
          */
 
         this.fromAccount = LedgerAccountManagerFactory.
                 getLedgerAccountManagerSingleton().
-                    getAccountByName(fromAccountURI);
+                    getAccountByName(fromAccountURI.getAccountId());
     }
 
     @Override

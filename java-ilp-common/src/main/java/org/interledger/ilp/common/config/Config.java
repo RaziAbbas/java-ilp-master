@@ -3,6 +3,7 @@ package org.interledger.ilp.common.config;
 import com.google.common.base.Optional;
 import java.util.Arrays;
 import java.util.List;
+import org.interledger.ilp.common.config.core.ArrayConfigKey;
 import org.interledger.ilp.common.config.core.ClassConfigKey;
 import org.interledger.ilp.common.config.core.CompoundConfigKey;
 import org.interledger.ilp.common.config.core.ConfigKey;
@@ -113,7 +114,7 @@ public class Config {
     public boolean hasKey(String... key) {
         return configuration.hasKey(ObjectConfigKey.of(key));
     }
-    
+
     /**
      * Checks that a key is defined or throws a {@code RequiredKeyException}.
      * This method should be more efficient due to the fact that no value
@@ -127,6 +128,21 @@ public class Config {
     public ConfigKey requireKey(Enum... key) throws RequiredKeyException {
         checkKey(key);
         return configuration.requireKey(EnumConfigKey.of(key));
+    }
+
+    /**
+     * Checks that a key is defined or throws a {@code RequiredKeyException}.
+     * This method should be more efficient due to the fact that no value
+     * evaluation and/or conversions will be performed.
+     *
+     * @param key
+     * @return the resulting {@code ConfigKey} created from the input
+     * {@code String} key/s
+     * @throws RequiredKeyException if key is not found
+     */
+    public ConfigKey requireKey(String... key) throws RequiredKeyException {
+        checkKey(key);
+        return configuration.requireKey(ArrayConfigKey.of(key));
     }
 
     /**
@@ -164,6 +180,18 @@ public class Config {
      * @throws RequiredKeyException if no prefix is found
      * @throws ConfigurationException if some other error occurred.
      */
+    public Config getConfig(String... prefixKey) throws RequiredKeyException, ConfigurationException {
+        return new Config(configuration.getConfiguration(requireKey(prefixKey)));
+    }
+
+    /**
+     * Creates a child configuration from a prefix key
+     *
+     * @param prefixKey
+     * @return {@code Config} child.
+     * @throws RequiredKeyException if no prefix is found
+     * @throws ConfigurationException if some other error occurred.
+     */
     public <T extends Enum<T>> Config getConfig(Class<T> prefixKey) throws RequiredKeyException, ConfigurationException {
         return new Config(configuration.getConfiguration(requireKey(prefixKey)));
     }
@@ -173,11 +201,25 @@ public class Config {
      *
      * @param prefixKey
      * @return {@link Optional} {@code Config} child.
-     * @throws RequiredKeyException if no prefix is found
      * @throws ConfigurationException if some other error occurred.
      */
     public <T extends Enum<T>> Optional<Config> getOptionalConfig(Class<T> prefixKey) throws ConfigurationException {
         ConfigKey configKey = ClassConfigKey.of(prefixKey);
+        if (!configuration.hasKey(configKey)) {
+            return Optional.absent();
+        }
+        return Optional.of(new Config(configuration.getConfiguration(configKey)));
+    }
+
+    /**
+     * Gets an {@link Optional} child configuration from a prefix key
+     *
+     * @param prefixKey
+     * @return {@link Optional} {@code Config} child.
+     * @throws ConfigurationException if some other error occurred.
+     */
+    public <T extends Enum<T>> Optional<Config> getOptionalConfig(String... prefixKey) throws ConfigurationException {
+        ConfigKey configKey = ArrayConfigKey.of(prefixKey);
         if (!configuration.hasKey(configKey)) {
             return Optional.absent();
         }
@@ -314,7 +356,7 @@ public class Config {
         return configuration.getBoolean(EnumConfigKey.of(key), defaultValue);
     }
 
-    private void checkKey(Enum... key) {
+    private <T> void checkKey(T... key) {
         if (key == null || key.length == 0) {
             throw new IllegalArgumentException(MSG_ILLEGAL_NO_KEY_ARGS);
         }

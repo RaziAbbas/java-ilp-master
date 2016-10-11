@@ -1,8 +1,5 @@
 package org.interledger.ilp.ledger.impl.simple;
 
-import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
-import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
-import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
@@ -14,10 +11,15 @@ import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.core.events.LedgerEventHandler;
 import org.interledger.ilp.ledger.Currencies;
+import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
+import org.interledger.ilp.ledger.LedgerFactory;
+import org.interledger.ilp.ledger.LedgerInfoBuilder;
 import org.interledger.ilp.ledger.account.LedgerAccount;
+import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.javamoney.moneta.Money;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -28,15 +30,25 @@ import org.junit.Test;
  */
 public class SimpleLedgerTest {
 
-    Currencies CURRENCY = Currencies.EURO;
-    SimpleLedger instance;
-    
-    AccountUri aliceURI = new AccountUri("https://ledger1/accounts/alice");
-    AccountUri bobURI   = new AccountUri("https://ledger2/accounts/bob");
+    static final Currencies CURRENCY = Currencies.EURO;
+    static final LedgerInfo ledgerInfo = new LedgerInfoBuilder()
+            .setCurrency(CURRENCY)
+            .setBaseUri("https://ledger.example")
+            .build();
 
+    SimpleLedger instance;
+
+    final String ALICE = "alice";
+    final String BOB = "bob";
+    
+    @BeforeClass
+    public static void init() {
+        LedgerFactory.initialize(ledgerInfo, "test-ledger");
+    }
+    
     @Before
     public void setUp() {
-        instance = new SimpleLedger(CURRENCY, "test");
+        instance = new SimpleLedger(ledgerInfo, "test");
     }
 
     /**
@@ -58,20 +70,21 @@ public class SimpleLedgerTest {
         System.out.println("send");
         TransferID transferID = new TransferID("3a2a1d9e-8640-4d2d-b06c-84f2cd613204");
 
-        LedgerAccount alice = new SimpleLedgerAccount(aliceURI, CURRENCY.code()).setBalance(100);
-        LedgerAccount bob   = new SimpleLedgerAccount(bobURI  , CURRENCY.code()).setBalance(100);
-        instance.getLedgerAccountManager().addAccount(alice);
-        instance.getLedgerAccountManager().addAccount(bob);
-        LedgerTransfer transfer = 
-                new SimpleLedgerTransfer(transferID, 
-                    alice.getAccountUri(), new AccountUri("bob@test"), 
-                    Money.of(10, CURRENCY.code()), new ConditionURI("cc:execution"),
-                    new ConditionURI("cc:cancelation"),
-                    new DTTM(""), new DTTM(""),
-                    "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED );
+        LedgerAccount alice = new SimpleLedgerAccount(ALICE, CURRENCY.code()).setBalance(100);
+        LedgerAccount bob = new SimpleLedgerAccount(BOB, CURRENCY.code()).setBalance(100);
+        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
+        accountManager.addAccount(alice);
+        accountManager.addAccount(bob);
+        LedgerTransfer transfer
+                = new SimpleLedgerTransfer(transferID,
+                        accountManager.getAccountUri(alice), new AccountUri("http://ledger", BOB),
+                        Money.of(10, CURRENCY.code()), new ConditionURI("cc:execution"),
+                        new ConditionURI("cc:cancelation"),
+                        new DTTM(""), new DTTM(""),
+                        "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED);
         instance.send(transfer);
-        assertEquals(90, instance.getLedgerAccountManager().getAccountByName(aliceURI).getBalanceAsNumber().intValue());
-        assertEquals(110, instance.getLedgerAccountManager().getAccountByName(bobURI).getBalanceAsNumber().intValue());
+        assertEquals(90, accountManager.getAccountByName(ALICE).getBalance().getNumber().intValue());
+        assertEquals(110, accountManager.getAccountByName(BOB).getBalance().getNumber().intValue());
     }
 
     /**

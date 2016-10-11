@@ -1,8 +1,7 @@
 package org.interledger.ilp.ledger.impl.simple;
 
-import org.interledger.ilp.core.AccountUri;
-import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import javax.money.MonetaryAmount;
+import org.interledger.ilp.core.AccountUri;
 import org.javamoney.moneta.Money;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -19,13 +18,13 @@ public class SimpleLedgerAccountTest {
     SimpleLedgerAccount instance;
     final String sTestURI  = "http://ledgerTest/accounts/test";
     final String sOtherURI = "http://ledgerOther/accounts/others";
-    AccountUri testURI  = new AccountUri(sTestURI);
-    AccountUri otherURI = new AccountUri(sOtherURI);
-
-
+    AccountUri testURI  = new AccountUri(sTestURI,"test");
+    AccountUri otherURI = new AccountUri(sOtherURI,"others");
+    
+    
     @Before
     public void setUp() {
-        instance = new SimpleLedgerAccount(testURI, CURRENCY_CODE);
+        instance = new SimpleLedgerAccount("test", CURRENCY_CODE);
     }
 
     /**
@@ -34,9 +33,7 @@ public class SimpleLedgerAccountTest {
     @Test
     public void testGetName() {
         System.out.println("getName");
-        AccountUri expResult = new AccountUri(sTestURI);
-        AccountUri result = instance.getAccountUri();
-        assertEquals(expResult, result);
+        assertEquals("test", instance.getName());
     }
 
     /**
@@ -155,7 +152,7 @@ public class SimpleLedgerAccountTest {
     @Test
     public void testEquals() {
         System.out.println("equals");
-        SimpleLedgerAccount other = new SimpleLedgerAccount(otherURI, CURRENCY_CODE);
+        SimpleLedgerAccount other = new SimpleLedgerAccount(sOtherURI, CURRENCY_CODE);
         assertNotEquals(instance, other);
         assertNotEquals(instance, null);
         assertEquals(instance, instance);

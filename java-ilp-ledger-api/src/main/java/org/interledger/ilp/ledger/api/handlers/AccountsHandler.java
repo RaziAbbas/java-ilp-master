@@ -7,6 +7,7 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.api.util.VertxUtils;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
+import org.interledger.ilp.ledger.account.LedgerAccountManager;
 
 /**
  * Accounts handler
@@ -33,9 +34,10 @@ public class AccountsHandler extends RestEndpointHandler implements ProtectedRes
         JsonObject request = VertxUtils.getBodyAsJson(context);
         int page = request.getInteger("page", 1);
         int pageSize = request.getInteger("pageSize", 10);
+        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         context.response()
                 .putHeader("content-type", "application/json; charset=utf-8") //TODO create decorator
-                .end(Json.encode(LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccounts(page, pageSize)));
+                .end(Json.encode(accountManager.getAccounts(page, pageSize)));
     }
 
 }

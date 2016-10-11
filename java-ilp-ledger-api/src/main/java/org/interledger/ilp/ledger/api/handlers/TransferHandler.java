@@ -133,7 +133,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             throw new RuntimeException("Transactions from multiple source debits not implemented");
         }
         JsonObject debit0 = debits.getJsonObject(0); 
-        AccountUri fromURI = new AccountUri(debit0.getString("account"));
+        //FIXME
+        AccountUri fromURI = new AccountUri(debit0.getString("account"),"fixme");
         //  {"account":"http://localhost/accounts/alice","amount":"50"},
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
@@ -145,7 +146,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         if (credits.size()>1) {
             throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
         }
-        AccountUri toURI  = new AccountUri(credits.getString(0));
+        //FIXME
+        AccountUri toURI  = new AccountUri(credits.getString(0),"fixme");        
         ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
         String cancelation_condition = requestBody.getString("cancelation_condition");
         
