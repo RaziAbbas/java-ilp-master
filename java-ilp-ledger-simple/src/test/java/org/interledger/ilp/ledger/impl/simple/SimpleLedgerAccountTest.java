@@ -16,8 +16,8 @@ public class SimpleLedgerAccountTest {
 
     static final String CURRENCY_CODE = "EUR";
     SimpleLedgerAccount instance;
-    final String sTestURI  = "http://ledgerTest/accounts/test";
-    final String sOtherURI = "http://ledgerOther/accounts/others";
+    final String sTestURI  = "http://ledgerTest";
+    final String sOtherURI = "http://ledgerOther";
     AccountUri testURI  = new AccountUri(sTestURI,"test");
     AccountUri otherURI = new AccountUri(sOtherURI,"others");
     

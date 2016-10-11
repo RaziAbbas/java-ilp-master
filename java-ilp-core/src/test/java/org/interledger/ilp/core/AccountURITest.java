@@ -7,9 +7,9 @@ public class AccountURITest {
     
     @Test
     public void testCtor() {
-        final String ledgerUri = "https://ilp.ledger.com/accounts";
+        final String ledgerUri = "https://ilp.ledger.com";
         final String accountId = "alice";
-        final String URI = ledgerUri + "/" + accountId;
+        final String URI = ledgerUri + "/accounts/" + accountId;
         AccountUri accountUri = new AccountUri(ledgerUri,accountId);
         assertEquals(""+ledgerUri    + " == " + accountUri.getLedgerUri()   , ledgerUri, accountUri.getLedgerUri());
         assertEquals(""+accountId + " == " + accountUri.getAccountId(), accountId, accountUri.getAccountId());

@@ -33,6 +33,7 @@ import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
+import org.interledger.ilp.ledger.transfer.TransferManager;
 import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         log.debug(this.getClass().getName() + "invoqued ");
         HttpServerRequest request = context.request();
         String ilpConnectorIP = request.remoteAddress().host();
-        String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -115,12 +115,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          *     }
          */
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
-        boolean deleteme = true; if (deleteme/*FIXME: TODO:(0) deleteme all this if block */) {
-            context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
-            response(context,HttpResponseStatus.CREATED ); // deleteme line
-            if (true) return; // deleteme line
-        }
-        // FIXME: Check first if the Transaction exists. Otherwise create it.
 
         JsonObject requestBody = getBodyAsJson(context);
         String state = requestBody.getString("state");
@@ -133,9 +127,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             throw new RuntimeException("Transactions from multiple source debits not implemented");
         }
         JsonObject debit0 = debits.getJsonObject(0); 
-        //FIXME
-        AccountUri fromURI = new AccountUri(debit0.getString("account"),"fixme");
-        //  {"account":"http://localhost/accounts/alice","amount":"50"},
+        // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
+        AccountUri fromURI0 = AccountUri.buildFromURI(debit0.getString("account") /*account URI*/);
+
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
         CurrencyUnit currencyUnit /*local ledger currency */ = Monetary.getCurrency(ledgerInfo.getCurrencyCode());
@@ -146,8 +140,22 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         if (credits.size()>1) {
             throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
         }
-        //FIXME
-        AccountUri toURI  = new AccountUri(credits.getString(0),"fixme");        
+        JsonObject credit0 = credits.getJsonObject(0); 
+//        {"account":"http://localhost/accounts/bob","amount":"30"},
+        AccountUri toURI0  = AccountUri.buildFromURI(credit0.getString("account") /*accountURI */);
+        MonetaryAmount credit0_ammount = Money.of(credit0.getDouble("account") , currencyUnit);
+
+        // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
+        TransferManager tm = SimpleLedgerTransferManager.getSingleton();
+        if (fromURI0.getLedgerUri().equals(toURI0.getLedgerUri())) {
+            if (!debit0_ammount.equals(credit0_ammount)) {
+                throw new RuntimeException("WARN: SECURITY EXCEPTION: "
+              + "debit '" + debit0_ammount.toString()+"' is different to "
+              + "credit '"+credit0_ammount.toString()+"'");
+            }
+            tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
+            return;
+        }
         ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
         String cancelation_condition = requestBody.getString("cancelation_condition");
         
@@ -157,13 +165,14 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         DTTM DTTM_proposed = DTTM.getNow();
         String data = ""; // Not used
         String noteToSelf = ""; // Not used
-        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, fromURI, toURI, 
+        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, fromURI0, toURI0, 
                 debit0_ammount, URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
                 data, noteToSelf, TransferStatus.PROPOSED );
-        SimpleLedgerTransferManager tm = SimpleLedgerTransferManager.getSingletonInstance();
+
         boolean isNewTransfer = !tm.transferExists(transferID);
         LedgerTransfer existingTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
         if (!isNewTransfer){
+            // Check that received json data match existing transaction.
             if (
                  ! existingTransfer.     getAmount().equals(receivedTransfer.getAmount()     )
               || ! existingTransfer.getFromAccount().equals(receivedTransfer.getFromAccount()) 
@@ -171,6 +180,18 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                ) {
                 throw new RuntimeException("Wrong data");
             }
+        } else {
+            tm.createNewRemoteTransfer(receivedTransfer);
+        }
+        try {
+            // FIXME: What's the exact message to send to the connector.
+            String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
+            context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
+        } catch(Exception e) {
+            log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
+            /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
+             *     send to the connector once the (websocket) connection is restablished.
+             */
         }
         response(context,
                 isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,

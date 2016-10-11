@@ -23,8 +23,8 @@ public class SimpleLedgerAccountManagerTest {
 
     LedgerAccountManager instance;
     
-    final static String URI_LEDGER_A = "https://ledger1.example/accounts";
-    final static String URI_LEDGER_B = "https://ledger2.example/accounts";
+    final static String URI_LEDGER_A = "https://ledger1.example/";
+    final static String URI_LEDGER_B = "https://ledger2.example/";
 
     AccountUri aliceURI = new AccountUri(URI_LEDGER_A, "alice");
     AccountUri bobURI = new AccountUri(URI_LEDGER_B, "bob");
