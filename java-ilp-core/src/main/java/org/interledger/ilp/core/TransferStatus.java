@@ -37,13 +37,13 @@ public enum TransferStatus {
     public String toString() {
         switch (statusCode) {
         case 0:
-            return "0";
+            return "proposed";
         case 1:
-            return "1";
+            return "prepared";
         case 2:
-            return "2";
+            return "executed";
         case 3:
-            return "3";
+            return "rejected";
         default:
             throw new IllegalArgumentException("Invalid status " + statusCode);
     }

@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Health handler
+ * TransferHandler handler
  *
  * @author earizon
  */
@@ -47,11 +47,11 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 
 	// GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
 	// GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
-	// GET      /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
+	// GET     /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
 
 	// PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
 	// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
-    
+
     public TransferHandler() {
         // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
         // router.put('/transfers/:id/fulfillment', transfers.putFulfillment)
@@ -76,12 +76,12 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 //    }
 
     public static TransferHandler create() {
-        
         return new TransferHandler(); // TODO: return singleton?
     }
 
     @Override
     protected void handlePut(RoutingContext context) {
+        // FIXME: If debit's account owner != request credentials throw exception.
         log.debug(this.getClass().getName() + "invoqued ");
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
@@ -128,7 +128,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
         CurrencyUnit currencyUnit /*local ledger currency */ = Monetary.getCurrency(ledgerInfo.getCurrencyCode());
-        MonetaryAmount debit0_ammount = Money.of(jsonDebit0.getDouble("account") , currencyUnit);
+        MonetaryAmount debit0_ammount = Money.of(Double.parseDouble(jsonDebit0.getString("amount")) , currencyUnit);
         Debit debit0 = new Debit(fromURI0, debit0_ammount);
 
         // REF: JsonArray ussage: http://www.programcreek.com/java-api-examples/index.php?api=io.vertx.core.json.JsonArray
@@ -139,91 +139,99 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         JsonObject jsonCredit0 = credits.getJsonObject(0); 
 //        {"account":"http://localhost/accounts/bob","amount":"30"},
         AccountUri toURI0  = AccountUri.buildFromURI(jsonCredit0.getString("account") /*accountURI */);
-        MonetaryAmount credit0_ammount = Money.of(jsonCredit0.getDouble("account") , currencyUnit);
+        MonetaryAmount credit0_ammount = Money.of(Double.parseDouble(jsonCredit0.getString("amount")), currencyUnit);
         Credit credit0 = new Credit(toURI0, credit0_ammount);
 
         // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        if (fromURI0.getLedgerUri().equals(toURI0.getLedgerUri())) {
+        boolean isLocalTransaction = fromURI0.getLedgerUri().equals(toURI0.getLedgerUri());
+        
+        if (isLocalTransaction) {
             if (!debit0_ammount.equals(credit0_ammount)) {
                 throw new RuntimeException("WARN: SECURITY EXCEPTION: "
               + "debit '" + debit0_ammount.toString()+"' is different to "
               + "credit '"+credit0_ammount.toString()+"'");
             }
             tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
-            return;
-        }
-        ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
-        String cancelation_condition = requestBody.getString("cancelation_condition");
-        
-        ConditionURI URICancelationCond = (cancelation_condition != null)
-                ? new ConditionURI(cancelation_condition) : ConditionURI.EMPTY;
-        DTTM DTTM_expires = new DTTM(requestBody.getString("expires_at"));
-        DTTM DTTM_proposed = DTTM.getNow();
-        String data = ""; // Not used
-        String noteToSelf = ""; // Not used
-        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, 
-                new Debit[]{debit0}, new Credit[] {credit0}, 
-                URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
-                data, noteToSelf, TransferStatus.PROPOSED );
-
-        boolean isNewTransfer = !tm.transferExists(transferID);
-        LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
-        if (!isNewTransfer){
-            // Check that received json data match existing transaction.
-            if ( ! effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
-              || ! effectiveTransfer. getDebits()[0].equals(receivedTransfer. getDebits()[0]) ) {
-                throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
-            }
+            response(context, HttpResponseStatus.CREATED, requestBody);
         } else {
-            tm.createNewRemoteTransfer(receivedTransfer);
-        }
-        try {
+            ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
+            String cancelation_condition = requestBody.getString("cancelation_condition");
             
-            /*
-             * REF: five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
-             * Notification sent back to ilp-connector at transaction status change in five-bells-ledger:
-             *
-             * class NotificationBroadcaster extends EventEmitter {
-             *   * sendNotifications (transfer, transaction) {
-             *     const affectedAccounts = _([transfer.debits, transfer.credits])
-             *       .flatten().pluck('account').value()
-             *     affectedAccounts.push('*')
-             * 
-             *     // Prepare notification for websocket subscribers
-             *     const notificationBody = { resource: convertToExternalTransfer(transfer) }
-             * 
-             *     // If the transfer is finalized, see if it was finalized by a fulfillment
-             *     if (isTransferFinalized(transfer)) {
-             *       let fulfillment = yield maybeGetFulfillment(transfer.id, { transaction })
-             *       if (fulfillment) {
-             *         if (transfer.state === transferStates.TRANSFER_STATE_EXECUTED) {
-             *           notificationBody.related_resources = {
-             *             execution_condition_fulfillment: convertToExternalFulfillment(fulfillment)
-             *           }
-             *         } else if (transfer.state === transferStates.TRANSFER_STATE_REJECTED) {
-             *           notificationBody.related_resources = {
-             *             cancellation_condition_fulfillment: convertToExternalFulfillment(fulfillment)
-             *           }
-             *         }
-             *       }
-             *     }
-             *     this.log.debug('emitting transfer-{' + affectedAccounts.join(',') + '}')
-             *     for (let account of affectedAccounts) { this.emit('transfer-' + account, notificationBody) }
-             *   }
-             * }
-             */
-            TransferWSEventHandler.notifyILPConnector( context, 
-                    ((SimpleLedgerTransfer)effectiveTransfer).toILPJSONFormat());
-        } catch(Exception e) {
-            log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
-            /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
-             *     send to the connector once the (websocket) connection is restablished.
-             */
+            ConditionURI URICancelationCond = (cancelation_condition != null)
+                    ? new ConditionURI(cancelation_condition) : ConditionURI.EMPTY;
+            DTTM DTTM_expires = requestBody.getString("expires_at") != null
+                    ? new DTTM(requestBody.getString("expires_at"))
+                    : DTTM.future; // TODO: RECHECK
+            DTTM DTTM_proposed = DTTM.getNow();
+            String data = ""; // Not used
+            String noteToSelf = ""; // Not used
+            LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, 
+                    new Debit[]{debit0}, new Credit[] {credit0}, 
+                    URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
+                    data, noteToSelf, TransferStatus.PROPOSED );
+    
+            boolean isNewTransfer = !tm.transferExists(transferID);
+            LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
+            if (!isNewTransfer){
+                // Check that received json data match existing transaction.
+                if ( ! effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
+                  || ! effectiveTransfer. getDebits()[0].equals(receivedTransfer. getDebits()[0]) ) {
+                    throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
+                }
+            } else {
+                tm.createNewRemoteTransfer(receivedTransfer);
+            }
+            try {
+                
+                /*
+                 * REF: five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
+                 * Notification sent back to ilp-connector at transaction status change in five-bells-ledger:
+                 *
+                 * class NotificationBroadcaster extends EventEmitter {
+                 *   * sendNotifications (transfer, transaction) {
+                 *     const affectedAccounts = _([transfer.debits, transfer.credits])
+                 *       .flatten().pluck('account').value()
+                 *     affectedAccounts.push('*')
+                 * 
+                 *     // Prepare notification for websocket subscribers
+                 *     const notificationBody = { resource: convertToExternalTransfer(transfer) }
+                 * 
+                 *     // If the transfer is finalized, see if it was finalized by a fulfillment
+                 *     if (isTransferFinalized(transfer)) {
+                 *       let fulfillment = yield maybeGetFulfillment(transfer.id, { transaction })
+                 *       if (fulfillment) {
+                 *         if (transfer.state === transferStates.TRANSFER_STATE_EXECUTED) {
+                 *           notificationBody.related_resources = {
+                 *             execution_condition_fulfillment: convertToExternalFulfillment(fulfillment)
+                 *           }
+                 *         } else if (transfer.state === transferStates.TRANSFER_STATE_REJECTED) {
+                 *           notificationBody.related_resources = {
+                 *             cancellation_condition_fulfillment: convertToExternalFulfillment(fulfillment)
+                 *           }
+                 *         }
+                 *       }
+                 *     }
+                 *     this.log.debug('emitting transfer-{' + affectedAccounts.join(',') + '}')
+                 *     for (let account of affectedAccounts) { this.emit('transfer-' + account, notificationBody) }
+                 *   }
+                 * }
+                 */
+                String notification = ((SimpleLedgerTransfer)effectiveTransfer).toILPJSONFormat();
+                log.debug("send transfer update to ILP Connector through websocket: \n:"+ notification+"\n");
+                TransferWSEventHandler.notifyILPConnector( context, 
+                        notification);
+            } catch(Exception e) {
+                log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
+                /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
+                 *     send to the connector once the (websocket) connection is restablished.
+                 */
+            }
+            response(context,
+                    isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
+                    buildJSON("result", ((SimpleLedgerTransfer)effectiveTransfer).toWalletJSONFormat()));
         }
-        response(context,
-                isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
-                buildJSON("result", ((SimpleLedgerTransfer)effectiveTransfer).toWalletJSONFormat()));
+        // TODO: FIXME: ?context.request().response().end();?
     }
 
     @Override
