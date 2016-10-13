@@ -178,6 +178,53 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         }
         String message = Json.encode(isNewTransfer ? receivedTransfer : existingTransfer);
         try {
+            /*
+             * REF: five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
+             * Notification sent back to ilp-connector at transaction status change in five-bells-ledger:
+             * 
+             * function convertToExternalTransfer (data) {
+             *  data.id = http://..../transfers/:id
+             *
+             *  for (let debit of data.debits) { debit.account = uri.make('account', debit.account) }
+             *  for (let credit of data.credits) { credit.account = uri.make('account', credit.account) }
+             *  const timelineProperties = [ 'proposed_at', 'prepared_at', 'executed_at', 'rejected_at' ]
+             *  data.timeline = _.pick(data, timelineProperties)
+             *  data = _.omit(data, timelineProperties)
+             *  if (_.isEmpty(data.timeline)) delete data.timeline
+             *
+             *  if (data.expires_at instanceof Date) { data.expires_at = data.expires_at.toISOString() }
+             *  return data
+             *}
+             * 
+             * class NotificationBroadcaster extends EventEmitter {
+             *   * sendNotifications (transfer, transaction) {
+             *     const affectedAccounts = _([transfer.debits, transfer.credits])
+             *       .flatten().pluck('account').value()
+             *     affectedAccounts.push('*')
+             * 
+             *     // Prepare notification for websocket subscribers
+             *     const notificationBody = { resource: convertToExternalTransfer(transfer) }
+             * 
+             *     // If the transfer is finalized, see if it was finalized by a fulfillment
+             *     if (isTransferFinalized(transfer)) {
+             *       let fulfillment = yield maybeGetFulfillment(transfer.id, { transaction })
+             *       if (fulfillment) {
+             *         if (transfer.state === transferStates.TRANSFER_STATE_EXECUTED) {
+             *           notificationBody.related_resources = {
+             *             execution_condition_fulfillment: convertToExternalFulfillment(fulfillment)
+             *           }
+             *         } else if (transfer.state === transferStates.TRANSFER_STATE_REJECTED) {
+             *           notificationBody.related_resources = {
+             *             cancellation_condition_fulfillment: convertToExternalFulfillment(fulfillment)
+             *           }
+             *         }
+             *       }
+             *     }
+             *     this.log.debug('emitting transfer-{' + affectedAccounts.join(',') + '}')
+             *     for (let account of affectedAccounts) { this.emit('transfer-' + account, notificationBody) }
+             *   }
+             * }
+             */
             TransferWSEventHandler.notifyILPConnector( context, message);
         } catch(Exception e) {
             log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
