@@ -29,6 +29,7 @@ dependencies {
     compile     "org.javamoney:moneta:${moneta_version}"
     compile     "commons-lang:commons-lang:${commons_lang_version}"
     compile     "com.fasterxml.jackson.core:jackson-annotations:${jackson_annotations_version}"
+    compile     "io.vertx:vertx-core:${vertx_core_version}"
     testCompile "junit:junit:${junit_version}"
     testCompile "org.hamcrest:hamcrest-core:${hamcrest_core_version}"
 }
