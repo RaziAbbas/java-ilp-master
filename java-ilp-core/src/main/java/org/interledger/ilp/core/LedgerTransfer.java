@@ -1,7 +1,5 @@
 package org.interledger.ilp.core;
 
-import javax.money.MonetaryAmount;
-
 public interface LedgerTransfer {
 
     /**
@@ -21,26 +19,14 @@ public interface LedgerTransfer {
      *
      * @return local account identifier
      */
-    AccountUri getFromAccount();
+    Credit[] getCredits();
 
     /**
      * Get the local account that funds are being debited from.
      *
      * @return local account identifier
      */
-    AccountUri getToAccount();
-
-    /**
-     * Get the transfer amount.
-     *
-     * MUST be positive. The supported precision is defined by each ledger
-     * plugin and can be queried by the host via getInfo. The ledger plugin MUST
-     * throw an InsufficientPrecisionError if the given amount exceeds the
-     * supported level of precision.
-     *
-     * @return a decimal amount, represented as a string
-     */
-    MonetaryAmount getAmount();
+    Debit[] getDebits();
 
     /**
      * Get the data to be sent.

@@ -3,7 +3,9 @@ package org.interledger.ilp.ledger.impl.simple;
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
+import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.DTTM;
+import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.LedgerTransferRejectedReason;
@@ -18,6 +20,9 @@ import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.javamoney.moneta.Money;
 import static org.junit.Assert.*;
+
+import javax.money.MonetaryAmount;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -75,10 +80,14 @@ public class SimpleLedgerTest {
         LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         accountManager.addAccount(alice);
         accountManager.addAccount(bob);
+        MonetaryAmount money = Money.of(10, CURRENCY.code());
+        Debit   debit = new  Debit(accountManager.getAccountUri(alice) , money);
+        Credit credit = new Credit(new AccountUri("http://ledger", BOB), money);
+        
         LedgerTransfer transfer
                 = new SimpleLedgerTransfer(transferID,
-                        accountManager.getAccountUri(alice), new AccountUri("http://ledger", BOB),
-                        Money.of(10, CURRENCY.code()), new ConditionURI("cc:execution"),
+                        new Debit[]{debit}, new Credit[] {credit},
+                        new ConditionURI("cc:execution"),
                         new ConditionURI("cc:cancelation"),
                         new DTTM(""), new DTTM(""),
                         "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED);

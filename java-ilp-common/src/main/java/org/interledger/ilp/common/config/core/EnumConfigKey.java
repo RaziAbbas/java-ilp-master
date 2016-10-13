@@ -5,7 +5,6 @@ package org.interledger.ilp.common.config.core;
  *
  * @author mrmx
  */
-@SuppressWarnings("rawtypes")
 public class EnumConfigKey extends ArrayConfigKey<Enum<?>> {
 
     public EnumConfigKey(Enum<?>... keys) {

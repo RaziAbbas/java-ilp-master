@@ -1,7 +1,7 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.json.Json;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 //import io.netty.handler.codec.http.HttpResponseStatus;
@@ -19,6 +19,8 @@ import javax.money.MonetaryAmount;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.Debit;
+import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.LedgerInfo;
@@ -119,24 +121,26 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         if (debits.size()>1) {
             throw new RuntimeException("Transactions from multiple source debits not implemented");
         }
-        JsonObject debit0 = debits.getJsonObject(0); 
+        JsonObject jsonDebit0 = debits.getJsonObject(0); 
         // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
-        AccountUri fromURI0 = AccountUri.buildFromURI(debit0.getString("account") /*account URI*/);
+        AccountUri fromURI0 = AccountUri.buildFromURI(jsonDebit0.getString("account") /*account URI*/);
 
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
         CurrencyUnit currencyUnit /*local ledger currency */ = Monetary.getCurrency(ledgerInfo.getCurrencyCode());
-        MonetaryAmount debit0_ammount = Money.of(debit0.getDouble("account") , currencyUnit);
+        MonetaryAmount debit0_ammount = Money.of(jsonDebit0.getDouble("account") , currencyUnit);
+        Debit debit0 = new Debit(fromURI0, debit0_ammount);
 
         // REF: JsonArray ussage: http://www.programcreek.com/java-api-examples/index.php?api=io.vertx.core.json.JsonArray
         JsonArray credits = requestBody.getJsonArray("credits");
         if (credits.size()>1) {
             throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
         }
-        JsonObject credit0 = credits.getJsonObject(0); 
+        JsonObject jsonCredit0 = credits.getJsonObject(0); 
 //        {"account":"http://localhost/accounts/bob","amount":"30"},
-        AccountUri toURI0  = AccountUri.buildFromURI(credit0.getString("account") /*accountURI */);
-        MonetaryAmount credit0_ammount = Money.of(credit0.getDouble("account") , currencyUnit);
+        AccountUri toURI0  = AccountUri.buildFromURI(jsonCredit0.getString("account") /*accountURI */);
+        MonetaryAmount credit0_ammount = Money.of(jsonCredit0.getDouble("account") , currencyUnit);
+        Credit credit0 = new Credit(toURI0, credit0_ammount);
 
         // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
@@ -158,44 +162,28 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         DTTM DTTM_proposed = DTTM.getNow();
         String data = ""; // Not used
         String noteToSelf = ""; // Not used
-        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, fromURI0, toURI0, 
-                debit0_ammount, URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
+        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, 
+                new Debit[]{debit0}, new Credit[] {credit0}, 
+                URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
                 data, noteToSelf, TransferStatus.PROPOSED );
 
         boolean isNewTransfer = !tm.transferExists(transferID);
-        LedgerTransfer existingTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
+        LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
         if (!isNewTransfer){
             // Check that received json data match existing transaction.
-            if (
-                 ! existingTransfer.     getAmount().equals(receivedTransfer.getAmount()     )
-              || ! existingTransfer.getFromAccount().equals(receivedTransfer.getFromAccount()) 
-              || ! existingTransfer.  getToAccount().equals(receivedTransfer.  getToAccount())
-               ) {
-                throw new RuntimeException("Wrong data");
+            if ( ! effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
+              || ! effectiveTransfer. getDebits()[0].equals(receivedTransfer. getDebits()[0]) ) {
+                throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
             }
         } else {
             tm.createNewRemoteTransfer(receivedTransfer);
         }
-        String message = Json.encode(isNewTransfer ? receivedTransfer : existingTransfer);
         try {
+            
             /*
              * REF: five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
              * Notification sent back to ilp-connector at transaction status change in five-bells-ledger:
-             * 
-             * function convertToExternalTransfer (data) {
-             *  data.id = http://..../transfers/:id
              *
-             *  for (let debit of data.debits) { debit.account = uri.make('account', debit.account) }
-             *  for (let credit of data.credits) { credit.account = uri.make('account', credit.account) }
-             *  const timelineProperties = [ 'proposed_at', 'prepared_at', 'executed_at', 'rejected_at' ]
-             *  data.timeline = _.pick(data, timelineProperties)
-             *  data = _.omit(data, timelineProperties)
-             *  if (_.isEmpty(data.timeline)) delete data.timeline
-             *
-             *  if (data.expires_at instanceof Date) { data.expires_at = data.expires_at.toISOString() }
-             *  return data
-             *}
-             * 
              * class NotificationBroadcaster extends EventEmitter {
              *   * sendNotifications (transfer, transaction) {
              *     const affectedAccounts = _([transfer.debits, transfer.credits])
@@ -225,7 +213,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
              *   }
              * }
              */
-            TransferWSEventHandler.notifyILPConnector( context, message);
+            TransferWSEventHandler.notifyILPConnector( context, 
+                    ((SimpleLedgerTransfer)effectiveTransfer).toILPJSONFormat());
         } catch(Exception e) {
             log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
             /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
@@ -234,7 +223,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         }
         response(context,
                 isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
-                buildJSON("result", message ));
+                buildJSON("result", ((SimpleLedgerTransfer)effectiveTransfer).toWalletJSONFormat()));
     }
 
     @Override

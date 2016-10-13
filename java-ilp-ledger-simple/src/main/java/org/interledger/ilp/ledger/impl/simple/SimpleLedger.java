@@ -38,15 +38,15 @@ public class SimpleLedger implements Ledger {
 
     public void send(LedgerTransfer transfer) {
         LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-        LedgerAccount from = accountManager.getAccountByName(transfer.getFromAccount().getAccountId());
-        LedgerAccount to = accountManager.getAccountByName(transfer.getToAccount().getAccountId());
-        if (to.equals(from)) {
+        LedgerAccount debitFrom = accountManager.getAccountByName(transfer. getDebits()[0].account.getAccountId());
+        LedgerAccount creditTo  = accountManager.getAccountByName(transfer.getCredits()[0].account.getAccountId());
+        if (creditTo.equals(debitFrom)) {
             throw new RuntimeException("accounts are the same");
         }
-        MonetaryAmount amount = transfer.getAmount();
-        if (from.getBalance().isGreaterThanOrEqualTo(amount)) {
-            from.debit(amount);
-            to.credit(amount);
+        MonetaryAmount amount = transfer.getCredits()[0].amount;
+        if (debitFrom.getBalance().isGreaterThanOrEqualTo(amount)) {
+            debitFrom.debit(amount);
+            creditTo.credit(amount);
         } else {
             throw new InsufficientAmountException(amount.toString());
         }

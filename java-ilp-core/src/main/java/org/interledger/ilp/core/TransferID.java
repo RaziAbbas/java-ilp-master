@@ -21,4 +21,9 @@ public class TransferID {
         }
         this.transferID = transferID;
     }
+    
+    @Override
+    public String toString() {
+        return transferID;
+    }
 }

@@ -32,4 +32,20 @@ public enum TransferStatus {
                 throw new IllegalArgumentException("Invalid status " + statusCode);
         }
     }
+    
+    @Override
+    public String toString() {
+        switch (statusCode) {
+        case 0:
+            return "0";
+        case 1:
+            return "1";
+        case 2:
+            return "2";
+        case 3:
+            return "3";
+        default:
+            throw new IllegalArgumentException("Invalid status " + statusCode);
+    }
+    }
 }

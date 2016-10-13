@@ -62,8 +62,6 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         LedgerAccountManager accManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         accManager.getAccountByName(sender   .getAccountId()).debit (amount);
         accManager.getAccountByName(recipient.getAccountId()).credit(amount);
-        
-        
     }
 
 }
