@@ -176,10 +176,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         } else {
             tm.createNewRemoteTransfer(receivedTransfer);
         }
+        String message = Json.encode(isNewTransfer ? receivedTransfer : existingTransfer);
         try {
-            String message = "PUT transferID:"+transferID.transferID; // FIXME: Use real JSON 
             TransferWSEventHandler.notifyILPConnector( context, message);
-
         } catch(Exception e) {
             log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
             /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
@@ -188,7 +187,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         }
         response(context,
                 isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
-                buildJSON("result", Json.encode(isNewTransfer ? receivedTransfer : existingTransfer)));
+                buildJSON("result", message ));
     }
 
     @Override
