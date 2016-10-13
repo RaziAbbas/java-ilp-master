@@ -2,9 +2,15 @@ package org.interledger.ilp.ledger.impl.simple;
 
 import javax.money.MonetaryAmount;
 import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.ledger.Currencies;
+import org.interledger.ilp.ledger.LedgerFactory;
+import org.interledger.ilp.ledger.LedgerInfoBuilder;
+import static org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccountManagerTest.URI_LEDGER_A;
 import org.javamoney.moneta.Money;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -21,6 +27,14 @@ public class SimpleLedgerAccountTest {
     AccountUri testURI  = new AccountUri(sTestURI,"test");
     AccountUri otherURI = new AccountUri(sOtherURI,"others");
     
+        @BeforeClass
+    public static void init() {
+        LedgerInfo ledgerInfo = new LedgerInfoBuilder()
+            .setCurrency(Currencies.EURO)
+            .setBaseUri(URI_LEDGER_A)
+            .build();        
+        LedgerFactory.initialize(ledgerInfo, "test-ledger");
+    }
     
     @Before
     public void setUp() {
