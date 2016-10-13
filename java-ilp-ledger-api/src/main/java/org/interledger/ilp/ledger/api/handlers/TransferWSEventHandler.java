@@ -57,7 +57,8 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
     private static final Logger log = LoggerFactory.getLogger(TransferWSEventHandler.class);
 
     // TODO: RECHECK key (ilp Connector SocketAddress)
-    private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID = new HashMap<String, String>();
+    private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID =
+        new HashMap<String, String>();
 
 	// GET /accounts/alice/transfers -> Upgrade to websocket
 
@@ -125,6 +126,12 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
             throw new RuntimeException("No ws connection exists to ilp-connector "+connectorIP);
         }
         return server2WSHandlerID.get(connectorIP);
+    }
+
+    public static void getServerWebSocketHandlerID(RoutingContext context, String message) {
+        String ilpConnectorIP = context.request().remoteAddress().host();
+        String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
+        context.vertx().eventBus().send(wsID, message);
     }
 
 

@@ -10,13 +10,13 @@ import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
-import org.interledger.ilp.ledger.transfer.TransferManager;
+import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 /**
  * Simple in-memory {@code SimpleLedgerTransferManager}.
  *
  * @author earizon
  */
-public class SimpleLedgerTransferManager implements TransferManager /* FIXME TODO implements LedgerTransferManager, LedgerTransferManagerFactory */{
+public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIXME TODO implements LedgerTransferManager, LedgerTransferManagerFactory */{
 
     private Map<TransferID, LedgerTransfer> transferMap = 
         new HashMap<TransferID, LedgerTransfer>();// In-memory database of pending/executed/cancelled transfers
@@ -26,7 +26,7 @@ public class SimpleLedgerTransferManager implements TransferManager /* FIXME TOD
     // Make default constructor private to avoid instantiating new classes.
     private SimpleLedgerTransferManager() {}
 
-    public static TransferManager getSingleton() {
+    public static LedgerTransferManager getSingleton() {
         return singleton;
     }
 

@@ -6,7 +6,7 @@ import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 
-public  interface TransferManager {
+public  interface LedgerTransferManager {
     LedgerTransfer getTransferById(TransferID transferId);
     
     boolean transferExists(TransferID transferId);

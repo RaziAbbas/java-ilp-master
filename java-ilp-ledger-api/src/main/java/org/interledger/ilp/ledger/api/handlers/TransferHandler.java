@@ -1,7 +1,6 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -29,7 +28,7 @@ import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
-import org.interledger.ilp.ledger.transfer.TransferManager;
+import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +81,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
     @Override
     protected void handlePut(RoutingContext context) {
         log.debug(this.getClass().getName() + "invoqued ");
-        HttpServerRequest request = context.request();
-        String ilpConnectorIP = request.remoteAddress().host();
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -142,7 +139,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         MonetaryAmount credit0_ammount = Money.of(credit0.getDouble("account") , currencyUnit);
 
         // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
-        TransferManager tm = SimpleLedgerTransferManager.getSingleton();
+        LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         if (fromURI0.getLedgerUri().equals(toURI0.getLedgerUri())) {
             if (!debit0_ammount.equals(credit0_ammount)) {
                 throw new RuntimeException("WARN: SECURITY EXCEPTION: "
@@ -180,9 +177,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             tm.createNewRemoteTransfer(receivedTransfer);
         }
         try {
-            // FIXME: What's the exact message to send to the connector.
-            String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
-            context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
+            String message = "PUT transferID:"+transferID.transferID; // FIXME: Use real JSON 
+            TransferWSEventHandler.getServerWebSocketHandlerID( context, message);
+
         } catch(Exception e) {
             log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
             /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
