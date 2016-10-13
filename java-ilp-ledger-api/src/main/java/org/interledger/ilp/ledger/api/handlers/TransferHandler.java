@@ -178,7 +178,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         }
         try {
             String message = "PUT transferID:"+transferID.transferID; // FIXME: Use real JSON 
-            TransferWSEventHandler.getServerWebSocketHandlerID( context, message);
+            TransferWSEventHandler.notifyILPConnector( context, message);
 
         } catch(Exception e) {
             log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());

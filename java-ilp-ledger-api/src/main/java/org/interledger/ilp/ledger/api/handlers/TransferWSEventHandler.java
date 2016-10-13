@@ -60,10 +60,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
     private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID =
         new HashMap<String, String>();
 
-	// GET /accounts/alice/transfers -> Upgrade to websocket
-
     public TransferWSEventHandler() {
-        // super("transfer", "accounts/alice/transfers");
         super("transfer", "accounts/:account_name/transfers");
         accept(GET);
     }
@@ -74,6 +71,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 
     @Override
     protected void handleGet(RoutingContext context) {
+        // GET /accounts/alice/transfers -> Upgrade to websocket
         log.debug("TransferWSEventHandler Connected. Upgrading HTTP GET to WebSocket!");
         ServerWebSocket sws = context.request().upgrade();
         /*
@@ -121,17 +119,24 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
         
     }
     
-    public static String getServerWebSocketHandlerID(String connectorIP) {
-        if (!server2WSHandlerID.containsKey(connectorIP)) {
-            throw new RuntimeException("No ws connection exists to ilp-connector "+connectorIP);
-        }
-        return server2WSHandlerID.get(connectorIP);
-    }
+//    public static String getServerWebSocketHandlerID(String connectorIP) {
+//        if (!server2WSHandlerID.containsKey(connectorIP)) {
+//            throw new RuntimeException("No ws connection exists to ilp-connector "+connectorIP);
+//        }
+//        return server2WSHandlerID.get(connectorIP);
+//    }
 
-    public static void getServerWebSocketHandlerID(RoutingContext context, String message) {
-        String ilpConnectorIP = context.request().remoteAddress().host();
-        String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
-        context.vertx().eventBus().send(wsID, message);
+    /**
+     * Send transacction status update to the ILP connector   
+     * @param context
+     * @param message
+     */
+    public static void notifyILPConnector(RoutingContext context, String message) {
+        // Send notification to all existing webSockets
+        for (String key : server2WSHandlerID.keySet() ) {
+            String wsID = server2WSHandlerID.get(key);
+            context.vertx().eventBus().send(wsID, message);
+        }
     }
 
 
