@@ -214,15 +214,15 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
 
 
         if (  this.getTransferStatus() == TransferStatus.EXECUTED 
-            ||this.getTransferStatus() == TransferStatus.REJECTED) {
+            ||this.getTransferStatus() == TransferStatus.REJECTED ) {
             //  REF: sendNotifications @
             //       five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
-
             JsonObject related_resources = new JsonObject();
             String URI_FF = (this.getTransferStatus() == TransferStatus.EXECUTED)
                     ? this.  getURIExecutionFulfillment().URI
                     : this.getURICancelationFulfillment().URI;
             related_resources.put("execution_condition_fulfillment", URI_FF);
+            jo.put("related_resources", related_resources);
         }
         return jo.encode();
     }
