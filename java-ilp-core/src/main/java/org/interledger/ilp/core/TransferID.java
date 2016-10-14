@@ -26,4 +26,17 @@ public class TransferID {
     public String toString() {
         return transferID;
     }
+    
+    @Override
+    public int hashCode() {
+        return transferID.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof TransferID))return false;
+        return transferID.equals(((TransferID)other).transferID);
+    }
 }

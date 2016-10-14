@@ -11,6 +11,8 @@ import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Simple in-memory {@code SimpleLedgerTransferManager}.
  *
@@ -41,11 +43,16 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     
     @Override
     public boolean transferExists(TransferID transferId) {
-        return transferMap.containsKey(transferId);
+        System.out.println("transferExists transferId:"+transferId.transferID);
+        boolean result = transferMap.containsKey(transferId);
+        System.out.println("transferExists result:"+result);
+        return result;
     }
     
     @Override
     public void createNewRemoteTransfer(LedgerTransfer newTransfer) {
+        System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
+
         // FIXME: If accounts are both locals the execute and forget.
         if (transferExists(newTransfer.getTransferID())) {
             throw new RuntimeException("trying to create new transfer "
