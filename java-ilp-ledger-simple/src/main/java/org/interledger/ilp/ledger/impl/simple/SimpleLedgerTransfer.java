@@ -14,6 +14,7 @@ import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
+import org.interledger.ilp.core.LedgerPartialEntry;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
@@ -200,8 +201,8 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         JsonObject jo = new JsonObject();
         jo.put("id", credit_list[0].account.getLedgerUri() + "/transfers/"+this.transferID);
         jo.put("state", this.getTransferStatus());
-        jo.put("credits", creditsToJson()); // FIXME: Simplify remove creditsToJson if possible
-        jo.put("debits" ,  debitsToJson()); // FIXME: Simplify remove  debitsToJson if possible
+        jo.put("credits", entryList2Json(credit_list)); // FIXME: Simplify remove creditsToJson if possible
+        jo.put("debits" , entryList2Json( debit_list)); // FIXME: Simplify remove  debitsToJson if possible
         {
             JsonObject timeline = new JsonObject();
             timeline.put("proposed_at", this.DTTM_proposed.toString());
@@ -231,23 +232,12 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         return Json.encode(this); // FIXME: Recheck
     }
 
-    private JsonArray creditsToJson() {
+    private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
         JsonArray ja = new JsonArray();
-        for (Credit credit : credit_list) {
+        for (LedgerPartialEntry entry : input_list) {
             JsonObject jo = new JsonObject();
-            jo.put("account", credit.account.getUri());
-            jo.put( "amount", credit. amount.toString());
-            ja.add(jo);
-        }
-        return ja;
-    }
-    
-    private JsonArray debitsToJson() {
-        JsonArray ja = new JsonArray();
-        for (Debit debit : debit_list) {
-            JsonObject jo = new JsonObject();
-            jo.put("account", debit.account.getUri());
-            jo.put( "amount", debit. amount.toString());
+            jo.put("account", entry.account.getUri());
+            jo.put( "amount", entry. amount.toString());
             ja.add(jo);
         }
         return ja;
