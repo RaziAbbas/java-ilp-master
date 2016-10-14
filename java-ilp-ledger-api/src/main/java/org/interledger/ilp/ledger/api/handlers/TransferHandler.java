@@ -145,7 +145,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         boolean isLocalTransaction = fromURI0.getLedgerUri().equals(toURI0.getLedgerUri());
-        
+        log.debug(">>> is local lransaction?: " + isLocalTransaction );
         if (isLocalTransaction) {
             if (!debit0_ammount.equals(credit0_ammount)) {
                 throw new RuntimeException("WARN: SECURITY EXCEPTION: "
@@ -172,6 +172,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                     data, noteToSelf, TransferStatus.PROPOSED );
     
             boolean isNewTransfer = !tm.transferExists(transferID);
+            log.debug(">>> is new transfer?: " + isNewTransfer );
             LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
             if (!isNewTransfer){
                 // Check that received json data match existing transaction.

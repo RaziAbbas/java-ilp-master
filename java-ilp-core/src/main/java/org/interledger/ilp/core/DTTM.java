@@ -26,4 +26,9 @@ public class DTTM {
         Date now = new Date(); // TODO: Check.
         return new DTTM(sdf.format(now));
     }
+    
+    @Override
+    public String toString() {
+        return sdf.format(DTTM);
+    }
 }

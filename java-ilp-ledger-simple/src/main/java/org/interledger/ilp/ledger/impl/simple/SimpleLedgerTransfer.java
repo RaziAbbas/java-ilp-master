@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 
 //import javax.money.MonetaryAmount;
 
@@ -176,17 +177,17 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         JsonObject jo = new JsonObject();
         jo.put("id", credit_list[0].account.getLedgerUri() + "/transfers/"+this.transferID);
         jo.put("state", this.getTransferStatus());
-        jo.put("credits", credit_list);
-        jo.put("debits" ,  debit_list);
+        jo.put("credits", creditsToJson()); // FIXME: Simplify remove creditsToJson if possible
+        jo.put("debits" ,  debitsToJson()); // FIXME: Simplify remove  debitsToJson if possible
         {
             JsonObject timeline = new JsonObject();
-            timeline.put("proposed_at", this.DTTM_proposed);
-            if (this.DTTM_prepared != DTTM.future) { timeline.put("prepared_at", this.DTTM_prepared); }
-            if (this.DTTM_executed != DTTM.future) { timeline.put("executed_at", this.DTTM_executed); }
-            if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected); }
+            timeline.put("proposed_at", this.DTTM_proposed.toString());
+            if (this.DTTM_prepared != DTTM.future) { timeline.put("prepared_at", this.DTTM_prepared.toString()); }
+            if (this.DTTM_executed != DTTM.future) { timeline.put("executed_at", this.DTTM_executed.toString()); }
+            if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
             jo.put("timeline", timeline);
         }
-        jo.put("expires_at", this.DTTM_expires);
+        jo.put("expires_at", this.DTTM_expires.toString());
         return jo.encode();
 
         
@@ -196,4 +197,25 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         return Json.encode(this); // FIXME: Recheck
     }
 
+    private JsonArray creditsToJson() {
+        JsonArray ja = new JsonArray();
+        for (Credit credit : credit_list) {
+            JsonObject jo = new JsonObject();
+            jo.put("account", credit.account.getUri());
+            jo.put( "amount", credit. amount.toString());
+            ja.add(jo);
+        }
+        return ja;
+    }
+    
+    private JsonArray debitsToJson() {
+        JsonArray ja = new JsonArray();
+        for (Debit debit : debit_list) {
+            JsonObject jo = new JsonObject();
+            jo.put("account", debit.account.getUri());
+            jo.put( "amount", debit. amount.toString());
+            ja.add(jo);
+        }
+        return ja;
+    }
 }
