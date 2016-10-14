@@ -70,7 +70,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
         new HashMap<String, String>();
 
     public TransferWSEventHandler() {
-        super("transfer", "accounts/:account_name/transfers");
+        super("transfer", new String[] {"accounts/:account_name/transfers"});
         accept(GET);
     }
 

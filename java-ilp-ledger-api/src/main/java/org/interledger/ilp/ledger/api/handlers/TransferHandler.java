@@ -66,7 +66,13 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         //  router.get('/accounts/:name/transfers',
         //          passport.authenticate(['basic', 'http-signature', 'client-cert', 'anonymous'], { session: false }),
         //          accounts.subscribeTransfers)
-        super("transfer", "transfers/:" + transferUUID);
+        super("transfer", new String[] 
+            {
+                "transfers/:" + transferUUID,
+                "transfers/:" + transferUUID + "/fulfillment",
+                "transfers/:" + transferUUID + "/rejection",
+                "transfers/:" + transferUUID + "/status",
+            });
         accept(GET,POST, PUT);
     }
 

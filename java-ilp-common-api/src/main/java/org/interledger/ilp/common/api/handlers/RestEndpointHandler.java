@@ -30,11 +30,11 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     private final static String FORBIDDEN_ERROR_MSG = "Forbidden";
 
     public RestEndpointHandler(String name) {
-        this(name, name);
+        this(name, new String[] { name });
     }
 
-    public RestEndpointHandler(String name, String uri) {
-        super(name, uri);
+    public RestEndpointHandler(String name, String[] uriList) {
+        super(name, uriList);
     }
 
     @Override

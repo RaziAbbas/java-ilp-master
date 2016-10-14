@@ -31,7 +31,7 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     private final static String PARAM_BALANCE = "balance";
 
     public AccountHandler() {
-        super("account", "accounts/:" + PARAM_NAME);
+        super("account", new String[] {"accounts/:" + PARAM_NAME});
         accept(GET, POST);
     }
 
