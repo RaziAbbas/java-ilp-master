@@ -67,23 +67,26 @@ public interface LedgerTransfer {
     TransferStatus getTransferStatus(); 
 
     public DTTM getDTTM_prepared();
-
     public void setDTTM_prepared(DTTM dTTM_prepared);
 
     public DTTM getDTTM_executed();
-
     public void setDTTM_executed(DTTM dTTM_executed);
 
     public DTTM getDTTM_rejected();
-
     public void setDTTM_rejected(DTTM dTTM_rejected);
 
     public DTTM getDTTM_expires();
 
     public DTTM getDTTM_proposed();
-    
+
     public ConditionURI getURIExecutionCondition();
 
     public ConditionURI getURICancelationCondition();
+
+    public void           setURIExecutionFulfillment(FulfillmentURI ffURI);
+    public FulfillmentURI getURIExecutionFulfillment();
+
+    public void           setURICancelationFulfillment(FulfillmentURI ffURI);
+    public FulfillmentURI getURICancelationFulfillment();
 
 }

@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.Debit;
-
+import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
@@ -34,6 +34,9 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     final DTTM DTTM_expires ;
     final DTTM DTTM_proposed;
 
+    FulfillmentURI URIExecutionFF   = FulfillmentURI.EMPTY;
+    FulfillmentURI URICancelationFF = FulfillmentURI.EMPTY;;
+    
     String data = "";
     String noteToSelf = "";
 
@@ -171,6 +174,26 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         return DTTM_proposed;
     }
 
+    @Override
+    public void  setURIExecutionFulfillment(FulfillmentURI ffURI){
+        this.URIExecutionFF = ffURI;
+    }
+    
+    @Override
+    public FulfillmentURI getURIExecutionFulfillment(){
+        return URIExecutionFF;
+    }
+
+    @Override
+    public void  setURICancelationFulfillment(FulfillmentURI ffURI){
+        this.URICancelationFF = ffURI;
+    }
+    
+    @Override
+    public FulfillmentURI getURICancelationFulfillment(){
+        return URICancelationFF;
+    }
+    
     public String toILPJSONFormat() {
         // REF: convertToExternalTransfer@
         // https://github.com/interledger/five-bells-ledger/blob/master/src/models/converters/transfers.js
@@ -188,11 +211,22 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             jo.put("timeline", timeline);
         }
         jo.put("expires_at", this.DTTM_expires.toString());
-        return jo.encode();
 
-        
+
+        if (  this.getTransferStatus() == TransferStatus.EXECUTED 
+            ||this.getTransferStatus() == TransferStatus.REJECTED) {
+            //  REF: sendNotifications @
+            //       five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
+
+            JsonObject related_resources = new JsonObject();
+            String URI_FF = (this.getTransferStatus() == TransferStatus.EXECUTED)
+                    ? this.  getURIExecutionFulfillment().URI
+                    : this.getURICancelationFulfillment().URI;
+            related_resources.put("execution_condition_fulfillment", URI_FF);
+        }
+        return jo.encode();
     }
-    
+
     public String toWalletJSONFormat() {
         return Json.encode(this); // FIXME: Recheck
     }

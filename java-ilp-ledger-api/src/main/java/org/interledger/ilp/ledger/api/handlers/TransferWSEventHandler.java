@@ -56,7 +56,16 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 
     private static final Logger log = LoggerFactory.getLogger(TransferWSEventHandler.class);
 
-    // TODO: RECHECK key (ilp Connector SocketAddress)
+    /*
+     *  FIXME: Change mapping
+     *       "ilpConnectorIP" <-> "WebSocket Handler ID"
+     *    to
+     *              "account" <-> "WebSocket Handler ID"
+     *         Chang also:
+     *       notifyILPConnector(RoutingContext context, String message)
+     *    to
+     *       notifyILPConnector(LedgerAccount[] affectedAccounts, String message)
+     */
     private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID =
         new HashMap<String, String>();
 
