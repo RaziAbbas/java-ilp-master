@@ -3,52 +3,30 @@ package org.interledger.ilp.ledger.api.handlers;
 // TESTING FROM COMMAND LINE: https://blogs.oracle.com/PavelBucek/entry/websocket_command_line_client
 // 
 //import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.http.ServerWebSocket;
-//import io.vertx.core.net.SocketAddress;
-import io.vertx.ext.web.RoutingContext;
-
+import io.vertx.core.Handler;
 import static io.vertx.core.http.HttpMethod.GET;
-
-//import javax.money.CurrencyUnit;
-//import javax.money.Monetary;
-//import javax.money.MonetaryAmount;
-
-//import org.interledger.ilp.common.api.ProtectedResource;
+import io.vertx.core.http.ServerWebSocket;
+import io.vertx.ext.web.RoutingContext;
+import java.util.HashMap;
+import java.util.Map;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
-//import org.interledger.ilp.core.AccountUri;
-//import org.interledger.ilp.core.ConditionURI;
-//import org.interledger.ilp.core.DTTM;
-//import org.interledger.ilp.core.LedgerInfo;
-//import org.interledger.ilp.core.LedgerTransfer;
-//import org.interledger.ilp.core.TransferID;
-//import org.interledger.ilp.core.TransferStatus;
-//import org.interledger.ilp.ledger.LedgerFactory;
-//import org.interledger.ilp.ledger.impl.SimpleLedgerTransfer;
-//import org.interledger.ilp.ledger.impl.SimpleLedgerTransferManager;
-//import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.vertx.core.Handler;
-//import io.vertx.core.buffer.Buffer;
-
-//import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 /**
- * @author earizon
- * TransferWSEventHandler handler
- * Wrapper to HTTP GET request to upgrade it to WebSocketEventHandler 
- * ILP-Connector five-bells-plugins will connect to a URL similar to:
- * /accounts/alice/transfers
- * This (GET) request will be upgraded to a webSocket connection in order
- * to send back internal events (transfer accepted, rejected, ...)
- * 
+ * @author earizon TransferWSEventHandler handler Wrapper to HTTP GET request to
+ * upgrade it to WebSocketEventHandler ILP-Connector five-bells-plugins will
+ * connect to a URL similar to: /accounts/alice/transfers This (GET) request
+ * will be upgraded to a webSocket connection in order to send back internal
+ * events (transfer accepted, rejected, ...)
+ *
  * Internal java-ilp-ledger components will inform of events to this Handler
  * using a code similar to:
- * 
- *     String wsID = TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
- *     context.vertx().eventBus().send(wsID, "PUT transferID:"+transferID.transferID);
+ *
+ * String wsID =
+ * TransferWSEventHandler.getServerWebSocketHandlerID(ilpConnectorIP);
+ * context.vertx().eventBus().send(wsID, "PUT
+ * transferID:"+transferID.transferID);
  */
 // FIXME: implements ProtectedResource required? 
 //    Note: earizon: I didn't find an easy way to add authentication to the connecting WS "client"
@@ -66,11 +44,11 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
      *    to
      *       notifyILPConnector(LedgerAccount[] affectedAccounts, String message)
      */
-    private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID =
-        new HashMap<String, String>();
+    private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID
+            = new HashMap<String, String>();
 
     public TransferWSEventHandler() {
-        super("transfer", new String[] {"accounts/:account_name/transfers"});
+        super("transfer", "accounts/:account_name/transfers");
         accept(GET);
     }
 
@@ -102,19 +80,19 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 
         server2WSHandlerID.put(ilpConnectorIP, handlerID);
         sws.frameHandler/* bytes read from the connector */(/*WebSocketFrame*/frame -> {
-          log.debug("ilpConnector input frame -> frame.textData()   " + frame.textData());
-          log.debug("ilpConnector input frame -> frame.binaryData() " + frame.binaryData());
-        });
+                            log.debug("ilpConnector input frame -> frame.textData()   " + frame.textData());
+                            log.debug("ilpConnector input frame -> frame.binaryData() " + frame.binaryData());
+                        });
 //      if (bCloseSocket) { websocket.close(); } 
 
         sws.closeHandler(new Handler<Void>() {
             @Override
             public void handle(final Void event) {
-                log.info("un-registering connection from ilp Server: '" + ilpConnectorIP+"'");
+                log.info("un-registering connection from ilp Server: '" + ilpConnectorIP + "'");
                 server2WSHandlerID.remove(ilpConnectorIP);
             }
         });
-        
+
 //        sws.handler/*data sent from the internal vertX components through the event-Bus */(new Handler<Buffer>() {
 //            @Override
 //            public void handle(final Buffer data) {
@@ -124,29 +102,26 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 //                log.debug("message forwarded to ilp connector through websocket");
 //            }
 //        });
-        
-        
     }
-    
+
 //    public static String getServerWebSocketHandlerID(String connectorIP) {
 //        if (!server2WSHandlerID.containsKey(connectorIP)) {
 //            throw new RuntimeException("No ws connection exists to ilp-connector "+connectorIP);
 //        }
 //        return server2WSHandlerID.get(connectorIP);
 //    }
-
     /**
-     * Send transacction status update to the ILP connector   
+     * Send transacction status update to the ILP connector
+     *
      * @param context
      * @param message
      */
     public static void notifyILPConnector(RoutingContext context, String message) {
         // Send notification to all existing webSockets
-        for (String key : server2WSHandlerID.keySet() ) {
+        for (String key : server2WSHandlerID.keySet()) {
             String wsID = server2WSHandlerID.get(key);
             context.vertx().eventBus().send(wsID, message);
         }
     }
-
 
 }

@@ -30,10 +30,10 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     private final static String FORBIDDEN_ERROR_MSG = "Forbidden";
 
     public RestEndpointHandler(String name) {
-        this(name, new String[] { name });
+        this(name, name);
     }
 
-    public RestEndpointHandler(String name, String[] uriList) {
+    public RestEndpointHandler(String name, String... uriList) {
         super(name, uriList);
     }
 
@@ -53,11 +53,11 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                 default: // CONNECT, DELETE, HEAD, OPTIONS, OTHER, PATCH, TRACE:
                     break;
             }
-        } catch (RestEndpointException rex) {               
-            log.error("RestEndpointException {} -> {}\n",rex.getResponseStatus(),rex.getResponse(), rex.toString());
+        } catch (RestEndpointException rex) {
+            log.error("RestEndpointException {} -> {}\n", rex.getResponseStatus(), rex.getResponse(), rex.toString());
             response(context, rex.getResponseStatus(), rex.getResponse());
         } catch (Throwable t) {
-            log.error("Handle exception "+t.toString(), t);
+            log.error("Handle exception " + t.toString(), t);
             response(context, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
     }
@@ -119,7 +119,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     protected void unauthorized(RoutingContext context) {
         response(context, HttpResponseStatus.UNAUTHORIZED, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
     }
-    
+
     protected void forbidden(RoutingContext context) {
         response(context, HttpResponseStatus.FORBIDDEN, buildJSON(FORBIDDEN_ERROR_ID, FORBIDDEN_ERROR_MSG));
     }
@@ -145,7 +145,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     protected void response(RoutingContext context, HttpResponseStatus responseStatus, JsonObject response) {
         boolean plainEncoding = StringUtils.isNotBlank(context.request().getParam(PARAM_ENCODE_PLAIN_JSON));
         String jsonResponse = plainEncoding ? response.encode() : response.encodePrettily();
-        log.debug("response:\n{}",jsonResponse);
+        log.debug("response:\n{}", jsonResponse);
         context.response()
                 .putHeader(HttpHeaders.CONTENT_TYPE, MIME_JSON_WITH_ENCODING)
                 .putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(jsonResponse.length()))
@@ -156,19 +156,19 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     protected static class RestEndpointException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
-        private HttpResponseStatus responseStatus;        
+        private HttpResponseStatus responseStatus;
         private JsonObject response;
-        
+
         public RestEndpointException(HttpResponseStatus responseStatus, Supplier<JsonObject> response) {
-            this(responseStatus,response.get());            
+            this(responseStatus, response.get());
         }
-        
+
         public RestEndpointException(HttpResponseStatus responseStatus, String response) {
-            this(responseStatus,buildJSON("Error",response));
+            this(responseStatus, buildJSON("Error", response));
         }
 
         public RestEndpointException(HttpResponseStatus responseStatus, JsonObject response) {
-            this.responseStatus = responseStatus;            
+            this.responseStatus = responseStatus;
             this.response = response;
         }
 
@@ -178,19 +178,15 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
         public JsonObject getResponse() {
             return response;
-        }        
-                
+        }
+
     }
-    
+
     protected RestEndpointException notFound(CharSequence message) {
         return new RestEndpointException(
                 HttpResponseStatus.NOT_FOUND,
-                buildJSON("NotFoundError",message)
+                buildJSON("NotFoundError", message)
         );
     }
-
-    
-    
-    
 
 }

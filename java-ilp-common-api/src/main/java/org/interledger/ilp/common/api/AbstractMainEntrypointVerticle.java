@@ -1,7 +1,6 @@
 package org.interledger.ilp.common.api;
 
 import io.vertx.core.AbstractVerticle;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
@@ -160,7 +159,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
             for (String path : handlerPath(handler)) {
                 checkProtectedEndpoint(router, handler, path);
                 for (HttpMethod httpMethod : handler.getHttpMethods()) {
-                    log.debug("publishing {} endpoint {} at {}", httpMethod, handler.getClass().getName(), getEndpointUrl(path));
+                    log.debug("publishing {} endpoint {} at {}", httpMethod, handler.getClass().getName(), getEndpointUrl(path));                    
                     router.route(httpMethod, path).handler(handler);
                 }
             }

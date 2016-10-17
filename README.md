@@ -8,6 +8,13 @@
 
 > This project serves as an umbrella for all java-related projects, ensuring all quality rules (eg: checkstyle) and common usages applies.
 
+Some note about sub-projects:
+* java-crypto-conditions: WARN. This project must be removed and a reference to the real one use.
+* java-ilp-ledger-api/java-ilp-ledger-simple: Basic code for the Java ILP ledger simple implementation. The idea is to make it compliant with the rest API and Websocket API found in five-bells-ledger. 
+  Note: the -api suffix can be misleading since it's actually the REST service API as seen by external clients, while the internal java API is in java-ilp-ledger-simple. Probably renaming to java-ilp-ledger-simple-rest-api / java-ilp-ledger-simple-api will be more appropiate.
+* java-ilp-core: Core interfaces / entities.
+* java-ilp-common / java-ilp-common-api: Common conf.  
+* java-ilp-connector-api: Not yet started (java implementation of ILP connector).
 
 ## Usage
 
