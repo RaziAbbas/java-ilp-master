@@ -1,28 +1,22 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-//import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.ext.web.RoutingContext;
-
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-
-
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
-
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.AccountUri;
-import org.interledger.ilp.core.Debit;
-import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.ConditionURI;
+import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.DTTM;
+import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
@@ -43,15 +37,13 @@ import org.slf4j.LoggerFactory;
 public class TransferHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(TransferHandler.class);
-    private final static String transferUUID= "transferUUID";
+    private final static String transferUUID = "transferUUID";
 
-	// GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
-	// GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
-	// GET     /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
-
-	// PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-	// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
-
+    // GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
+    // GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
+    // GET     /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
+    // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
+    // GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
     public TransferHandler() {
         // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
         // router.put('/transfers/:id/fulfillment', transfers.putFulfillment)
@@ -66,21 +58,19 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         //  router.get('/accounts/:name/transfers',
         //          passport.authenticate(['basic', 'http-signature', 'client-cert', 'anonymous'], { session: false }),
         //          accounts.subscribeTransfers)
-        super("transfer", new String[] 
-            {
+        super("transfer",
                 "transfers/:" + transferUUID,
                 "transfers/:" + transferUUID + "/fulfillment",
                 "transfers/:" + transferUUID + "/rejection",
-                "transfers/:" + transferUUID + "/status",
-            });
-        accept(GET,POST, PUT);
+                "transfers/:" + transferUUID + "/status"
+        );
+        accept(GET, POST, PUT);
     }
 
 //    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
 //        this.ledgerAccountManager = ledgerAccountManager;
 //        return this;
 //    }
-
     public static TransferHandler create() {
         return new TransferHandler(); // TODO: return singleton?
     }
@@ -123,51 +113,53 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 
         JsonObject requestBody = getBodyAsJson(context);
         String state = requestBody.getString("state");
-        if (state == null) { state = "proposed"; }
-        if ( ! "proposed".equals(state)) {
+        if (state == null) {
+            state = "proposed";
+        }
+        if (!"proposed".equals(state)) {
             throw new RuntimeException("state must be 'proposed' for new transactions");
         }
-        JsonArray debits  = requestBody.getJsonArray("debits");
-        if (debits.size()>1) {
+        JsonArray debits = requestBody.getJsonArray("debits");
+        if (debits.size() > 1) {
             throw new RuntimeException("Transactions from multiple source debits not implemented");
         }
-        JsonObject jsonDebit0 = debits.getJsonObject(0); 
+        JsonObject jsonDebit0 = debits.getJsonObject(0);
         // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
         AccountUri fromURI0 = AccountUri.buildFromURI(jsonDebit0.getString("account") /*account URI*/);
 
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
         CurrencyUnit currencyUnit /*local ledger currency */ = Monetary.getCurrency(ledgerInfo.getCurrencyCode());
-        MonetaryAmount debit0_ammount = Money.of(Double.parseDouble(jsonDebit0.getString("amount")) , currencyUnit);
+        MonetaryAmount debit0_ammount = Money.of(Double.parseDouble(jsonDebit0.getString("amount")), currencyUnit);
         Debit debit0 = new Debit(fromURI0, debit0_ammount);
 
         // REF: JsonArray ussage: http://www.programcreek.com/java-api-examples/index.php?api=io.vertx.core.json.JsonArray
         JsonArray credits = requestBody.getJsonArray("credits");
-        if (credits.size()>1) {
+        if (credits.size() > 1) {
             throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
         }
-        JsonObject jsonCredit0 = credits.getJsonObject(0); 
+        JsonObject jsonCredit0 = credits.getJsonObject(0);
 //        {"account":"http://localhost/accounts/bob","amount":"30"},
-        AccountUri toURI0  = AccountUri.buildFromURI(jsonCredit0.getString("account") /*accountURI */);
+        AccountUri toURI0 = AccountUri.buildFromURI(jsonCredit0.getString("account") /*accountURI */);
         MonetaryAmount credit0_ammount = Money.of(Double.parseDouble(jsonCredit0.getString("amount")), currencyUnit);
         Credit credit0 = new Credit(toURI0, credit0_ammount);
 
         // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         boolean isLocalTransaction = fromURI0.getLedgerUri().equals(toURI0.getLedgerUri());
-        log.debug(">>> is local lransaction?: " + isLocalTransaction );
+        log.debug(">>> is local lransaction?: " + isLocalTransaction);
         if (isLocalTransaction) {
             if (!debit0_ammount.equals(credit0_ammount)) {
                 throw new RuntimeException("WARN: SECURITY EXCEPTION: "
-              + "debit '" + debit0_ammount.toString()+"' is different to "
-              + "credit '"+credit0_ammount.toString()+"'");
+                        + "debit '" + debit0_ammount.toString() + "' is different to "
+                        + "credit '" + credit0_ammount.toString() + "'");
             }
             tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
             response(context, HttpResponseStatus.CREATED, requestBody);
         } else {
             ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
             String cancelation_condition = requestBody.getString("cancelation_condition");
-            
+
             ConditionURI URICancelationCond = (cancelation_condition != null)
                     ? new ConditionURI(cancelation_condition) : ConditionURI.EMPTY;
             DTTM DTTM_expires = requestBody.getString("expires_at") != null
@@ -176,37 +168,37 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             DTTM DTTM_proposed = DTTM.getNow();
             String data = ""; // Not used
             String noteToSelf = ""; // Not used
-            LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, 
-                    new Debit[]{debit0}, new Credit[] {credit0}, 
-                    URIExecutionCond, URICancelationCond,  DTTM_expires, DTTM_proposed,
-                    data, noteToSelf, TransferStatus.PROPOSED );
-    
+            LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID,
+                    new Debit[]{debit0}, new Credit[]{credit0},
+                    URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
+                    data, noteToSelf, TransferStatus.PROPOSED);
+
             boolean isNewTransfer = !tm.transferExists(transferID);
-            log.debug(">>> is new transfer?: " + isNewTransfer );
+            log.debug(">>> is new transfer?: " + isNewTransfer);
             LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
-            if (!isNewTransfer){
+            if (!isNewTransfer) {
                 // Check that received json data match existing transaction.
-                if ( ! effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
-                  || ! effectiveTransfer. getDebits()[0].equals(receivedTransfer. getDebits()[0]) ) {
+                if (!effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
+                        || !effectiveTransfer.getDebits()[0].equals(receivedTransfer.getDebits()[0])) {
                     throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
                 }
             } else {
                 tm.createNewRemoteTransfer(receivedTransfer);
             }
             try {
-                String notification = ((SimpleLedgerTransfer)effectiveTransfer).toILPJSONFormat();
-                log.debug("send transfer update to ILP Connector through websocket: \n:"+ notification+"\n");
-                TransferWSEventHandler.notifyILPConnector( context, 
+                String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONFormat();
+                log.debug("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
+                TransferWSEventHandler.notifyILPConnector(context,
                         notification);
-            } catch(Exception e) {
-                log.warn("transaction created correctly but ilp-connector couldn't be notified due to "+ e.toString());
+            } catch (Exception e) {
+                log.warn("transaction created correctly but ilp-connector couldn't be notified due to " + e.toString());
                 /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
                  *     send to the connector once the (websocket) connection is restablished.
                  */
             }
             response(context,
                     isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
-                    buildJSON("result", ((SimpleLedgerTransfer)effectiveTransfer).toWalletJSONFormat()));
+                    buildJSON("result", ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONFormat()));
         }
         // TODO: FIXME: ?context.request().response().end();?
     }
@@ -219,14 +211,14 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         boolean transferExists = tm.transferExists(transferID);
-        if (!transferExists) { 
+        if (!transferExists) {
             // FIXME: Return correct HTTP code 40x. 
             // throwing a RuntimeException returns "ERROR 500: Internal Server Error"
             throw new RuntimeException("Transfer not found");
         }
         LedgerTransfer transfer = tm.getTransferById(transferID);
         response(context, HttpResponseStatus.ACCEPTED,
-                buildJSON("result", ((SimpleLedgerTransfer)transfer).toWalletJSONFormat()));
+                buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONFormat()));
     }
 
 }
@@ -350,7 +342,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
  *     {"id":"UnauthorizedError","message":"Invalid attempt to reject credit"}
  * 
  */
-
 ///*
 //// REF: https://github.com/interledger/five-bells-ledger/blob/master/src/sql/sqlite3/create.sql
 //create table if not exists "L_LU_TRANSFER_STATUS" (

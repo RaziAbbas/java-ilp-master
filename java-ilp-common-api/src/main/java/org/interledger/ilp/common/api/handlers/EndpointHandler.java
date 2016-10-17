@@ -22,17 +22,17 @@ public abstract class EndpointHandler implements Handler<RoutingContext> {
     private static final Logger log = LoggerFactory.getLogger(EndpointHandler.class);
 
     private final String name;
-    private final String[] uriList; 
+    private final String[] uriList;
     private URL url;
     private Set<HttpMethod> httpMethods;
 
     public EndpointHandler(String name) {
-        this(name, new String[] {name});
+        this(name, name);
     }
 
-    public EndpointHandler(String name, String[] uri_l) {
-        this.name = name; // TODO: Replace name by this.getClass.getName()
-        this.uriList = uri_l;
+    public EndpointHandler(String name, String ... uriList) {
+        this.name = name;
+        this.uriList = uriList;
         httpMethods = new HashSet<>();
     }
 
@@ -56,10 +56,8 @@ public abstract class EndpointHandler implements Handler<RoutingContext> {
     public final Set<HttpMethod> getHttpMethods() {
         if (httpMethods.isEmpty()) {
             httpMethods = Collections.singleton(GET);
-        } else {
-            httpMethods = Collections.unmodifiableSet(httpMethods);
         }
-        return httpMethods;
+        return Collections.unmodifiableSet(httpMethods);
     }
 
     @Override
