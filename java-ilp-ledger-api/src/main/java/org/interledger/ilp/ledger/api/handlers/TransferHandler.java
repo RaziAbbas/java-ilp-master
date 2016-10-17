@@ -220,10 +220,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         boolean transferExists = tm.transferExists(transferID);
-        if (!transferExists) {
-            // FIXME: Return correct HTTP code 40x. 
-            // throwing a RuntimeException returns "ERROR 500: Internal Server Error"
-            throw new RuntimeException("Transfer not found");
+        if (!transferExists) {            
+            throw notFound("Transfer not found");
         }
         LedgerTransfer transfer = tm.getTransferById(transferID);
         response(context, HttpResponseStatus.ACCEPTED,
