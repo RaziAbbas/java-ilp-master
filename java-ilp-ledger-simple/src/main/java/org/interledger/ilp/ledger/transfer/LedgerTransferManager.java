@@ -14,4 +14,9 @@ public  interface LedgerTransferManager {
     void createNewRemoteTransfer(LedgerTransfer newTransfer);
     
     void executeLocalTransfer(AccountUri from, AccountUri to, MonetaryAmount amount);
+    
+    void executeTransfer(LedgerTransfer transfer);
+
+    void abortTransfer(LedgerTransfer transfer);
+
 }

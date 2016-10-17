@@ -71,4 +71,16 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         accManager.getAccountByName(recipient.getAccountId()).credit(amount);
     }
 
+    @Override
+    public void executeTransfer(LedgerTransfer transfer) {
+        // FIXME TODO
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public void abortTransfer(LedgerTransfer transfer) {
+        // FIXME TODO
+        throw new RuntimeException("Not implemented");
+    }
+
 }

@@ -59,6 +59,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         return new FulfillmentHandler(); // TODO: return singleton?
     }
 
+    @SuppressWarnings("unused")
     @Override
     protected void handlePut(RoutingContext context) {
         // FIXME: If debit's account owner != request credentials throw exception.
@@ -67,6 +68,14 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
         log.debug(this.getClass().getName() + "handlePut invoqued ");
+        boolean isFulfillment = false, isRejection   = false;
+        if (context.request().path().endsWith("/fulfillment")){
+            isFulfillment = true;
+        } else if (context.request().path().endsWith("/rejection")){
+            isRejection = true;
+        } else {
+            throw new RuntimeException("path doesn't match /fulfillment | /rejection");
+        }
         /**********************
          * PUT/GET fulfillment (FROM ILP-CONNECTOR)
          *********************
@@ -186,18 +195,24 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         String fulfillmentURI = context.getBodyAsString();
         Fulfillment ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
         
-        boolean bFulfillmentOK = false;
         // FIXME: TODO Create ConditionFactory.getConditionFromURI to isolate from implementation.s
         // FIXME TODO: ff.getCondition -> Return ConditionURI instead of String
-        if (   !transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI())
-            && !transfer.getURICancelationCondition().URI.equals(ff.getCondition().toURI())
-           ) {
+        MessagePayload message = new MessagePayload(new byte[]{});
+        if (false) {
+            // 
+        } else if (isFulfillment && transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI()) ) {
+            if (!ff.validate(message)){
+                throw new RuntimeException("execution fulfillment doesn't validate");
+            }
+            tm.executeTransfer(transfer);
+        } else if (isRejection && transfer.getURICancelationCondition().URI.equals(ff.getCondition().toURI()) ){
+            if (!ff.validate(message)){
+                throw new RuntimeException("cancelation fulfillment doesn't validate");
+            }
+            tm.abortTransfer(transfer);
+        } else {
             throw new RuntimeException("fulfillment doesn't match stored condition for transaction");
-        }
-        if (!transfer.getURIExecutionCondition()  .equals(FulfillmentURI.EMPTY)) {
-            
-        } else if (!transfer.getURIExecutionCondition()  .equals(FulfillmentURI.EMPTY)) {
-                
+
         }
 
 
