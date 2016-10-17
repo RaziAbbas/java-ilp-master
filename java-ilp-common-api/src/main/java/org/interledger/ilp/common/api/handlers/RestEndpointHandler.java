@@ -54,10 +54,10 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                     break;
             }
         } catch (RestEndpointException rex) {               
-            log.debug("RestEndpointException {} -> {}",rex.getResponseStatus(),rex.getResponse());
+            log.error("RestEndpointException {} -> {}\n",rex.getResponseStatus(),rex.getResponse(), rex.toString());
             response(context, rex.getResponseStatus(), rex.getResponse());
         } catch (Throwable t) {
-            log.debug("Handle exception", t);
+            log.error("Handle exception "+t.toString(), t);
             response(context, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
     }

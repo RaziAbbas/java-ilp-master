@@ -17,6 +17,7 @@ import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.common.api.ProtectedResource;
+import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.Debit;
@@ -213,7 +214,21 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          // PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
          // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
          // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-         throw new RuntimeException("Not implemented");
+        log.debug("Handing get single account");
+        SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
+        boolean isAdmin = user.hasRole("admin");
+        boolean transferMatchUser = true; // FIXME: TODO: implement
+        if (!isAdmin && !transferMatchUser) {
+            unauthorized(context);
+            return;
+        }
+        TransferID transferID = new TransferID(context.request().getParam(transferUUID));
+        LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
+        LedgerTransfer effectiveTransfer =  tm.getTransferById(transferID);
+        response(context,
+                HttpResponseStatus.ACCEPTED,
+                buildJSON("result", ((SimpleLedgerTransfer)effectiveTransfer).toWalletJSONFormat()));
+
     }
 
 }
