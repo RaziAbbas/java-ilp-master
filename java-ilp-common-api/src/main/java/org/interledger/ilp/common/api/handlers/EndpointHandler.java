@@ -30,7 +30,7 @@ public abstract class EndpointHandler implements Handler<RoutingContext> {
         this(name, name);
     }
 
-    public EndpointHandler(String name, String ... uriList) {
+    public EndpointHandler(String name, String... uriList) {
         this.name = name;
         this.uriList = uriList;
         httpMethods = new HashSet<>();
