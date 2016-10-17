@@ -36,6 +36,13 @@ Note: executing gradle writePom in java-ilp-master will automatically update all
 On every change to [gradle.build](gradle.build) don't forget to execute the *writePom* task.
 
 ### Step 3: Execute java-ilp-ledger 
+With Eclipse/Netbeans:
+   Run/debug java-ilp-ledger-api/src/main/java/org/interledger/ilp/ledger/api/Main.java as a java application.
+
+With gradle: 
+```
+     $ gradle :java-ilp-ledger-api:launchServer
+```
 With maven: (TODO: gradle execution and manual execution pending)
 ```
      $ mvn install # (if not yet done)
