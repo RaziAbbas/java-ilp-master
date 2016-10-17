@@ -2,15 +2,22 @@ package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
+
 //import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
 
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import org.interledger.cryptoconditions.Condition;
+import org.interledger.cryptoconditions.ConditionImpl;
+import org.interledger.cryptoconditions.Fulfillment;
+import org.interledger.cryptoconditions.FulfillmentFactory;
+import org.interledger.cryptoconditions.types.MessagePayload;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
+import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
@@ -80,7 +87,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             // throwing a RuntimeException returns "ERROR 500: Internal Server Error"
             throw new RuntimeException("Transfer not found");
         }
-        LedgerTransfer transfer = tm.getTransferById(transferID);
         
         /*
          * REF: five-bells-ledger/src/lib/app.js
@@ -130,7 +136,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
          *     }
          * }
          *
-         * REF: five-bells-ledger/src/controllers/transfers.js
+         * REF: five-bells-ledger/src/  
          * 
          * function validateConditionFulfillment (transfer, fulfillmentModel) {
          *     if (!transfer.execution_condition && !transfer.cancellation_condition) {
@@ -143,7 +149,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
          *          cc.validateFulfillment(fulfillment, condition) ) {
          *       return CONDITION_TYPE_EXECUTION
          *     } else if ( condition === transfer.cancellation_condition &&
-         *                 cc.validateFulfillment(fulfillment, condition) ) {
+         *          cc.validateFulfillment(fulfillment, condition) ) {
          *       return CONDITION_TYPE_CANCELLATION
          *     }
          *                                             } catch (err) {
@@ -152,7 +158,50 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
          *     throw new UnmetConditionError('Fulfillment does not match any condition')
          * }
          */
-        // TODO: FIXME: Implement PUT Fulfillment/Rejection
+        
+        /*
+         * REF: https://gitter.im/interledger/Lobby
+         * Enrique Arizón Benito @earizon 17:51
+         *     Hi, I'm trying to figure out how the five-bells-ledger implementation validates fulfillments. 
+         *     Following the node.js code I see the next route:
+         *     
+         *          router.put('/transfers/:id/fulfillment', transfers.putFulfillment)
+         *     
+         *     I understand the fulfillment is validated at this (PUT) point against the stored condition 
+         *     in the existing ":id" transaction.
+         *     Following the stack for this request it looks to me that the method
+         *     
+         *     (/five-bells-condition/index.js)validateFulfillment (serializedFulfillment, serializedCondition, message)
+         *     
+         *     is always being called with an undefined message and so an empty one is being used.
+         *     I'm missing something or is this the expected behaviour?
+         * 
+         * Stefan Thomas @justmoon 18:00
+         *     @earizon Yes, this is expected. We're using crypto conditions as a trigger, not to verify the 
+         *     authenticity of a message!
+         *     Note that the actual cryptographic signature might still be against a message - via prefix 
+         *     conditions (which append a prefix to this empty message)
+         **/
+        LedgerTransfer transfer = tm.getTransferById(transferID);
+        String fulfillmentURI = context.getBodyAsString();
+        Fulfillment ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
+        
+        boolean bFulfillmentOK = false;
+        // FIXME: TODO Create ConditionFactory.getConditionFromURI to isolate from implementation.s
+        // FIXME TODO: ff.getCondition -> Return ConditionURI instead of String
+        if (   !transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI())
+            && !transfer.getURICancelationCondition().URI.equals(ff.getCondition().toURI())
+           ) {
+            throw new RuntimeException("fulfillment doesn't match stored condition for transaction");
+        }
+        if (!transfer.getURIExecutionCondition()  .equals(FulfillmentURI.EMPTY)) {
+            
+        } else if (!transfer.getURIExecutionCondition()  .equals(FulfillmentURI.EMPTY)) {
+                
+        }
+
+
+        throw new RuntimeException("Not implemented"); // TODO: FIXME: Implement PUT Fulfillment/Rejection
     }
 
     @Override
