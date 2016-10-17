@@ -15,7 +15,11 @@ Some note about sub-projects:
   $ git submodule update
 ```
 * java-ilp-ledger-api/java-ilp-ledger-simple: Basic code for the Java ILP ledger simple implementation. The idea is to make it compliant with the rest API and Websocket API found in five-bells-ledger. 
+
+ In practice that means making a java server exposing a REST and Websocket interfaces passing all? tests ("npm test") in https://github.com/interledgerjs/five-bells-ledger and it's also compliant with the js-ilp-connector five-bells-plugin (https://github.com/interledgerjs/ilp-plugin-bells).
+ 
   Note: the -api suffix can be misleading since it's actually the REST service API as seen by external clients, while the internal java API is in java-ilp-ledger-simple. Probably renaming to java-ilp-ledger-simple-rest-api / java-ilp-ledger-simple-api will be more appropiate.
+  
 * java-ilp-core: Core interfaces / entities.
 * java-ilp-common / java-ilp-common-api: Common conf.  
 * java-ilp-connector-api: Not yet started (java implementation of ILP connector).
