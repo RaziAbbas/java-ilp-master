@@ -89,7 +89,11 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
     @Override
     protected void handlePut(RoutingContext context) {
         // FIXME: If debit's account owner != request credentials throw exception.
-        log.debug(this.getClass().getName() + "invoqued ");
+        // FIXME:TODO: Implement
+        // PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
+        // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
+        // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
+        log.debug(this.getClass().getName() + "handlePut invoqued ");
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -211,10 +215,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
     @Override
     protected void handleGet(RoutingContext context) {
          // FIXME:TODO: Implement
-         // PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
-         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
-         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-        log.debug("Handing get single account");
+        // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
+        // GET /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
+        log.debug("Handing get invoqued");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
@@ -224,11 +227,15 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         }
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        LedgerTransfer effectiveTransfer =  tm.getTransferById(transferID);
-        response(context,
-                HttpResponseStatus.ACCEPTED,
-                buildJSON("result", ((SimpleLedgerTransfer)effectiveTransfer).toWalletJSONFormat()));
-
+        boolean transferExists = tm.transferExists(transferID);
+        if (!transferExists) { 
+            // FIXME: Return correct HTTP code 40x. 
+            // throwing a RuntimeException returns "ERROR 500: Internal Server Error"
+            throw new RuntimeException("Transfer not found");
+        }
+        LedgerTransfer transfer = tm.getTransferById(transferID);
+        response(context, HttpResponseStatus.ACCEPTED,
+                buildJSON("result", ((SimpleLedgerTransfer)transfer).toWalletJSONFormat()));
     }
 
 }
