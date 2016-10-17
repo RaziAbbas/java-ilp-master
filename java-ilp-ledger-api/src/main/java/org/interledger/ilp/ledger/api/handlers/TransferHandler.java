@@ -44,35 +44,21 @@ import org.slf4j.LoggerFactory;
 public class TransferHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(TransferHandler.class);
-    private final static String transferUUID= "transferUUID";
+    private final static String transferUUID  = "transferUUID",
+                                execCondition = "execCondition";
 
 	// GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
-	// GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
 	// GET     /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
-
-	// PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
 	// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
 
     public TransferHandler() {
         // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
-        // router.put('/transfers/:id/fulfillment', transfers.putFulfillment)
-        // router.get('/transfers/:id/fulfillment', transfers.getFulfillment)
-        // router.put('/transfers/:id/rejection',
-        //   passport.authenticate(['basic', 'http-signature', 'client-cert'], { session: false }),
-        //   transfers.putRejection)
-        // router.get('/transfers/:id', transfers.getResource)
-        // router.get('/transfers/byExecutionCondition/:execution_condition', transfers.getResourcesByExecutionCondition)
-        // router.get('/transfers/:id/state', transfers.getStateResource)
-        // _makeWebsocketRouter () {
-        //  router.get('/accounts/:name/transfers',
-        //          passport.authenticate(['basic', 'http-signature', 'client-cert', 'anonymous'], { session: false }),
-        //          accounts.subscribeTransfers)
         super("transfer", new String[] 
             {
                 "transfers/:" + transferUUID,
-                "transfers/:" + transferUUID + "/fulfillment",
-                "transfers/:" + transferUUID + "/rejection",
-                "transfers/:" + transferUUID + "/status",
+                "transfers/:" + transferUUID + "/state",
+                "transfers/byExecutionCondition/:" + execCondition
+
             });
         accept(GET,POST, PUT);
     }
@@ -217,7 +203,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          // FIXME:TODO: Implement
         // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         // GET /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-        log.debug("Handing get invoqued");
+        log.debug(this.getClass().getName() + "handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
@@ -249,18 +235,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
  * {"id":"http://localhost/transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204","ledger":"http://localhost","debits":[{"account":"http://localhost/accounts/alice","amount":"50"},{"account":"http://localhost/accounts/candice","amount":"20"}],"credits":[{"account":"http://localhost/accounts/bob","amount":"30"},{"account":"http://localhost/accounts/dave","amount":"40"}],"execution_condition":"cc:0:3:Xk14jPQJs7vrbEZ9FkeZPGBr0YqVzkpOYjFp_tIZMgs:7","expires_at":"2015-06-16T00:00:01.000Z","state":"prepared"}
  *     HTTP/1.1 201 Created
  *     {"id":"http://localhost/transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204","ledger":"http://localhost","debits":[{"account":"http://localhost/accounts/alice","amount":"50"},{"account":"http://localhost/accounts/candice","amount":"20"}],"credits":[{"account":"http://localhost/accounts/bob","amount":"30"},{"account":"http://localhost/accounts/dave","amount":"40"}],"execution_condition":"cc:0:3:Xk14jPQJs7vrbEZ9FkeZPGBr0YqVzkpOYjFp_tIZMgs:7","expires_at":"2015-06-16T00:00:01.000Z","state":"proposed","timeline":{"proposed_at":"2015-06-16T00:00:00.000Z"}}
- * 
- * *********************
- * * PUT/GET fulfillment (FROM ILP-CONNECTOR)
- * *********************
- * PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment HTTP/1.1
- * cf:0:ZXhlY3V0ZQ
- * HTTP 1.1 200 OK
- * GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment HTTP/1.1
- *     HTTP 1.1 200 OK
- *     cf:0:ZXhlY3V0ZQ
- * 
- * 
  * 
  * *************************
  * * GET transfer by UUID
