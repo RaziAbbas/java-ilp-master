@@ -10,4 +10,12 @@ public class ConditionURI {
     public ConditionURI(String URI) {
         this.URI = URI;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof ConditionURI))return false;
+        return URI.equals(((ConditionURI)other).URI);
+    }
 }
