@@ -2,11 +2,13 @@ package org.interledger.ilp.common.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
+import org.interledger.ilp.common.api.auth.AuthHandlerFactory;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.api.util.VertxUtils;
 import org.slf4j.Logger;
@@ -84,7 +86,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
      *
      * @param context {@code RoutingContext}
      * @param authority the authority - what this really means is determined by
-     * the specific implementation. It might represent a permission to access a
+     * the specific implementation. It might rhttpServerResponseepresent a permission to access a
      * resource e.g. `printers:printer34` or it might represent authority to a
      * role in a roles based model, e.g. `role:admin`.
      */
@@ -92,13 +94,13 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         User user = context.user();
         if (user == null) {
             log.warn("No user present in request in checkAuth with {}", authority);
-            forbidden(context);
+            unauthorized(context,AuthHandlerFactory.DEFAULT_BASIC_REALM);
         } else {
             user.isAuthorised(authority, res -> {
                 if (res.succeeded()) {
                     handleAuthorized(context);
                 } else {
-                    unauthorized(context);
+                    handleUnAuthorized(context);                    
                 }
             });
         }
@@ -106,6 +108,11 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     protected void handleAuthorized(RoutingContext context) {
         response(context, HttpResponseStatus.NOT_IMPLEMENTED);
+    }
+    
+    protected void handleUnAuthorized(RoutingContext context) {
+        log.debug("Unauthorized access!");
+        forbidden(context);
     }
 
     protected static Supplier<JsonObject> buildJSON(CharSequence id, CharSequence message) {
@@ -116,7 +123,9 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         return JsonObjectBuilder.create().with(pairs);
     }
 
-    protected void unauthorized(RoutingContext context) {
+    
+    protected void unauthorized(RoutingContext context,String realm) {
+        context.response().putHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
         response(context, HttpResponseStatus.UNAUTHORIZED, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
     }
 
@@ -146,11 +155,15 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         boolean plainEncoding = StringUtils.isNotBlank(context.request().getParam(PARAM_ENCODE_PLAIN_JSON));
         String jsonResponse = plainEncoding ? response.encode() : response.encodePrettily();
         log.debug("response:\n{}", jsonResponse);
-        context.response()
+        HttpServerResponse httpServerResponse = context.response()
                 .putHeader(HttpHeaders.CONTENT_TYPE, MIME_JSON_WITH_ENCODING)
                 .putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(jsonResponse.length()))
-                .setStatusCode(responseStatus.code())
-                .end(jsonResponse);
+                .setStatusCode(responseStatus.code());
+        if(responseStatus.code() >= 400) {
+            context.fail(responseStatus.code());
+        } else {
+            httpServerResponse.end(jsonResponse);
+        }
     }
 
     protected static class RestEndpointException extends RuntimeException {

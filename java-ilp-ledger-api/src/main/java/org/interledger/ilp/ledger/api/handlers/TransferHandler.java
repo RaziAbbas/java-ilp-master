@@ -208,7 +208,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            unauthorized(context);
+            forbidden(context);
             return;
         }
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));

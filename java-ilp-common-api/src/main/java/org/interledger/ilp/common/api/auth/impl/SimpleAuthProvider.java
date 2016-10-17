@@ -116,12 +116,14 @@ public class SimpleAuthProvider implements Configurable, AuthProvider {
 
         @Override
         protected void doIsPermitted(String permission, Handler<AsyncResult<Boolean>> resultHandler) {
+            System.out.println("doIsPermitted " + permission + " user:" + username + " role:" + role);
             if (StringUtils.isBlank(role)) {
                 resultHandler.handle(Future.succeededFuture(true));
             } else if (StringUtils.isNotBlank(role) && role.equalsIgnoreCase(permission)) {
                 resultHandler.handle(Future.succeededFuture(true));
             } else {
                 log.debug("User {} has no permission {}", username, role);
+                System.out.println("User " + username + " has no permission " + role);    
                 resultHandler.handle(Future.failedFuture(permission));
             }
         }

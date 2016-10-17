@@ -2,6 +2,7 @@ package org.interledger.ilp.ledger.api.handlers;
 
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
@@ -26,8 +27,19 @@ public class AccountsHandler extends RestEndpointHandler implements ProtectedRes
 
     @Override
     protected void handleGet(RoutingContext context) {
+        User user = context.user();
+        System.out.println("AccountsHandler user:"+user);
         checkAuth(context, "admin");
     }
+
+    @Override
+    protected void handleUnAuthorized(RoutingContext context) {
+        User user = context.user();
+        System.out.println("AccountsHandler forbidden user:"+user);
+        super.handleUnAuthorized(context); //Sends a forbidden result
+    }
+    
+    
 
     @Override
     protected void handleAuthorized(RoutingContext context) {

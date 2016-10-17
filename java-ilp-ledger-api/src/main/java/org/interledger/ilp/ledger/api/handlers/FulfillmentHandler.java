@@ -1,13 +1,9 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-
-//import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.ext.web.RoutingContext;
-
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
-
+import io.vertx.ext.web.RoutingContext;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
@@ -94,7 +90,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            unauthorized(context);
+            forbidden(context);
             return;
         }
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
