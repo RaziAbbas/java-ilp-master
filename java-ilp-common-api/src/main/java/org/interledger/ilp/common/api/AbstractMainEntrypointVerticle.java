@@ -155,14 +155,16 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
 
     private Map<String, EndpointHandler> publish(Router router, List<EndpointHandler> handlers) {
         Map<String, EndpointHandler> endpoints = new LinkedHashMap<>();
-        String path;
         for (EndpointHandler handler : handlers) {
             endpoints.put(handler.getName(), handler);
-            path = handlerPath(handler);
-            checkProtectedEndpoint(router, handler, path);
-            for (HttpMethod httpMethod : handler.getHttpMethods()) {
-                log.debug("publishing {} endpoint {} at {}", httpMethod, handler.getClass().getName(), getEndpointUrl(path));
-                router.route(httpMethod, path).handler(handler);
+System.out.println(">>>>>>>>>>>deleteme handlerPath(handler) length:"+handlerPath(handler).length);
+            for (String path : handlerPath(handler)) {
+                checkProtectedEndpoint(router, handler, path);
+                for (HttpMethod httpMethod : handler.getHttpMethods()) {
+                    log.debug("publishing {} endpoint {} at {}", httpMethod, handler.getClass().getName(), getEndpointUrl(path));
+                    System.out.printf("publishing %s endpoint %s at %s\n", httpMethod, handler.getClass().getName(), getEndpointUrl(path));
+                    router.route(httpMethod, path).handler(handler);
+                }
             }
         }
         return endpoints;
@@ -175,11 +177,17 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         }
     }
 
-    private String handlerPath(EndpointHandler handler) {
+    private String[] handlerPath(EndpointHandler handler) {
         try {
-            URL url = new URL(serverPublicURL, paths(prefixUri, handler.getUri()));
-            handler.setUrl(url);
-            return url.getPath();
+            String[] uriList = handler.getUriList();
+            String[] result = new String[uriList.length];
+            for (int idx=0; idx < uriList.length; idx++) {
+                String uri = uriList[idx];
+                URL url = new URL(serverPublicURL, paths(prefixUri, uri));
+                handler.setUrl(url);
+                result[idx] = url.getPath();
+            }
+            return result;
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }
