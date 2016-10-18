@@ -159,7 +159,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
          // FIXME:TODO: Implement
         // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         // GET /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-        log.debug(this.getClass().getName() + "handleGet invoqued ");
+        log.debug(this.getClass().getName() + " handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
@@ -167,17 +167,25 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             unauthorized(context);
             return;
         }
-        TransferID transferID = new TransferID(context.request().getParam(transferUUID));
-        LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        boolean transferExists = tm.transferExists(transferID);
-        if (!transferExists) { 
-            // FIXME: Return correct HTTP code 40x. 
-            // throwing a RuntimeException returns "ERROR 500: Internal Server Error"
-            throw new RuntimeException("Transfer not found");
+        boolean isFulfillment = false, isRejection   = false;
+        if (context.request().path().endsWith("/fulfillment")){
+            isFulfillment = true;
+        } else if (context.request().path().endsWith("/rejection")){
+            isRejection = true;
+        } else {
+            throw new RuntimeException("path doesn't match /fulfillment | /rejection");
         }
+        LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
+        TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransfer transfer = tm.getTransferById(transferID);
-        response(context, HttpResponseStatus.ACCEPTED,
-                buildJSON("result", ((SimpleLedgerTransfer)transfer).toWalletJSONFormat()));
+        String fulfillmentURI = (isFulfillment) 
+                ? transfer.getURIExecutionFulfillment().URI
+                : transfer.getURICancelationFulfillment().URI;
+        context.response()
+            .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+            .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
+            .setStatusCode(HttpResponseStatus.ACCEPTED.code())
+            .end(fulfillmentURI);
     }
 }
 
