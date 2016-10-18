@@ -66,9 +66,6 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
          * HTTP/1.1 200 OK
          * {"type":"sha256","message":{"id":"http://localhost/transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204","state":"proposed","token":"xy9kB4n/nWd+MsI84WeK2qg/tLfDr/4SIe5xO9OAz9PTmAwKOUzzJxY1+7c7e3rs0iQ0jy57L3U1Xu8852qlCg=="},"signer":"http://localhost","digest":"P6K2HEaZxAthBeGmbjeyPau0BIKjgkaPqW781zmSvf4="}
          */
-         // FIXME:TODO: Implement
-        // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
-        // GET /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
         log.debug(this.getClass().getName() + "handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
@@ -77,66 +74,64 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
             forbidden(context);
             return;
         }
-        /*
-         *  TODO: FIXME: router.get('/transfers/:id/state', transfers.getStateResource)
-         *  
-         *  function * getStateResource () {
-         *      const conditionState = this.query.condition_state
-         *      const receiptType = this.query.type || 'ed25519-sha512'
-         *      const receiptTypes = ['ed25519-sha512', 'sha256']
-         *      if (!_.includes(receiptTypes, receiptType)) {
-         *        throw new InvalidUriParameterError('type is not valid')
-         *      }
+        
+        /* FIXME:
          *      this.body = yield model.getTransferStateReceipt(
          *        id.toLowerCase(), receiptType, conditionState)
-         * } 
-         * REF: five-bells-ledger/src/models/transfers.js
-         * 
-         * function * getTransferStateReceipt (id, receiptType, conditionState) {
-         *   const transfer = yield db.getTransfer(id)
-         *   const transferState = transfer ? transfer.state : transferStates.TRANSFER_STATE_NONEXISTENT
-         *   if (receiptType === RECEIPT_TYPE_ED25519) {
-         *     return makeEd25519Receipt(uri.make('transfer', id), transferState)
-         *   } else if (receiptType === RECEIPT_TYPE_SHA256) {
-         *     return makeSha256Receipt(uri.make('transfer', id), transferState, conditionState)
-         *   } else {
-         *     throw new UnprocessableEntityError('type is not valid')
-         *   }
-         * }
-         * function makeEd25519Receipt (transferId, transferState) {
-         *   const message = makeTransferStateMessage(transferId, transferState, RECEIPT_TYPE_ED25519)
-         *   return {
-         *     type: RECEIPT_TYPE_ED25519,
-         *     message: message,
-         *     signer: config.getIn(['server', 'base_uri']),
-         *     public_key: config.getIn(['keys', 'ed25519', 'public']),
-         *     signature: sign(hashJSON(message))
-         *   }
-         * }
-         * function makeSha256Receipt (transferId, transferState, conditionState) {
-         *   const message = makeTransferStateMessage(transferId, transferState, RECEIPT_TYPE_SHA256)
-         *   const receipt = {
-         *     type: RECEIPT_TYPE_SHA256,
-         *     message: message,
-         *     signer: config.getIn(['server', 'base_uri']),
-         *     digest: sha256(stringifyJSON(message))
-         *   }
-         *   if (conditionState) {
-         *     const conditionMessage = makeTransferStateMessage(transferId, conditionState, RECEIPT_TYPE_SHA256)
-         *     receipt.condition_state = conditionState
-         *     receipt.condition_digest = sha256(stringifyJSON(conditionMessage))
-         *   }
-         *   return receipt
-         * }
          */
-
+        // REF: getStateResource @ transfers.js
+        String conditionState = context.request().getParam("condition_state");
+        String receiptType = context.request().getParam("type");
+        // REF: getTransferStateReceipt(id, receiptType, conditionState) @ five-bells-ledger/src/models/transfers.js
+        if (receiptType == null) { receiptType = "ed25519-sha512"; }
+        if ( ! receiptType.equals("ed25519-sha512") &&
+             ! receiptType.equals("sha256"        ) &&
+             false ) {
+            throw new RuntimeException("type not in := ed25519-sha512* | sha256 ");
+        }
+        if (receiptType.equals("ed25519-sha512")) {
+            // FIXME: Implement
+            // return makeEd25519Receipt(uri.make('transfer', id), transferState)
+           /*
+            * function makeEd25519Receipt (transferId, transferState) {
+            *   const message = makeTransferStateMessage(transferId, transferState, RECEIPT_TYPE_ED25519)
+            *   return {
+            *     type: RECEIPT_TYPE_ED25519,
+            *     message: message,
+            *     signer: config.getIn(['server', 'base_uri']),
+            *     public_key: config.getIn(['keys', 'ed25519', 'public']),
+            *     signature: sign(hashJSON(message))
+            *   }
+            * }
+            */
+        } else {
+            // FIXME: Implement
+            // return makeSha256Receipt(uri.make('transfer', id), transferState, conditionState)
+            /*
+             * function makeSha256Receipt (transferId, transferState, conditionState) {
+             *   const message = makeTransferStateMessage(transferId, transferState, RECEIPT_TYPE_SHA256)
+             *   const receipt = {
+             *     type: RECEIPT_TYPE_SHA256,
+             *     message: message,
+             *     signer: config.getIn(['server', 'base_uri']),
+             *     digest: sha256(stringifyJSON(message))
+             *   }
+             *   if (conditionState) {
+             *     const conditionMessage = makeTransferStateMessage(transferId, conditionState, RECEIPT_TYPE_SHA256)
+             *     receipt.condition_state = conditionState
+             *     receipt.condition_digest = sha256(stringifyJSON(conditionMessage))
+             *   }
+             *   return receipt
+             * }
+             */
+        }
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        boolean transferExists = tm.transferExists(transferID);
-        if (!transferExists) {
-            throw notFound("Transfer not found");
+        TransferStatus status = TransferStatus.NONEXISTENT;
+        if (tm.transferExists(transferID)) { 
+            LedgerTransfer transfer = tm.getTransferById(transferID);
+            status = transfer.getTransferStatus();
         }
-        LedgerTransfer transfer = tm.getTransferById(transferID);
         response(context, HttpResponseStatus.ACCEPTED,
                 buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONFormat()));
     }

@@ -35,9 +35,14 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     final DTTM DTTM_expires ;
     final DTTM DTTM_proposed;
 
-    FulfillmentURI URIExecutionFF   = FulfillmentURI.EMPTY;
-    FulfillmentURI URICancelationFF = FulfillmentURI.EMPTY;;
-    
+    /*
+     * Note: Defensive security protection:
+     * The default value for URIExecutionFF|URICancelationFF FulfillmentURI.EMPTY
+     * will trigger a transaction just if the ConditionURI for Execution/Cancelation
+     * are also empty.
+     */
+    FulfillmentURI URIExecutionFF     = FulfillmentURI.EMPTY;
+    FulfillmentURI URICancelationFF   = FulfillmentURI.EMPTY;
     String data = "";
     String noteToSelf = "";
 

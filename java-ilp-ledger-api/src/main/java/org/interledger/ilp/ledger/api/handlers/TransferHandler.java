@@ -228,10 +228,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         }
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        boolean transferExists = tm.transferExists(transferID);
-        if (!transferExists) {
-            throw notFound("Transfer not found");
-        }
+
         LedgerTransfer transfer = tm.getTransferById(transferID);
         response(context, HttpResponseStatus.ACCEPTED,
                 buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONFormat()));
