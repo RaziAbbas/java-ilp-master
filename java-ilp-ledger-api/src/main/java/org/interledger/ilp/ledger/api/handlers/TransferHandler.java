@@ -141,6 +141,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 
         // FIXME: TODO: Check that fromURI.getLedgerUri() match local ledger. Otherwise raise RuntimeException 
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
+        // TODO: IMPROVEMENT: isLocalTransaction check and related logic must be done in 
+        // LedgerTransferManager using the private isLocalTransaction(LedgerTransfer transfer)
         boolean isLocalTransaction = fromURI0.getLedgerUri().equals(toURI0.getLedgerUri());
         log.debug(">>> is local lransaction?: " + isLocalTransaction);
         if (isLocalTransaction) {

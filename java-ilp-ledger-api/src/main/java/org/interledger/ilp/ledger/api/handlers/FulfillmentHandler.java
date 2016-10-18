@@ -1,16 +1,13 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-
-
+import io.vertx.core.http.HttpHeaders;
 //import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
 
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.PUT;
 
-import org.interledger.cryptoconditions.Condition;
-import org.interledger.cryptoconditions.ConditionImpl;
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.cryptoconditions.FulfillmentFactory;
 import org.interledger.cryptoconditions.types.MessagePayload;
@@ -42,6 +39,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
 	// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
 
     public FulfillmentHandler() {
+       // REF: _makeRouter @ five-bells-ledger/src/lib/app.js
         super("transfer", new String[] 
             {
                 "transfers/:" + transferUUID + "/fulfillment",
@@ -63,7 +61,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
     @Override
     protected void handlePut(RoutingContext context) {
         // FIXME: If debit's account owner != request credentials throw exception.
-        // FIXME:TODO: Implement
+        // REF: five-bells-ledger/src/controllers/transfers.js
         // PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
@@ -96,81 +94,9 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             // throwing a RuntimeException returns "ERROR 500: Internal Server Error"
             throw new RuntimeException("Transfer not found");
         }
-        
-        /*
-         * REF: five-bells-ledger/src/lib/app.js
-         *     _makeRouter () {
-         *         router.put('/transfers/:id/fulfillment', transfers.putFulfillment)
-         *
-         * REF: five-bells-ledger/src/controllers/transfers.js
-         *     const model = require('../models/transfers')
-         *     ...
-         *     function * putFulfillment () {
-         *         const id = this.params.id
-         *         const fulfillment = yield parse.text(this)
-         *         const result = yield model.fulfillTransfer(id, fulfillment)
-         *         this.body = result.fulfillment
-         *         this.status = result.existed ? 200 : 201
-         * // REF: five-bells-ledger/src/models/transfers.js
-         * function * fulfillTransfer (transferId, fulfillmentUri) {
-         *     const fulfillment = convertToInternalFulfillment(fulfillmentUri)
-         *     const existingFulfillment = yield db.getTransfer(transferId) // || or throw exception
-         *     const conditionType = validateConditionFulfillment(transfer, fulfillment)
-         *     if (  (conditionType === CONDITION_TYPE_EXECUTION    && transfer.state === transferStates.TRANSFER_STATE_EXECUTED)
-         *        || (conditionType === CONDITION_TYPE_CANCELLATION && transfer.state === transferStates.TRANSFER_STATE_REJECTED)
-         *     ) { return convertToExternalFulfillment(yield fulfillments.getFulfillment(transferId, {transaction})) }
-         *     if (conditionType === CONDITION_TYPE_EXECUTION) {
-         *       if (!_.includes(validExecutionStates, transfer.state)) {
-         *         throw new InvalidModificationError('Transfers in state ' + transfer.state + ' may not be executed')
-         *       }
-         *       yield executeTransfer(transaction, transfer, fulfillment)
-         *     } else if (conditionType === CONDITION_TYPE_CANCELLATION) {
-         *       if (!_.includes(validCancellationStates, transfer.state)) {
-         *         throw new InvalidModificationError('Transfers in state ' + transfer.state + ' may not be cancelled') }
-         *       yield cancelTransfer(transaction, transfer, fulfillment)
-         *     }
-         *     transferExpiryMonitor.unwatch(transfer.id)
-         *     db.updateTransfer(transfer, {transaction})
-         *     notificationBroadcaster.sendNotifications(transfer, transaction)
-         *     // Start the expiry countdown if the transfer is not yet finalized
-         *     // If the expires_at has passed by this time we'll consider
-         *     // the transfer to have made it in before the deadline
-         *     if (!isTransferFinalized(transfer)) {
-         *       yield transferExpiryMonitor.watch(transfer)
-         *     }
-         * 
-         *     return {
-         *       fulfillment: existingFulfillment || convertToExternalFulfillment(fulfillment),
-         *       existed: Boolean(existingFulfillment)
-         *     }
-         * }
-         *
-         * REF: five-bells-ledger/src/  
-         * 
-         * function validateConditionFulfillment (transfer, fulfillmentModel) {
-         *     if (!transfer.execution_condition && !transfer.cancellation_condition) {
-         *       throw new TransferNotConditionalError('Transfer is not conditional')
-         *     }
-         *     const fulfillment = convertToExternalFulfillment(fulfillmentModel)
-         *                                             try {
-         *     const condition = cc.fulfillmentToCondition(fulfillment)
-         *     if ( condition === transfer.execution_condition &&
-         *          cc.validateFulfillment(fulfillment, condition) ) {
-         *       return CONDITION_TYPE_EXECUTION
-         *     } else if ( condition === transfer.cancellation_condition &&
-         *          cc.validateFulfillment(fulfillment, condition) ) {
-         *       return CONDITION_TYPE_CANCELLATION
-         *     }
-         *                                             } catch (err) {
-         *     throw new InvalidBodyError('Invalid fulfillment: ' + err.toString())
-         *                                             }
-         *     throw new UnmetConditionError('Fulfillment does not match any condition')
-         * }
-         */
-        
         /*
          * REF: https://gitter.im/interledger/Lobby
-         * Enrique Arizón Benito @earizon 17:51
+         * Enrique Arizon Benito @earizon 17:51 2016-10-17
          *     Hi, I'm trying to figure out how the five-bells-ledger implementation validates fulfillments. 
          *     Following the node.js code I see the next route:
          *     
@@ -185,38 +111,47 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
          *     is always being called with an undefined message and so an empty one is being used.
          *     I'm missing something or is this the expected behaviour?
          * 
-         * Stefan Thomas @justmoon 18:00
+         * Stefan Thomas @justmoon 18:00 2016-10-17
          *     @earizon Yes, this is expected. We're using crypto conditions as a trigger, not to verify the 
          *     authenticity of a message!
          *     Note that the actual cryptographic signature might still be against a message - via prefix 
          *     conditions (which append a prefix to this empty message)
          **/
         LedgerTransfer transfer = tm.getTransferById(transferID);
-        String fulfillmentURI = context.getBodyAsString();
-        Fulfillment ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
-        
-        // FIXME: TODO Create ConditionFactory.getConditionFromURI to isolate from implementation.s
-        // FIXME TODO: ff.getCondition -> Return ConditionURI instead of String
+        String   fulfillmentURI = context.getBodyAsString();
+        Fulfillment          ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
         MessagePayload message = new MessagePayload(new byte[]{});
+        boolean ffExisted = false;
         if (false) {
             // 
         } else if (isFulfillment && transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI()) ) {
-            if (!ff.validate(message)){
-                throw new RuntimeException("execution fulfillment doesn't validate");
+            ffExisted = transfer.getURIExecutionCondition().URI.equals(fulfillmentURI);
+            if (!ffExisted) {
+                if (!ff.validate(message)){
+                    throw new RuntimeException("execution fulfillment doesn't validate");
+                }
+                transfer.setURIExecutionFulfillment(new FulfillmentURI(fulfillmentURI));
+                tm.executeRemoteILPTransfer(transfer);
             }
-            tm.executeRemoteILPTransfer(transfer);
         } else if (isRejection && transfer.getURICancelationCondition().URI.equals(ff.getCondition().toURI()) ){
-            if (!ff.validate(message)){
-                throw new RuntimeException("cancelation fulfillment doesn't validate");
+            ffExisted = transfer.getURICancelationCondition().URI.equals(fulfillmentURI);
+            if (!ffExisted) {
+                if (!ff.validate(message)){
+                    throw new RuntimeException("cancelation fulfillment doesn't validate");
+                }
+                transfer.setURICancelationFulfillment(new FulfillmentURI(fulfillmentURI));
+                tm.abortRemoteILPTransfer(transfer);
             }
-            tm.abortRemoteILPTransfer(transfer);
         } else {
             throw new RuntimeException("fulfillment doesn't match stored condition for transaction");
-
         }
-
-
-        throw new RuntimeException("Not implemented"); // TODO: FIXME: Implement PUT Fulfillment/Rejection
+        context.response()
+            .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+            .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
+            .setStatusCode(!ffExisted ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.ACCEPTED.code())
+            .end(fulfillmentURI);
+        String notification = ((SimpleLedgerTransfer) transfer).toILPJSONFormat();
+        TransferWSEventHandler.notifyILPConnector(context, notification);
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
+import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
@@ -28,7 +29,7 @@ import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
  *    - http://docs.oracle.com/javaee/6/tutorial/doc/bncij.html
  *    - ...
  */
-public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIXME TODO implements LedgerTransferManager, LedgerTransferManagerFactory */{
+public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIXME TODO LedgerTransferManagerFactory */{
 
     private Map<TransferID, LedgerTransfer> transferMap = 
         new HashMap<TransferID, LedgerTransfer>();// In-memory database of pending/executed/cancelled transfers
@@ -63,11 +64,19 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         return result;
     }
 
+    private boolean isLocalTransaction(LedgerTransfer transfer) {
+        // FIXME: TODO: Only the first debit/credit are compared
+        // FIXME: TODO: Check getLedgerUri for debits equals local ledger or raise Exception.
+        return  (transfer. getDebits()[0]).account.getLedgerUri().equals(
+                (transfer.getCredits()[0]).account.getLedgerUri()) ;
+    }
+
     @Override
     public void createNewRemoteILPTransfer(LedgerTransfer newTransfer) {
         System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
-
-        // FIXME: If accounts are both locals the execute and forget.
+        if (isLocalTransaction(newTransfer)) {
+            throw new RuntimeException("transaction is local but remote transaction handling invoqued");
+        }
         if (transferExists(newTransfer.getTransferID())) {
             throw new RuntimeException("trying to create new transfer "
                     + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "
@@ -78,6 +87,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         for (Debit debit : newTransfer.getDebits()) {
             executeLocalTransfer(debit.account, HOLDS_URI, debit.amount);
         }
+        newTransfer.setTransferStatus(TransferStatus.PROPOSED);
     }
 
     @Override
@@ -94,6 +104,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         for (Credit debit : transfer.getCredits()) {
             executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);
         }
+        transfer.setTransferStatus(TransferStatus.EXECUTED);
     }
 
     @Override
