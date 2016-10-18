@@ -19,6 +19,14 @@ import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
  * Simple in-memory {@code SimpleLedgerTransferManager}.
  *
  * @author earizon
+ * 
+ * FIXME:
+ *  All the @Override methods will be transactional in a real database 
+ *  JEE / Hibernate / ... . Mark them "somehow"
+ *  REF:
+ *    - http://docs.oracle.com/cd/E23095_01/Platform.93/ATGProgGuide/html/s1205transactiondemarcation01.html
+ *    - http://docs.oracle.com/javaee/6/tutorial/doc/bncij.html
+ *    - ...
  */
 public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIXME TODO implements LedgerTransferManager, LedgerTransferManagerFactory */{
 
