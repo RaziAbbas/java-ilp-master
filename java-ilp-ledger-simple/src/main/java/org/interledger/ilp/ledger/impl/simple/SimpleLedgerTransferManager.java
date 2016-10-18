@@ -6,8 +6,13 @@ import java.util.Map;
 import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.ConditionURI;
+import org.interledger.ilp.core.Credit;
+import org.interledger.ilp.core.DTTM;
+import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
+import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
@@ -40,7 +45,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         }
         return result;
     }
-    
+
     @Override
     public boolean transferExists(TransferID transferId) {
         System.out.println("transferExists transferId:"+transferId.transferID);
@@ -61,7 +66,17 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         }
         transferMap.put(newTransfer.getTransferID(), newTransfer);
         // FIXME: Notify ilp-connector
-        
+        /*
+         *  function holdFunds (transfer, transaction) {
+         *    return Promise.all(transfer.debits.map((debit) => {
+         *      return Promise.all([
+         *        _adjustBalance(debit.account, -debit.amount, transaction),
+         *        _adjustBalance('hold', debit.amount, transaction),
+         *        _insertEntryByName(debit.account, transfer.id, transaction)
+         *      ])
+         *    }))
+         *  }
+         */
     }
 
     @Override
@@ -73,12 +88,56 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
 
     @Override
     public void executeTransfer(LedgerTransfer transfer) {
-        // FIXME TODO
+        /*
+        public SimpleLedgerTransfer(TransferID transferID, 
+                Debit[] debit_list, Credit[] credit_list, 
+                ConditionURI URIExecutionCond, 
+                ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
+                String data, String noteToSelf, TransferStatus transferStatus )*/
+        /* const holds = require('../lib/holds')
+         *
+         * function * executeTransfer (transaction, transfer, fulfillment) {
+         *    yield holds.disburseFunds(transfer, transaction)
+         *    updateState(transfer, transferStates.TRANSFER_STATE_EXECUTED)
+         *    yield fulfillments.upsertFulfillment(fulfillment, {transaction})
+         *  }
+         *  
+         *  function disburseFunds (transfer, transaction) {
+         *    return Promise.all(transfer.credits.map((credit) => {
+         *      return Promise.all([
+         *        _adjustBalance('hold', -credit.amount, transaction),
+         *        _adjustBalance(credit.account, credit.amount, transaction),
+         *        _insertEntryByName(credit.account, transfer.id, transaction)
+         *      ])
+         *    }))
+         *  }
+         *  
+         */
         throw new RuntimeException("Not implemented");
     }
 
     @Override
     public void abortTransfer(LedgerTransfer transfer) {
+        /*
+         * function * cancelTransfer (transaction, transfer, fulfillment) {
+         *   if (transfer.state === transferStates.TRANSFER_STATE_PREPARED) {
+         *     yield holds.returnHeldFunds(transfer, transaction)
+         *   }
+         *   yield fulfillments.upsertFulfillment(fulfillment, {transaction})
+         *   transfer.rejection_reason = 'cancelled'
+         *   updateState(transfer, transferStates.TRANSFER_STATE_REJECTED)
+         * }
+         * 
+         * function returnHeldFunds (transfer, transaction) {
+         *    return Promise.all(transfer.debits.map((debit) => {
+         *      return Promise.all([
+         *        _adjustBalance('hold', -debit.amount, transaction),
+         *        _adjustBalance(debit.account, debit.amount, transaction),
+         *        _insertEntryByName(debit.account, transfer.id, transaction)
+         *      ])
+         *    }))
+         *  }
+         */
         // FIXME TODO
         throw new RuntimeException("Not implemented");
     }
