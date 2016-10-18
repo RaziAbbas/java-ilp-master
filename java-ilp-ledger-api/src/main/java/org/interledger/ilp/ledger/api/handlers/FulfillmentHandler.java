@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
  * Fulfillment (and rejection) handler
  *
  * @author earizon
+ * 
+ * REF: five-bells-ledger/src/controllers/transfers.js
  */
 public class FulfillmentHandler extends RestEndpointHandler implements ProtectedResource {
 
@@ -34,9 +36,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
     private final static String transferUUID= "transferUUID";
 
 	// GET|PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
-
 	// PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-	// GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
 
     public FulfillmentHandler() {
        // REF: _makeRouter @ five-bells-ledger/src/lib/app.js
@@ -48,11 +48,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         accept(GET, PUT);
     }
 
-//    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
-//        this.ledgerAccountManager = ledgerAccountManager;
-//        return this;
-//    }
-
     public static FulfillmentHandler create() {
         return new FulfillmentHandler(); // TODO: return singleton?
     }
@@ -61,8 +56,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
     @Override
     protected void handlePut(RoutingContext context) {
         // FIXME: If debit's account owner != request credentials throw exception.
-        // REF: five-bells-ledger/src/controllers/transfers.js
-        // PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
         log.debug(this.getClass().getName() + "handlePut invoqued ");
@@ -156,9 +149,8 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
 
     @Override
     protected void handleGet(RoutingContext context) {
-         // FIXME:TODO: Implement
         // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
-        // GET /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
+        //                                                    /rejection
         log.debug(this.getClass().getName() + " handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
@@ -167,11 +159,11 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             forbidden(context);
             return;
         }
-        boolean isFulfillment = false, isRejection   = false;
+        boolean isFulfillment = false; // false => isRejection
         if (context.request().path().endsWith("/fulfillment")){
             isFulfillment = true;
         } else if (context.request().path().endsWith("/rejection")){
-            isRejection = true;
+            isFulfillment = false;
         } else {
             throw new RuntimeException("path doesn't match /fulfillment | /rejection");
         }
