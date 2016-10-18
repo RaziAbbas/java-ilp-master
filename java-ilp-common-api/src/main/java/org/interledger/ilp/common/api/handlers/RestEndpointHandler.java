@@ -2,7 +2,6 @@ package org.interledger.ilp.common.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
@@ -86,7 +85,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
      *
      * @param context {@code RoutingContext}
      * @param authority the authority - what this really means is determined by
-     * the specific implementation. It might rhttpServerResponseepresent a permission to access a
+     * the specific implementation. It might represent a permission to access a
      * resource e.g. `printers:printer34` or it might represent authority to a
      * role in a roles based model, e.g. `role:admin`.
      */
@@ -155,14 +154,13 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         boolean plainEncoding = StringUtils.isNotBlank(context.request().getParam(PARAM_ENCODE_PLAIN_JSON));
         String jsonResponse = plainEncoding ? response.encode() : response.encodePrettily();
         log.debug("response:\n{}", jsonResponse);
-        HttpServerResponse httpServerResponse = context.response()
+        context.response()
                 .putHeader(HttpHeaders.CONTENT_TYPE, MIME_JSON_WITH_ENCODING)
                 .putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(jsonResponse.length()))
-                .setStatusCode(responseStatus.code());
-        if(responseStatus.code() >= 400) {
+                .setStatusCode(responseStatus.code())
+                .end(jsonResponse);        
+        if(responseStatus.code() >= HttpResponseStatus.BAD_REQUEST.code()) { 
             context.fail(responseStatus.code());
-        } else {
-            httpServerResponse.end(jsonResponse);
         }
     }
 

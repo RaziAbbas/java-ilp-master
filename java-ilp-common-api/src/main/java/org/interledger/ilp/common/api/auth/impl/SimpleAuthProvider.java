@@ -10,7 +10,6 @@ import io.vertx.ext.auth.User;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.common.config.core.Configurable;
 import org.interledger.ilp.common.config.core.ConfigurationException;
@@ -115,15 +114,11 @@ public class SimpleAuthProvider implements Configurable, AuthProvider {
         }
 
         @Override
-        protected void doIsPermitted(String permission, Handler<AsyncResult<Boolean>> resultHandler) {
-            System.out.println("doIsPermitted " + permission + " user:" + username + " role:" + role);
-            if (StringUtils.isBlank(role)) {
-                resultHandler.handle(Future.succeededFuture(true));
-            } else if (StringUtils.isNotBlank(role) && role.equalsIgnoreCase(permission)) {
+        protected void doIsPermitted(String permission, Handler<AsyncResult<Boolean>> resultHandler) {            
+            if (permission != null && permission.equalsIgnoreCase(role)) {
                 resultHandler.handle(Future.succeededFuture(true));
             } else {
-                log.debug("User {} has no permission {}", username, role);
-                System.out.println("User " + username + " has no permission " + role);    
+                log.debug("User {} has no permission {}", username, permission);                
                 resultHandler.handle(Future.failedFuture(permission));
             }
         }
