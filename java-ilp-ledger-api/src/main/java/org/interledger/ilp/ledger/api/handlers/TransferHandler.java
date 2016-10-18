@@ -178,7 +178,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                     throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
                 }
             } else {
-                tm.createNewRemoteTransfer(receivedTransfer);
+                tm.createNewRemoteILPTransfer(receivedTransfer);
             }
             try {
                 String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONFormat();

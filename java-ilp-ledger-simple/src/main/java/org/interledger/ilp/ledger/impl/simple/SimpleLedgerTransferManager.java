@@ -6,13 +6,10 @@ import java.util.Map;
 import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.core.AccountUri;
-import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
-import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
-import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
@@ -59,7 +56,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     }
 
     @Override
-    public void createNewRemoteTransfer(LedgerTransfer newTransfer) {
+    public void createNewRemoteILPTransfer(LedgerTransfer newTransfer) {
         System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
 
         // FIXME: If accounts are both locals the execute and forget.
@@ -84,13 +81,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     }
 
     @Override
-    public void executeTransfer(LedgerTransfer transfer) {
-        /*
-        public SimpleLedgerTransfer(TransferID transferID, 
-                Debit[] debit_list, Credit[] credit_list, 
-                ConditionURI URIExecutionCond, 
-                ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
-                String data, String noteToSelf, TransferStatus transferStatus )*/
+    public void executeRemoteILPTransfer(LedgerTransfer transfer) {
         // DisburseFunds:
         for (Credit debit : transfer.getCredits()) {
             executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);
@@ -98,7 +89,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     }
 
     @Override
-    public void abortTransfer(LedgerTransfer transfer) {
+    public void abortRemoteILPTransfer(LedgerTransfer transfer) {
         // Return Held Funds
         for (Debit debit : transfer.getDebits()) {
             executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);

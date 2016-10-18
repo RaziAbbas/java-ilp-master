@@ -11,12 +11,12 @@ public  interface LedgerTransferManager {
     
     boolean transferExists(TransferID transferId);
     
-    void createNewRemoteTransfer(LedgerTransfer newTransfer);
+    void createNewRemoteILPTransfer(LedgerTransfer newTransfer);
     
     void executeLocalTransfer(AccountUri from, AccountUri to, MonetaryAmount amount);
     
-    void executeTransfer(LedgerTransfer transfer);
+    void executeRemoteILPTransfer(LedgerTransfer transfer);
 
-    void abortTransfer(LedgerTransfer transfer);
+    void abortRemoteILPTransfer(LedgerTransfer transfer);
 
 }

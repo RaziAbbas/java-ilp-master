@@ -204,12 +204,12 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             if (!ff.validate(message)){
                 throw new RuntimeException("execution fulfillment doesn't validate");
             }
-            tm.executeTransfer(transfer);
+            tm.executeRemoteILPTransfer(transfer);
         } else if (isRejection && transfer.getURICancelationCondition().URI.equals(ff.getCondition().toURI()) ){
             if (!ff.validate(message)){
                 throw new RuntimeException("cancelation fulfillment doesn't validate");
             }
-            tm.abortTransfer(transfer);
+            tm.abortRemoteILPTransfer(transfer);
         } else {
             throw new RuntimeException("fulfillment doesn't match stored condition for transaction");
 
