@@ -9,7 +9,8 @@ import org.interledger.ilp.core.AccountUri;
  * @author mrmx
  */
 public interface LedgerAccountManager {
-            
+
+    // TODO: recheck whether create is necesary.
     LedgerAccount create(String name);
 
     int getTotalAccounts();
@@ -22,4 +23,5 @@ public interface LedgerAccountManager {
         
     AccountUri getAccountUri(LedgerAccount account);
     
+    LedgerAccount getHOLDAccountILP();
 }

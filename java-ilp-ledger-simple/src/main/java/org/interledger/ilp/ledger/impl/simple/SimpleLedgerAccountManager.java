@@ -17,6 +17,7 @@ import org.interledger.ilp.ledger.account.LedgerAccountManager;
  */
 public class SimpleLedgerAccountManager implements LedgerAccountManager {
     private Map<String, LedgerAccount> accountMap;
+    private static final String ILP_HOLD_ACCOUNT = "@@ILP_HOLDS@@"; 
 
     public SimpleLedgerAccountManager() {
         accountMap = new TreeMap<String, LedgerAccount>();
@@ -24,6 +25,9 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     
     @Override
     public LedgerAccount create(String name) {
+        if (accountMap.containsKey(name)) {
+            throw new RuntimeException("account '"+name+"' already exists");
+        }
         return new SimpleLedgerAccount(name, getLedgerInfo().getCurrencyCode());
     }
 
@@ -59,5 +63,11 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     private LedgerInfo getLedgerInfo() {
         return LedgerFactory.getDefaultLedger().getInfo();
     }
+    
+    @Override
+    public LedgerAccount getHOLDAccountILP() {
+        return create(ILP_HOLD_ACCOUNT);
+    }
+
 
 }
