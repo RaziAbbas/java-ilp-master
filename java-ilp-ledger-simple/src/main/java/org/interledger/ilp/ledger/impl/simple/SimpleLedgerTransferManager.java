@@ -30,6 +30,10 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
 
     private static SimpleLedgerTransferManager singleton = new SimpleLedgerTransferManager();
 
+    private static final AccountUri HOLDS_URI = AccountUri.buildFromURI(
+            LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().
+                getHOLDAccountILP().getUri());;
+
     // Make default constructor private to avoid instantiating new classes.
     private SimpleLedgerTransferManager() {}
 
@@ -53,7 +57,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         System.out.println("transferExists result:"+result);
         return result;
     }
-    
+
     @Override
     public void createNewRemoteTransfer(LedgerTransfer newTransfer) {
         System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
@@ -65,22 +69,15 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
                     + "Check transfer with SimpleLedgerTransferManager.transferExists before invoquing this function");
         }
         transferMap.put(newTransfer.getTransferID(), newTransfer);
-        // FIXME: Notify ilp-connector
-        /*
-         *  function holdFunds (transfer, transaction) {
-         *    return Promise.all(transfer.debits.map((debit) => {
-         *      return Promise.all([
-         *        _adjustBalance(debit.account, -debit.amount, transaction),
-         *        _adjustBalance('hold', debit.amount, transaction),
-         *        _insertEntryByName(debit.account, transfer.id, transaction)
-         *      ])
-         *    }))
-         *  }
-         */
+        // PUT Money on-hold:
+        for (Debit debit : newTransfer.getDebits()) {
+            executeLocalTransfer(debit.account, HOLDS_URI, debit.amount);
+        }
     }
 
     @Override
     public void executeLocalTransfer(AccountUri sender, AccountUri recipient, MonetaryAmount amount) {
+        // FIXME: LOG local transfer execution.
         LedgerAccountManager accManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         accManager.getAccountByName(sender   .getAccountId()).debit (amount);
         accManager.getAccountByName(recipient.getAccountId()).credit(amount);
@@ -94,52 +91,18 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
                 ConditionURI URIExecutionCond, 
                 ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
                 String data, String noteToSelf, TransferStatus transferStatus )*/
-        /* const holds = require('../lib/holds')
-         *
-         * function * executeTransfer (transaction, transfer, fulfillment) {
-         *    yield holds.disburseFunds(transfer, transaction)
-         *    updateState(transfer, transferStates.TRANSFER_STATE_EXECUTED)
-         *    yield fulfillments.upsertFulfillment(fulfillment, {transaction})
-         *  }
-         *  
-         *  function disburseFunds (transfer, transaction) {
-         *    return Promise.all(transfer.credits.map((credit) => {
-         *      return Promise.all([
-         *        _adjustBalance('hold', -credit.amount, transaction),
-         *        _adjustBalance(credit.account, credit.amount, transaction),
-         *        _insertEntryByName(credit.account, transfer.id, transaction)
-         *      ])
-         *    }))
-         *  }
-         *  
-         */
-        throw new RuntimeException("Not implemented");
+        // DisburseFunds:
+        for (Credit debit : transfer.getCredits()) {
+            executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);
+        }
     }
 
     @Override
     public void abortTransfer(LedgerTransfer transfer) {
-        /*
-         * function * cancelTransfer (transaction, transfer, fulfillment) {
-         *   if (transfer.state === transferStates.TRANSFER_STATE_PREPARED) {
-         *     yield holds.returnHeldFunds(transfer, transaction)
-         *   }
-         *   yield fulfillments.upsertFulfillment(fulfillment, {transaction})
-         *   transfer.rejection_reason = 'cancelled'
-         *   updateState(transfer, transferStates.TRANSFER_STATE_REJECTED)
-         * }
-         * 
-         * function returnHeldFunds (transfer, transaction) {
-         *    return Promise.all(transfer.debits.map((debit) => {
-         *      return Promise.all([
-         *        _adjustBalance('hold', -debit.amount, transaction),
-         *        _adjustBalance(debit.account, debit.amount, transaction),
-         *        _insertEntryByName(debit.account, transfer.id, transaction)
-         *      ])
-         *    }))
-         *  }
-         */
-        // FIXME TODO
-        throw new RuntimeException("Not implemented");
+        // Return Held Funds
+        for (Debit debit : transfer.getDebits()) {
+            executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);
+        }
     }
 
 }
