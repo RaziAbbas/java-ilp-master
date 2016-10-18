@@ -164,7 +164,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            unauthorized(context);
+            forbidden(context);
             return;
         }
         boolean isFulfillment = false, isRejection   = false;

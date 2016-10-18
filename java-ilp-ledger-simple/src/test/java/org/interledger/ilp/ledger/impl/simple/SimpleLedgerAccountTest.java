@@ -22,20 +22,20 @@ public class SimpleLedgerAccountTest {
 
     static final String CURRENCY_CODE = "EUR";
     SimpleLedgerAccount instance;
-    final String sTestURI  = "http://ledgerTest";
+    final String sTestURI = "http://ledgerTest";
     final String sOtherURI = "http://ledgerOther";
-    AccountUri testURI  = new AccountUri(sTestURI,"test");
-    AccountUri otherURI = new AccountUri(sOtherURI,"others");
-    
-        @BeforeClass
+    AccountUri testURI = new AccountUri(sTestURI, "test");
+    AccountUri otherURI = new AccountUri(sOtherURI, "others");
+
+    @BeforeClass
     public static void init() {
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
-            .setCurrency(Currencies.EURO)
-            .setBaseUri(URI_LEDGER_A)
-            .build();        
+                .setCurrency(Currencies.EURO)
+                .setBaseUri(URI_LEDGER_A)
+                .build();
         LedgerFactory.initialize(ledgerInfo, "test-ledger");
     }
-    
+
     @Before
     public void setUp() {
         instance = new SimpleLedgerAccount("test", CURRENCY_CODE);

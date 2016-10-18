@@ -39,13 +39,13 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
         return new AccountHandler();
     }
 
-    protected void handleGet(RoutingContext context) {
-        log.debug("Handing get single account");
+    protected void handleGet(RoutingContext context) {        
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         String accountName = getAccountName(context);
         boolean isAdmin = user.hasRole("admin");
-        if (!isAdmin && !accountName.equals(user.getUsername())) {
-            unauthorized(context);
+        System.out.println("AccountHandler "+user + " admin:" +isAdmin);
+        if (!isAdmin && !accountName.equals(user.getUsername())) {            
+            forbidden(context);
             return;
         }
         LedgerAccount account = getAccountByName(context);

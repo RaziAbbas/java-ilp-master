@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
  * @author mrmx
  */
 public class AuthHandlerFactory {
+    public static final String DEFAULT_BASIC_REALM  = "ILP Ledger API";
+    
     private static final Logger log = LoggerFactory.getLogger(AuthHandlerFactory.class);
     
     enum Provider {
@@ -36,7 +38,7 @@ public class AuthHandlerFactory {
         switch(provider) {
             case Basic:
                 authProvider = new SimpleAuthProvider();
-                String realm = authConfig.getString("ILP Ledger API",Auth.realm);
+                String realm = authConfig.getString(DEFAULT_BASIC_REALM,Auth.realm);
                 authHandler = BasicAuthHandler.create(authProvider,realm);                
                 break;
             default: // Jdbc, Shiro, break;
@@ -46,4 +48,5 @@ public class AuthHandlerFactory {
         log.debug("Created {} authProvider using {} impl",provider,authProvider.getClass().getSimpleName());                
         return authHandler;
     }
+    
 }
