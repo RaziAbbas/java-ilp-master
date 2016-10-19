@@ -2,10 +2,14 @@ package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+
 
 import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
@@ -55,6 +59,20 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         }
         return result;
     }
+
+    @Override
+    public java.util.List<LedgerTransfer> getTransfersByExecutionCondition(ConditionURI condition) {
+        // For this simple implementation just run over existing transfers until 
+        List<LedgerTransfer> result = new ArrayList<LedgerTransfer>();
+        for ( TransferID transferId : transferMap.keySet()) {
+            LedgerTransfer transfer = transferMap.get(transferId);
+            if (transfer.getURIExecutionCondition().equals(condition)) {
+                result.add(transfer);
+            }
+        }
+        return result;
+    }
+
 
     @Override
     public boolean transferExists(TransferID transferId) {

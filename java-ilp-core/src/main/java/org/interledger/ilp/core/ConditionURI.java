@@ -18,4 +18,9 @@ public class ConditionURI {
         if (!(other instanceof ConditionURI))return false;
         return URI.equals(((ConditionURI)other).URI);
     }
+    
+    @Override
+    public String toString() {
+        return URI;
+    }
 }
