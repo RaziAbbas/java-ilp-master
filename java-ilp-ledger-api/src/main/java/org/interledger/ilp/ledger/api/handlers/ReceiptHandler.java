@@ -19,6 +19,9 @@ import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
  * TransferHandler handler
  *
@@ -30,7 +33,14 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
     private final static String transferUUID  = "transferUUID";
     private static final String RECEIPT_TYPE_ED25519 = "ed25519-sha512",
                                 RECEIPT_TYPE_SHA256  = "sha256";
-
+    private static final MessageDigest md256;
+    static {
+        try {
+            md256 = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e.toString(), e);
+        }
+    }
     // GET     /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
     // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
     // GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
@@ -42,6 +52,7 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
             });
         accept(GET);
     }
+    
 
     public static ReceiptHandler create() {
         return new ReceiptHandler(); // TODO: return singleton?
@@ -84,14 +95,7 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
             LedgerTransfer transfer = tm.getTransferById(transferID);
             status = transfer.getTransferStatus();
         }
-        
-        /* FIXME:
-         *      this.body = yield model.getTransferStateReceipt(
-         *        id.toLowerCase(), receiptType, conditionState)
-         */
         // REF: getStateResource @ transfers.js
-        
-        
 
         String receiptType = context.request().getParam("type");
         // REF: getTransferStateReceipt(id, receiptType, conditionState) @ five-bells-ledger/src/models/transfers.js
@@ -118,7 +122,7 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
             // REF: makeSha256Receipt(transferId, transferState, conditionState) @
             //      @ five-bells-ledger/src/models/transfers.js
             JsonObject message = makeTransferStateMessage(transferId, status, RECEIPT_TYPE_SHA256);
-            String digest = "";     // FIXME: sha256(stringifyJSON(message))
+            String digest = sha256(message.encode());
             jo.put("type", RECEIPT_TYPE_SHA256);
             jo.put("message", message);
             jo.put("signer", signer);
@@ -126,7 +130,7 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
             String conditionState = context.request().getParam("condition_state");
             if (conditionState != null) {
                 JsonObject conditionMessage = makeTransferStateMessage(transferId, status, RECEIPT_TYPE_SHA256);
-                String condition_digest = "TODO sha256 of "+conditionMessage; // FIXME sha256(conditionMessage.encode())
+                String condition_digest = sha256(conditionMessage.encode());
                 jo.put("condition_state", conditionState);
                 jo.put("condition_digest", condition_digest);
             }
@@ -138,6 +142,12 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
         .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
         .setStatusCode(HttpResponseStatus.ACCEPTED.code())
         .end(response);
+    }
+    
+    private static String sha256(String input) {
+        md256.reset();
+        md256.update(input.getBytes());
+        return new String(md256.digest());
     }
 
 }
