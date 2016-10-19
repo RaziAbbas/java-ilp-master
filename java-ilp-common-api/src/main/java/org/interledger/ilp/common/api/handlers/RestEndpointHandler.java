@@ -7,7 +7,7 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
-import org.interledger.ilp.common.api.auth.AuthHandlerFactory;
+import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.api.util.VertxUtils;
 import org.slf4j.Logger;
@@ -27,6 +27,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     private final static String UNAUTHORIZED_ERROR_ID = "UnauthorizedError";
     private final static String UNAUTHORIZED_ERROR_MSG = "Unknown or invalid account / password";
+    private final static String BAD_REQUEST_ERROR_ID = "BadRequestError";
     private final static String FORBIDDEN_ERROR_ID = "ForbiddenError";
     private final static String FORBIDDEN_ERROR_MSG = "Forbidden";
 
@@ -40,6 +41,8 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     @Override
     public void handle(RoutingContext context) {
+        String handlerName = getClass().getSimpleName();
+        log.debug("In handler {}", handlerName);
         try {
             switch (context.request().method()) {
                 case GET:
@@ -93,13 +96,13 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         User user = context.user();
         if (user == null) {
             log.warn("No user present in request in checkAuth with {}", authority);
-            unauthorized(context,AuthHandlerFactory.DEFAULT_BASIC_REALM);
+            unauthorized(context, AuthManager.DEFAULT_BASIC_REALM);
         } else {
             user.isAuthorised(authority, res -> {
                 if (res.succeeded()) {
                     handleAuthorized(context);
                 } else {
-                    handleUnAuthorized(context);                    
+                    handleUnAuthorized(context);
                 }
             });
         }
@@ -108,7 +111,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     protected void handleAuthorized(RoutingContext context) {
         response(context, HttpResponseStatus.NOT_IMPLEMENTED);
     }
-    
+
     protected void handleUnAuthorized(RoutingContext context) {
         log.debug("Unauthorized access!");
         forbidden(context);
@@ -122,14 +125,17 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         return JsonObjectBuilder.create().with(pairs);
     }
 
-    
-    protected void unauthorized(RoutingContext context,String realm) {
+    protected void unauthorized(RoutingContext context, String realm) {
         context.response().putHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
         response(context, HttpResponseStatus.UNAUTHORIZED, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
     }
 
     protected void forbidden(RoutingContext context) {
         response(context, HttpResponseStatus.FORBIDDEN, buildJSON(FORBIDDEN_ERROR_ID, FORBIDDEN_ERROR_MSG));
+    }
+
+    protected void bad(RoutingContext context, String msg) {
+        response(context, HttpResponseStatus.BAD_REQUEST, buildJSON(BAD_REQUEST_ERROR_ID, msg));
     }
 
     protected void response(RoutingContext context, HttpResponseStatus responseStatus) {
@@ -158,8 +164,8 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                 .putHeader(HttpHeaders.CONTENT_TYPE, MIME_JSON_WITH_ENCODING)
                 .putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(jsonResponse.length()))
                 .setStatusCode(responseStatus.code())
-                .end(jsonResponse);        
-        if(responseStatus.code() >= HttpResponseStatus.BAD_REQUEST.code()) { 
+                .end(jsonResponse);
+        if (responseStatus.code() >= HttpResponseStatus.BAD_REQUEST.code()) {
             context.fail(responseStatus.code());
         }
     }

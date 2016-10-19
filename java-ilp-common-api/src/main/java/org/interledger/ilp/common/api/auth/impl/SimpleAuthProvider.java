@@ -4,12 +4,13 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.AbstractUser;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.interledger.ilp.common.api.auth.AuthInfo;
+import org.interledger.ilp.common.api.auth.RoleUser;
 import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.common.config.core.Configurable;
 import org.interledger.ilp.common.config.core.ConfigurationException;
@@ -25,8 +26,6 @@ public class SimpleAuthProvider implements Configurable, AuthProvider {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleAuthProvider.class);
 
-    private final static String USER_NAME = "username";
-    private final static String USER_PASS = "password";
     private final static String USER_ROLE = "role";
 
     private final Map<String, SimpleUser> users;
@@ -61,76 +60,28 @@ public class SimpleAuthProvider implements Configurable, AuthProvider {
     }
 
     @Override
-    public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-        String username = authInfo.getString(USER_NAME);
-        SimpleUser user = users.get(username);
-        if (user != null && user.getPassword().equals(authInfo.getString(USER_PASS))) {
+    public void authenticate(JsonObject auth, Handler<AsyncResult<User>> resultHandler) {
+        AuthInfo authInfo = AuthInfo.basic(auth);
+        SimpleUser user = users.get(authInfo.getUsername());
+        if (user != null && user.getPassword().equals(authInfo.getCredential())) {
             resultHandler.handle(Future.succeededFuture(user));
         } else {
-            resultHandler.handle(Future.failedFuture(username));
+            resultHandler.handle(Future.failedFuture(authInfo.getUsername()));
         }
     }
 
-    public static final class SimpleUser extends AbstractUser {
-
-        private final String username;
-        private final String password;
-        private final String role;
-        private final JsonObject principal;
+    public static final class SimpleUser extends RoleUser {
 
         public SimpleUser(String username, String password, String role) {
-            this.username = username;
-            this.password = password;
-            this.role = role;
-            this.principal = new JsonObject();
-            principal.put(USER_NAME, username);
-            principal.put(USER_ROLE, role);
+            super(AuthInfo.basic(username, password).put(USER_ROLE, role), role);
         }
 
         public String getUsername() {
-            return username;
+            return getAuthInfo().getUsername();
         }
 
         public String getPassword() {
-            return password;
-        }
-
-        public String getRole() {
-            return role;
-        }
-        
-        public boolean hasRole(String role) {
-            return this.role != null && this.role.equalsIgnoreCase(role);
-        }
-
-        @Override
-        public int hashCode() {
-            return username.hashCode();
-        }
-
-        @Override
-        public JsonObject principal() {
-            return principal;
-        }
-
-        @Override
-        protected void doIsPermitted(String permission, Handler<AsyncResult<Boolean>> resultHandler) {            
-            if (permission != null && permission.equalsIgnoreCase(role)) {
-                resultHandler.handle(Future.succeededFuture(true));
-            } else {
-                log.debug("User {} has no permission {}", username, permission);                
-                resultHandler.handle(Future.failedFuture(permission));
-            }
-        }
-
-        @Override
-        public void setAuthProvider(AuthProvider authProvider) {
-            throw new UnsupportedOperationException("Not supported " + authProvider);
-        }
-
-        @Override
-        public String toString() {
-            return username;
+            return getAuthInfo().getCredential();
         }
 
     }

@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.interledger.ilp.common.api.auth.AuthHandlerFactory;
+import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.handlers.DebugRequestHandler;
 import org.interledger.ilp.common.api.handlers.EndpointHandler;
 import org.interledger.ilp.common.api.handlers.IndexHandler;
@@ -92,7 +92,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         log.debug("serverPublicURL: {}", serverPublicURL);
 
         //Init auth
-        authHandler = AuthHandlerFactory.create(config);
+        authHandler = AuthManager.getInstance(config).getAuthHandler();
 
         //Extra configuration on child classes:
         config.apply(this);

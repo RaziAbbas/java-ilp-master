@@ -4,10 +4,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import static io.vertx.core.http.HttpMethod.*;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;
-import org.interledger.ilp.common.api.ProtectedResource;
-import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
+import org.interledger.ilp.common.api.auth.AuthInfo;
+import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.core.LedgerInfo;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mrmx
  */
-public class AccountHandler extends RestEndpointHandler implements ProtectedResource {
+public class AccountHandler extends RestEndpointHandler {
 
     private static final Logger log = LoggerFactory.getLogger(AccountHandler.class);
 
@@ -39,26 +40,25 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
         return new AccountHandler();
     }
 
-    protected void handleGet(RoutingContext context) {        
-        SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
-        String accountName = getAccountName(context);
-        boolean isAdmin = user.hasRole("admin");
-        System.out.println("AccountHandler "+user + " admin:" +isAdmin);
-        if (!isAdmin && !accountName.equals(user.getUsername())) {            
-            forbidden(context);
-            return;
+    protected void handleGet(RoutingContext context) {
+        //String accountName = getAccountName(context);
+        AuthInfo authInfo = AuthManager.getInstance().getAuthInfo(context);
+        if (authInfo.isEmpty()) {
+            String accountName = getAccountName(context);
+            if (StringUtils.isNotBlank(accountName)) {
+                handleAuthorized(context, null);
+            } else {
+                bad(context, "Required param " + PARAM_NAME);
+            }
+        } else {
+            AuthManager.getInstance().getAuthProvider().authenticate(authInfo.getPrincipal(), res -> {
+                if (res.succeeded()) {
+                    handleAuthorized(context, res.result());
+                } else {
+                    handleUnAuthorized(context, authInfo);
+                }
+            });
         }
-        LedgerAccount account = getAccountByName(context);
-        // TODO: Ussually ledgerURL will be a constant that can be fetch from config params.
-        //       No need to recalculate each time. Could it be the case that the server is configured with
-        //       different URL??? In such case there is no other way that fetchint it from the request.
-        String absoluteURI = context.request().absoluteURI();
-        String ledgerURL = absoluteURI.substring(0, absoluteURI.indexOf(context.request().path()));
-        JsonObject result = JsonObjectBuilder.create()
-                .from(account)
-                .put("ledger", ledgerURL)
-                .get();
-        response(context, HttpResponseStatus.OK, result);
     }
 
     protected void handlePost(RoutingContext context) {
@@ -77,7 +77,7 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     }
 
     private LedgerAccount getAccountByName(RoutingContext context) {
-        String accountName = getAccountName(context);
+        String accountName = getAccountNameOrThrowException(context);
         log.debug("Get account {}", accountName);
         try {
             return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountByName(accountName);
@@ -88,10 +88,31 @@ public class AccountHandler extends RestEndpointHandler implements ProtectedReso
     }
 
     private String getAccountName(RoutingContext context) {
+        return context.request().getParam(PARAM_NAME);
+    }
+
+    private String getAccountNameOrThrowException(RoutingContext context) {
         String accountName = context.request().getParam(PARAM_NAME);
         if (StringUtils.isBlank(accountName)) {
             throw new RestEndpointException(HttpResponseStatus.BAD_REQUEST, accountName);
         }
         return accountName;
+    }
+
+    private void handleAuthorized(RoutingContext context, User user) {
+        log.info("handleAuthorized {}", user);
+        //boolean isAdmin = ((UserRole)user).hasRole("admin");        
+        LedgerAccount account = getAccountByName(context);
+        JsonObject result = JsonObjectBuilder.create()
+                .put("id", account.getUri())
+                .put("name", account.getName())
+                .put("ledger", LedgerFactory.getDefaultLedger().getInfo().getBaseUri())
+                .get();
+        response(context, HttpResponseStatus.OK, result);
+    }
+
+    private void handleUnAuthorized(RoutingContext context, AuthInfo authInfo) {
+        log.info("handleUnAuthorized {}", authInfo);
+        forbidden(context);
     }
 }

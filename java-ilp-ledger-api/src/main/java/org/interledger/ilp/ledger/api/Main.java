@@ -49,14 +49,14 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         uri,
         accounts,
         balance,
-        admin,disabled,
+        admin, disabled,
         connector
     }
 
     // TODO: Move to the ledger-simple. The main is not part of the (reusable) API.
     public static void main(String[] args) {
         VertxRunner.run(Main.class);
-        
+
     }
 
     @Override
@@ -69,23 +69,22 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     public void configure(Config config) throws ConfigurationException {
         ilpPrefix = config.getString(LEDGER, ILP, PREFIX);
         String ledgerName = config.getString(DEFAULT_LEDGER_NAME, LEDGER, NAME);
-        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);                
+        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);
         String baseUri = getServerPublicURL().toString();
         //Development config
         Optional<Config> devConfig = config.getOptionalConfig(Dev.class);
         if (devConfig.isPresent()) {
             Config dev = devConfig.get();
             //Override baseUri to match 5-bells integration tests:
-            baseUri = dev.getString(baseUri, Dev.uri);        
+            baseUri = dev.getString(baseUri, Dev.uri);
         }
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
                 .setBaseUri(baseUri)
                 .setCurrencyCodeAndSymbol(currencyCode)
                 //TODO precission and scale
-                .build()
-        ;
+                .build();
         LedgerFactory.initialize(ledgerInfo, ledgerName);
-        ledger = LedgerFactory.getDefaultLedger();        
+        ledger = LedgerFactory.getDefaultLedger();
         //Development config
         if (devConfig.isPresent()) {
             configureDevelopmentEnvirontment(devConfig.get());
@@ -118,19 +117,19 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     }
 
     private void configureDevelopmentEnvirontment(Config config) {
-        log.info("Preparing development environment");        
+        log.info("Preparing development environment");
         List<String> accounts = config.getStringList(Dev.accounts);
         LedgerAccountManager ledgerAccountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-        for(String accountName : accounts) {
-            SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);                        
+        for (String accountName : accounts) {
+            SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);
             Config accountConfig = config.getConfig(accountName);
             account.setBalance(accountConfig.getInt(0, Dev.balance));
-            if(accountConfig.getBoolean(false, Dev.admin)) {
+            if (accountConfig.getBoolean(false, Dev.admin)) {
                 account.setAdmin(true);
             }
             account.setDisabled(accountConfig.getBoolean(false, Dev.disabled));
-            account.setConnector(accountConfig.getString((String)null, Dev.connector));
-            ledgerAccountManager.addAccount(account);            
+            account.setConnector(accountConfig.getString((String) null, Dev.connector));
+            ledgerAccountManager.addAccount(account);
         }
     }
 
