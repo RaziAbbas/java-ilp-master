@@ -4,6 +4,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
+
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -164,8 +166,12 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             tm.executeLocalTransfer(receivedTransfer);
             // tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
             // response(context, HttpResponseStatus.CREATED, requestBody);
-            response(context, HttpResponseStatus.CREATED,
-                    buildJSON("result", ((SimpleLedgerTransfer) receivedTransfer).toWalletJSONFormat()));
+            String response = ((SimpleLedgerTransfer) receivedTransfer).toWalletJSONFormat();
+            context.response()
+                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
+                .setStatusCode(HttpResponseStatus.CREATED.code())
+                .end(response);
         } else {
             boolean isNewTransfer = !tm.transferExists(transferID);
             log.debug(">>> is new transfer?: " + isNewTransfer);
@@ -190,9 +196,12 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                  *     send to the connector once the (websocket) connection is restablished.
                  */
             }
-            response(context,
-                    isNewTransfer ? HttpResponseStatus.CREATED : HttpResponseStatus.ACCEPTED,
-                    buildJSON("result", ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONFormat()));
+            String response = ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONFormat();
+            context.response()
+                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
+                .setStatusCode(isNewTransfer ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.ACCEPTED.code())
+                .end(response);
         }
     }
 

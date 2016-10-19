@@ -1,6 +1,5 @@
 package org.interledger.ilp.ledger.impl.simple;
 
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 
 //import javax.money.MonetaryAmount;
@@ -260,7 +259,35 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     }
 
     public String toWalletJSONFormat() {
-        return Json.encode(this); // FIXME: Recheck
+//        { id: 'http://localhost/transfers/155dff3f-4915-44df-a707-acc4b527bcbd',
+//            ledger: 'http://localhost',
+//            debits: 
+//             [ { account: 'http://localhost/accounts/alice',
+//                 amount: '10',
+//                 authorized: true } ],
+//            credits: [ { account: 'http://localhost/accounts/bob', amount: '10' } ],
+//            state: 'executed',
+//            timeline: 
+//             { executed_at: '2015-06-16T00:00:00.000Z',
+//               prepared_at: '2015-06-16T00:00:00.000Z',
+//               proposed_at: '2015-06-16T00:00:00.000Z' } }
+        JsonObject jo = new JsonObject();
+        jo.put("id", transferID.transferID);
+        jo.put("state", this.getTransferStatus());
+        jo.put("ledger", "FIXME"); // FIXME: Recheck
+        jo.put("credits", entryList2Json(credit_list));
+        jo.put("debits" , entryList2Json( debit_list));
+        {
+            JsonObject timeline = new JsonObject();
+            timeline.put("proposed_at", this.DTTM_proposed.toString());
+            if (this.DTTM_prepared != DTTM.future) { timeline.put("prepared_at", this.DTTM_prepared.toString()); }
+            if (this.DTTM_executed != DTTM.future) { timeline.put("executed_at", this.DTTM_executed.toString()); }
+            if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
+            jo.put("timeline", timeline);
+        }
+        jo.put("expires_at", this.DTTM_expires.toString());
+        String result = jo.encode(); // FIXME: Recheck
+        return result;
     }
 
     private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
