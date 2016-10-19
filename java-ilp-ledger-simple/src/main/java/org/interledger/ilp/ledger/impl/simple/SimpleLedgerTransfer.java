@@ -66,11 +66,6 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         AccountUri fromAccount =  debit_list[0].account;
         AccountUri   toAccount = credit_list[0].account;
 
-        if (fromAccount.getLedgerUri().equals(toAccount.getLedgerUri())) {
-            throw new RuntimeException("assert exception: "
-                    + "SimpleLedgerTransfer does not handle local transfers. Only transfers "
-                    + "from local ledger to external ones");
-        }
         // FIXME: TODO: If fromAccount.ledger != "our ledger" throw RuntimeException.
         this.transferID         = transferID        ;
         this.credit_list        = credit_list       ;
@@ -126,28 +121,27 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
 
     @Override
     public void setTransferStatus(TransferStatus transferStatus) {
-        final RuntimeException errorState = new RuntimeException(
-                "new state not compliant with Transfer State Machine");
+        final String errorState = "new state not compliant with Transfer State Machine";
         switch(transferStatus){
             // TODO: RECHECK allowed state machine 
             case PROPOSED:
                 if (this.transferStatus != TransferStatus.PROPOSED) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             case PREPARED:
                 if (this.transferStatus != TransferStatus.PROPOSED) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             case EXECUTED:
                 if (this.transferStatus != TransferStatus.PREPARED ) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             case REJECTED:
                 if (this.transferStatus != TransferStatus.PREPARED ) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             default:

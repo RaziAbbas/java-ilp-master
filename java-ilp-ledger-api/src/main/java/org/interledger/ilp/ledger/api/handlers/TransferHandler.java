@@ -100,13 +100,12 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
 
         JsonObject requestBody = getBodyAsJson(context);
-        String state = requestBody.getString("state");
-        if (state == null) {
-            state = "proposed";
-        }
-        if (!"proposed".equals(state)) {
-            throw new RuntimeException("state must be 'proposed' for new transactions");
-        }
+//        String state = "proposed"; 
+//        if (requestBody.getString("state") != null &&
+//            "proposed".equals(requestBody.getString("state")) ) {
+//            log.warn("state must be 'proposed' for new transactions");
+//        }
+
         JsonArray debits = requestBody.getJsonArray("debits");
         if (debits.size() > 1) {
             throw new RuntimeException("Transactions from multiple source debits not implemented");
@@ -137,31 +136,37 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         // LedgerTransferManager using the private isLocalTransaction(LedgerTransfer transfer)
         boolean isLocalTransaction = fromURI0.getLedgerUri().equals(toURI0.getLedgerUri());
         log.debug(">>> is local lransaction?: " + isLocalTransaction);
+        String data = ""; // Not used
+        String noteToSelf = ""; // Not used
+        DTTM DTTM_proposed = DTTM.getNow();
+        DTTM DTTM_expires = requestBody.getString("expires_at") != null
+                ? new DTTM(requestBody.getString("expires_at"))
+                : DTTM.future; // TODO: RECHECK
+        ConditionURI URIExecutionCond = isLocalTransaction 
+                ? ConditionURI.EMPTY
+                : new ConditionURI(requestBody.getString("execution_condition"));
+        String cancelation_condition = requestBody.getString("cancelation_condition");
+        ConditionURI URICancelationCond = (cancelation_condition != null)
+                        ?  ( isLocalTransaction 
+                                ? ConditionURI.EMPTY
+                                : new ConditionURI(cancelation_condition) )
+                        : ConditionURI.EMPTY;
+        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID,
+                new Debit[]{debit0}, new Credit[]{credit0},
+                URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
+                data, noteToSelf, TransferStatus.PROPOSED);
         if (isLocalTransaction) {
             if (!debit0_ammount.equals(credit0_ammount)) {
                 throw new RuntimeException("WARN: SECURITY EXCEPTION: "
                         + "debit '" + debit0_ammount.toString() + "' is different to "
                         + "credit '" + credit0_ammount.toString() + "'");
             }
-            tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
-            response(context, HttpResponseStatus.CREATED, requestBody);
+            tm.executeLocalTransfer(receivedTransfer);
+            // tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
+            // response(context, HttpResponseStatus.CREATED, requestBody);
+            response(context, HttpResponseStatus.CREATED,
+                    buildJSON("result", ((SimpleLedgerTransfer) receivedTransfer).toWalletJSONFormat()));
         } else {
-            ConditionURI URIExecutionCond = new ConditionURI(requestBody.getString("execution_condition"));
-            String cancelation_condition = requestBody.getString("cancelation_condition");
-
-            ConditionURI URICancelationCond = (cancelation_condition != null)
-                    ? new ConditionURI(cancelation_condition) : ConditionURI.EMPTY;
-            DTTM DTTM_expires = requestBody.getString("expires_at") != null
-                    ? new DTTM(requestBody.getString("expires_at"))
-                    : DTTM.future; // TODO: RECHECK
-            DTTM DTTM_proposed = DTTM.getNow();
-            String data = ""; // Not used
-            String noteToSelf = ""; // Not used
-            LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID,
-                    new Debit[]{debit0}, new Credit[]{credit0},
-                    URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
-                    data, noteToSelf, TransferStatus.PROPOSED);
-
             boolean isNewTransfer = !tm.transferExists(transferID);
             log.debug(">>> is new transfer?: " + isNewTransfer);
             LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);

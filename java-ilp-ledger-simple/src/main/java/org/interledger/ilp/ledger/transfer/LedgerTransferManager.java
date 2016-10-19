@@ -15,9 +15,11 @@ public  interface LedgerTransferManager {
     boolean transferExists(TransferID transferId);
     
     void createNewRemoteILPTransfer(LedgerTransfer newTransfer);
-    
-    void executeLocalTransfer(AccountUri from, AccountUri to, MonetaryAmount amount);
-    
+
+    // void executeLocalTransfer(AccountUri from, AccountUri to, MonetaryAmount amount);
+
+    void executeLocalTransfer(LedgerTransfer transfer);
+
     void executeRemoteILPTransfer(LedgerTransfer transfer);
 
     void abortRemoteILPTransfer(LedgerTransfer transfer);

@@ -66,6 +66,7 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     
     @Override
     public LedgerAccount getHOLDAccountILP() {
+        if (accountMap.containsKey(ILP_HOLD_ACCOUNT)) { return accountMap.get(ILP_HOLD_ACCOUNT); }
         return create(ILP_HOLD_ACCOUNT);
     }
 

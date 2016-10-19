@@ -108,12 +108,21 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         newTransfer.setTransferStatus(TransferStatus.PROPOSED);
     }
 
-    @Override
-    public void executeLocalTransfer(AccountUri sender, AccountUri recipient, MonetaryAmount amount) {
+    private void executeLocalTransfer(AccountUri sender, AccountUri recipient, MonetaryAmount amount) {
         // FIXME: LOG local transfer execution.
         LedgerAccountManager accManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         accManager.getAccountByName(sender   .getAccountId()).debit (amount);
         accManager.getAccountByName(recipient.getAccountId()).credit(amount);
+    }
+    @Override
+    public void executeLocalTransfer(LedgerTransfer transfer) {
+        // AccountUri sender, AccountUri recipient, MonetaryAmount amount)
+        AccountUri sender = transfer.getDebits()[0].account;
+        AccountUri recipient = transfer.getCredits()[0].account;
+        MonetaryAmount amount = transfer.getDebits()[0].amount;
+        executeLocalTransfer(sender, recipient, amount);
+        transfer.setTransferStatus(TransferStatus.PREPARED);
+        transfer.setTransferStatus(TransferStatus.EXECUTED);
     }
 
     @Override
