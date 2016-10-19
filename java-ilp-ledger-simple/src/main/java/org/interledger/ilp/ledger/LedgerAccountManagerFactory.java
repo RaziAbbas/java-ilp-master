@@ -10,7 +10,12 @@ import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccountManager;
  */
 public class LedgerAccountManagerFactory {
 
-    private static final SimpleLedgerAccountManager instance = new SimpleLedgerAccountManager();
+    private static final SimpleLedgerAccountManager instance;
+    static {
+        instance = new SimpleLedgerAccountManager();
+        // Create HOLD account required by ILP Protocol.
+        instance.addAccount(instance.getHOLDAccountILP());
+    }
 
     public static LedgerAccountManager getLedgerAccountManagerSingleton() {
         return instance;

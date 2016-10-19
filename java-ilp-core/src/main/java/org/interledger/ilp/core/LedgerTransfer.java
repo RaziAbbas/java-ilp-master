@@ -64,7 +64,8 @@ public interface LedgerTransfer {
      */
     String getNoteToSelf();
     
-    TransferStatus getTransferStatus(); 
+    void setTransferStatus(TransferStatus transferStatus);
+    TransferStatus getTransferStatus();
 
     public DTTM getDTTM_prepared();
     public void setDTTM_prepared(DTTM dTTM_prepared);

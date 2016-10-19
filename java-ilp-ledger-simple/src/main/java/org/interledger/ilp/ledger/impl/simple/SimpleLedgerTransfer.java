@@ -120,6 +120,38 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     }
 
     @Override
+    public void setTransferStatus(TransferStatus transferStatus) {
+        final RuntimeException errorState = new RuntimeException(
+                "new state not compliant with Transfer State Machine");
+        switch(transferStatus){
+            // TODO: RECHECK allowed state machine 
+            case PROPOSED:
+                if (this.transferStatus != TransferStatus.PROPOSED) { 
+                    throw errorState; 
+                }
+                break;
+            case PREPARED:
+                if (this.transferStatus != TransferStatus.PROPOSED) { 
+                    throw errorState; 
+                }
+                break;
+            case EXECUTED:
+                if (this.transferStatus != TransferStatus.PREPARED ) { 
+                    throw errorState; 
+                }
+                break;
+            case REJECTED:
+                if (this.transferStatus != TransferStatus.PREPARED ) { 
+                    throw errorState; 
+                }
+                break;
+            default:
+                throw new RuntimeException("Unknown transferStatus");
+        }
+        this.transferStatus = transferStatus;
+    }
+
+    @Override
     public TransferStatus getTransferStatus() {
         return transferStatus;
     }
