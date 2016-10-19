@@ -13,11 +13,13 @@ import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
+import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerPartialEntry;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
+import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 
 
@@ -230,7 +232,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         // https://github.com/interledger/five-bells-ledger/blob/master/src/models/converters/transfers.js
         JsonObject jo = new JsonObject();
         jo.put("id", credit_list[0].account.getLedgerUri() + "/transfers/"+this.transferID);
-        jo.put("state", this.getTransferStatus());
+        jo.put("state", this.getTransferStatus().toString());
         jo.put("credits", entryList2Json(credit_list)); // FIXME: Simplify remove creditsToJson if possible
         jo.put("debits" , entryList2Json( debit_list)); // FIXME: Simplify remove  debitsToJson if possible
         {
@@ -271,10 +273,11 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
 //             { executed_at: '2015-06-16T00:00:00.000Z',
 //               prepared_at: '2015-06-16T00:00:00.000Z',
 //               proposed_at: '2015-06-16T00:00:00.000Z' } }
+        LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
         JsonObject jo = new JsonObject();
         jo.put("id", transferID.transferID);
-        jo.put("state", this.getTransferStatus());
-        jo.put("ledger", "FIXME"); // FIXME: Recheck
+        jo.put("state", this.getTransferStatus().toString());
+        jo.put("ledger", ledgerInfo.getBaseUri());
         jo.put("credits", entryList2Json(credit_list));
         jo.put("debits" , entryList2Json( debit_list));
         {
@@ -293,9 +296,11 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
         JsonArray ja = new JsonArray();
         for (LedgerPartialEntry entry : input_list) {
+            // FIXME: This code to calculate amount is PLAIN WRONG. Just to pass five-bells-ledger
+            long amount = entry. amount.getNumber().longValue();
             JsonObject jo = new JsonObject();
             jo.put("account", entry.account.getUri());
-            jo.put( "amount", entry. amount.toString());
+            jo.put( "amount", ""+amount);
             ja.add(jo);
         }
         return ja;

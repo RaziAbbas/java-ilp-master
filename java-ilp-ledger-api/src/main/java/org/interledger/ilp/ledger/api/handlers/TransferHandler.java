@@ -99,9 +99,14 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          *     "timeline":{"proposed_at":"2015-06-16T00:00:00.000Z"}
          *     }
          */
-        TransferID transferID = new TransferID(context.request().getParam(transferUUID));
 
         JsonObject requestBody = getBodyAsJson(context);
+        TransferID transferID = new TransferID(requestBody.getString("id"));
+        if (transferID.transferID.indexOf(context.request().getParam(transferUUID))<0) {
+            throw new RuntimeException("Mismatch between ID in HTTP request path and JSON id");
+        }
+        // TODO: Check also ledger host contained in transferID.
+
 //        String state = "proposed"; 
 //        if (requestBody.getString("state") != null &&
 //            "proposed".equals(requestBody.getString("state")) ) {
