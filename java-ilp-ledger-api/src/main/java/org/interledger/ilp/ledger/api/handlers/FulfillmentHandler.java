@@ -81,12 +81,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
          */
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        boolean transferExists = tm.transferExists(transferID);
-        if (!transferExists) { 
-            // FIXME: Return correct HTTP code 40x. 
-            // throwing a RuntimeException returns "ERROR 500: Internal Server Error"
-            throw new RuntimeException("Transfer not found");
-        }
         /*
          * REF: https://gitter.im/interledger/Lobby
          * Enrique Arizon Benito @earizon 17:51 2016-10-17

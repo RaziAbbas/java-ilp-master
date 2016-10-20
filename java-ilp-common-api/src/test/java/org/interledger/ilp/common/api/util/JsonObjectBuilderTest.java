@@ -17,11 +17,13 @@ public class JsonObjectBuilderTest {
     private static class MyBean {
 
         String string;
-
+        
+        @SuppressWarnings("unused")
         public String getString() {
             return string;
         }
-
+        
+        @SuppressWarnings("unused")
         public void setString(String string) {
             this.string = string;
         }

@@ -2,11 +2,16 @@ package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+
 
 import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
+import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
@@ -57,6 +62,20 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     }
 
     @Override
+    public java.util.List<LedgerTransfer> getTransfersByExecutionCondition(ConditionURI condition) {
+        // For this simple implementation just run over existing transfers until 
+        List<LedgerTransfer> result = new ArrayList<LedgerTransfer>();
+        for ( TransferID transferId : transferMap.keySet()) {
+            LedgerTransfer transfer = transferMap.get(transferId);
+            if (transfer.getURIExecutionCondition().equals(condition)) {
+                result.add(transfer);
+            }
+        }
+        return result;
+    }
+
+
+    @Override
     public boolean transferExists(TransferID transferId) {
         System.out.println("transferExists transferId:"+transferId.transferID);
         boolean result = transferMap.containsKey(transferId);
@@ -64,19 +83,17 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         return result;
     }
 
-    private boolean isLocalTransaction(LedgerTransfer transfer) {
-        // FIXME: TODO: Only the first debit/credit are compared
-        // FIXME: TODO: Check getLedgerUri for debits equals local ledger or raise Exception.
-        return  (transfer. getDebits()[0]).account.getLedgerUri().equals(
-                (transfer.getCredits()[0]).account.getLedgerUri()) ;
-    }
-
     @Override
     public void createNewRemoteILPTransfer(LedgerTransfer newTransfer) {
-        System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
-        if (isLocalTransaction(newTransfer)) {
-            throw new RuntimeException("transaction is local but remote transaction handling invoqued");
+        
+        if (newTransfer.isLocal() && 
+            newTransfer.getURIExecutionCondition().equals(ConditionURI.EMPTY)) {
+            // local transfer with no execution condition => execute and "forget" 
+            executeLocalTransfer(newTransfer);
+            return;
         }
+        System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
+
         if (transferExists(newTransfer.getTransferID())) {
             throw new RuntimeException("trying to create new transfer "
                     + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "
@@ -90,12 +107,24 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         newTransfer.setTransferStatus(TransferStatus.PROPOSED);
     }
 
-    @Override
-    public void executeLocalTransfer(AccountUri sender, AccountUri recipient, MonetaryAmount amount) {
+    private void executeLocalTransfer(AccountUri sender, AccountUri recipient, MonetaryAmount amount) {
         // FIXME: LOG local transfer execution.
         LedgerAccountManager accManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         accManager.getAccountByName(sender   .getAccountId()).debit (amount);
         accManager.getAccountByName(recipient.getAccountId()).credit(amount);
+    }
+    @Override
+    public void executeLocalTransfer(LedgerTransfer transfer) {
+        // AccountUri sender, AccountUri recipient, MonetaryAmount amount)
+        AccountUri sender = transfer.getDebits()[0].account;
+        AccountUri recipient = transfer.getCredits()[0].account;
+        MonetaryAmount amount = transfer.getDebits()[0].amount;
+        executeLocalTransfer(sender, recipient, amount);
+        transfer.setTransferStatus(TransferStatus.PREPARED);
+        transfer.setTransferStatus(TransferStatus.EXECUTED);
+        transfer.setDTTM_prepared(DTTM.getNow());
+        transfer.setDTTM_executed(DTTM.getNow());
+        
     }
 
     @Override

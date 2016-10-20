@@ -87,9 +87,9 @@ public class SimpleLedgerTest {
         LedgerTransfer transfer
                 = new SimpleLedgerTransfer(transferID,
                         new Debit[]{debit}, new Credit[] {credit},
-                        new ConditionURI("cc:execution"),
-                        new ConditionURI("cc:cancelation"),
-                        new DTTM(""), new DTTM(""),
+                        ConditionURI.c("cc:execution"),
+                        ConditionURI.c("cc:cancelation"),
+                        DTTM.c(""), DTTM.c(""),
                         "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED);
         instance.send(transfer);
         assertEquals(90, accountManager.getAccountByName(ALICE).getBalance().getNumber().intValue());

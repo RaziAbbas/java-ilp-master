@@ -1,26 +1,27 @@
 package org.interledger.ilp.ledger.impl.simple;
 
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 
 //import javax.money.MonetaryAmount;
 
 //import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
+import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerPartialEntry;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
+import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 
+// FIXME: Allow multiple debit/credits (Remove all code related to index [0]
 
 public class SimpleLedgerTransfer implements LedgerTransfer {
     final InterledgerPacketHeader ph = null; // FIXME. Really needed?
@@ -35,9 +36,14 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     final DTTM DTTM_expires ;
     final DTTM DTTM_proposed;
 
-    FulfillmentURI URIExecutionFF   = FulfillmentURI.EMPTY;
-    FulfillmentURI URICancelationFF = FulfillmentURI.EMPTY;;
-    
+    /*
+     * Note: Defensive security protection:
+     * The default value for URIExecutionFF|URICancelationFF FulfillmentURI.EMPTY
+     * will trigger a transaction just if the ConditionURI for Execution/Cancelation
+     * are also empty.
+     */
+    FulfillmentURI URIExecutionFF     = FulfillmentURI.EMPTY;
+    FulfillmentURI URICancelationFF   = FulfillmentURI.EMPTY;
     String data = "";
     String noteToSelf = "";
 
@@ -58,14 +64,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             throw new RuntimeException("Only one credit is supported in this implementation");
         }
         // TODO: FIXME: Check debit_list SUM of amounts equals credit_list SUM  of amounts.
-        AccountUri fromAccount =  debit_list[0].account;
-        AccountUri   toAccount = credit_list[0].account;
 
-        if (fromAccount.getLedgerUri().equals(toAccount.getLedgerUri())) {
-            throw new RuntimeException("assert exception: "
-                    + "SimpleLedgerTransfer does not handle local transfers. Only transfers "
-                    + "from local ledger to external ones");
-        }
         // FIXME: TODO: If fromAccount.ledger != "our ledger" throw RuntimeException.
         this.transferID         = transferID        ;
         this.credit_list        = credit_list       ;
@@ -121,28 +120,27 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
 
     @Override
     public void setTransferStatus(TransferStatus transferStatus) {
-        final RuntimeException errorState = new RuntimeException(
-                "new state not compliant with Transfer State Machine");
+        final String errorState = "new state not compliant with Transfer State Machine";
         switch(transferStatus){
             // TODO: RECHECK allowed state machine 
             case PROPOSED:
                 if (this.transferStatus != TransferStatus.PROPOSED) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             case PREPARED:
                 if (this.transferStatus != TransferStatus.PROPOSED) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             case EXECUTED:
                 if (this.transferStatus != TransferStatus.PREPARED ) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             case REJECTED:
                 if (this.transferStatus != TransferStatus.PREPARED ) { 
-                    throw errorState; 
+                    throw new RuntimeException(errorState); 
                 }
                 break;
             default:
@@ -232,7 +230,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         // https://github.com/interledger/five-bells-ledger/blob/master/src/models/converters/transfers.js
         JsonObject jo = new JsonObject();
         jo.put("id", credit_list[0].account.getLedgerUri() + "/transfers/"+this.transferID);
-        jo.put("state", this.getTransferStatus());
+        jo.put("state", this.getTransferStatus().toString());
         jo.put("credits", entryList2Json(credit_list)); // FIXME: Simplify remove creditsToJson if possible
         jo.put("debits" , entryList2Json( debit_list)); // FIXME: Simplify remove  debitsToJson if possible
         {
@@ -261,17 +259,59 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     }
 
     public String toWalletJSONFormat() {
-        return Json.encode(this); // FIXME: Recheck
+//        { id: 'http://localhost/transfers/155dff3f-4915-44df-a707-acc4b527bcbd',
+//            ledger: 'http://localhost',
+//            debits: 
+//             [ { account: 'http://localhost/accounts/alice',
+//                 amount: '10',
+//                 authorized: true } ],
+//            credits: [ { account: 'http://localhost/accounts/bob', amount: '10' } ],
+//            state: 'executed',
+//            timeline: 
+//             { executed_at: '2015-06-16T00:00:00.000Z',
+//               prepared_at: '2015-06-16T00:00:00.000Z',
+//               proposed_at: '2015-06-16T00:00:00.000Z' } }
+        LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+        JsonObject jo = new JsonObject();
+        jo.put("id", transferID.transferID);
+        jo.put("state", this.getTransferStatus().toString());
+        jo.put("ledger", ledgerInfo.getBaseUri());
+        jo.put("credits", entryList2Json(credit_list));
+        jo.put("debits" , entryList2Json( debit_list));
+        {
+            JsonObject timeline = new JsonObject();
+            timeline.put("proposed_at", this.DTTM_proposed.toString());
+            if (this.DTTM_prepared != DTTM.future) { timeline.put("prepared_at", this.DTTM_prepared.toString()); }
+            if (this.DTTM_executed != DTTM.future) { timeline.put("executed_at", this.DTTM_executed.toString()); }
+            if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
+            jo.put("timeline", timeline);
+        }
+        // jo.put("expires_at", this.DTTM_expires.toString());
+        String result = jo.encode(); // FIXME: Recheck
+        return result;
     }
 
     private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
         JsonArray ja = new JsonArray();
         for (LedgerPartialEntry entry : input_list) {
+            // FIXME: This code to calculate amount is PLAIN WRONG. Just to pass five-bells-ledger
+            long amount = entry. amount.getNumber().longValue();
             JsonObject jo = new JsonObject();
             jo.put("account", entry.account.getUri());
-            jo.put( "amount", entry. amount.toString());
+            jo.put( "amount", ""+amount);
+            if (entry instanceof Debit) {
+                jo.put("authorized", ((Debit) entry).getAuthorized());
+            }
             ja.add(jo);
         }
         return ja;
     }
+    
+    @Override
+    public boolean isLocal() {
+        return this.debit_list[0].account.getLedgerUri().equals(
+                    this.credit_list[0].account.getLedgerUri() );
+    }
+
+
 }

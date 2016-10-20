@@ -89,5 +89,11 @@ public interface LedgerTransfer {
 
     public void           setURICancelationFulfillment(FulfillmentURI ffURI);
     public FulfillmentURI getURICancelationFulfillment();
+    
+    /**
+     * @return true if the transaction is local between internal
+     * ledgers accounts
+     */
+    public boolean isLocal();
 
 }
