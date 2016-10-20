@@ -16,15 +16,6 @@ public class JsonObjectBuilderTest {
 
     private static class MyBean {
 
-        String string;
-
-        public String getString() {
-            return string;
-        }
-
-        public void setString(String string) {
-            this.string = string;
-        }
 
     }
 
@@ -51,7 +42,6 @@ public class JsonObjectBuilderTest {
     public void testFrom() {
         System.out.println("testFrom");
         MyBean value = new MyBean();
-        value.setString("value");
         JsonObject expResult = new JsonObject("{ \"string\": \"value\"}");
         JsonObject result = instance.from(value).get();
         assertEquals(expResult, result);
@@ -80,7 +70,6 @@ public class JsonObjectBuilderTest {
     public void testFromWith() {
         System.out.println("testFromWith");
         MyBean value = new MyBean();
-        value.setString("value");
         String expJson = "{ \"string\": \"value\",\"field2\":123}";
         JsonObject expResult = new JsonObject(expJson);
         JsonObject result = instance.from(value).with("field2", 123L).get();

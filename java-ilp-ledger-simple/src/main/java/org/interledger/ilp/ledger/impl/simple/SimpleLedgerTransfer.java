@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonArray;
 
 //import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.FulfillmentURI;
@@ -65,8 +64,6 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             throw new RuntimeException("Only one credit is supported in this implementation");
         }
         // TODO: FIXME: Check debit_list SUM of amounts equals credit_list SUM  of amounts.
-        AccountUri fromAccount =  debit_list[0].account;
-        AccountUri   toAccount = credit_list[0].account;
 
         // FIXME: TODO: If fromAccount.ledger != "our ledger" throw RuntimeException.
         this.transferID         = transferID        ;

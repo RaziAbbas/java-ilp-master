@@ -1,8 +1,6 @@
 package org.interledger.ilp.ledger.transfer;
 
-import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
