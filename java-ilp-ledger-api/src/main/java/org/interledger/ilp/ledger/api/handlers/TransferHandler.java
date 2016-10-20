@@ -101,11 +101,11 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          */
 
         JsonObject requestBody = getBodyAsJson(context);
-        TransferID transferID = new TransferID(requestBody.getString("id"));
-        if (transferID.transferID.indexOf(context.request().getParam(transferUUID))<0) {
-            throw new RuntimeException("Mismatch between ID in HTTP request path and JSON id");
-        }
-        // TODO: Check also ledger host contained in transferID.
+        String sTransferID = requestBody.getString("ledger")
+                + "/transfers/" + context.request().getParam(transferUUID);
+        TransferID transferID = new TransferID(sTransferID);
+        
+        // TODO: Check equestBody.getString("ledger") match ledger host/port
 
 //        String state = "proposed"; 
 //        if (requestBody.getString("state") != null &&
