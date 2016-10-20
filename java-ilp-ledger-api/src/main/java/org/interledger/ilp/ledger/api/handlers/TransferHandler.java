@@ -186,7 +186,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
-            .setStatusCode(isNewTransfer ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.ACCEPTED.code())
+            .setStatusCode(isNewTransfer ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.OK.code())
             .end(response);
     }
 
