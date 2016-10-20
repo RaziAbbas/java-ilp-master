@@ -10,7 +10,7 @@ public class DTTM {
     // https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
     final private static String dateFormat = "YYYY-MM-dd'T'HH:mm:ss.SSS'Z'";
     static SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-
+    public static String mockDate = null;
     public static final DTTM future = new DTTM("9999-12-31T23:59:59.999Z");
 
     private DTTM(String DTTM) {
@@ -33,7 +33,8 @@ public class DTTM {
     
     @Override
     public String toString() {
-        return /* sdf.format(DTTM); */ "2015-06-16T00:00:00.000Z"; // FIXME: Just for tests
+        if (mockDate != null) return mockDate;
+        return sdf.format(DTTM);//  ;
         
     }
 }

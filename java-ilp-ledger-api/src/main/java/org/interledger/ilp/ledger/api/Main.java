@@ -69,14 +69,14 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     public void configure(Config config) throws ConfigurationException {
         ilpPrefix = config.getString(LEDGER, ILP, PREFIX);
         String ledgerName = config.getString(DEFAULT_LEDGER_NAME, LEDGER, NAME);
-        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);                
+        String currencyCode = config.getString(LEDGER, CURRENCY, CODE);
         String baseUri = getServerPublicURL().toString();
         //Development config
         Optional<Config> devConfig = config.getOptionalConfig(Dev.class);
         if (devConfig.isPresent()) {
             Config dev = devConfig.get();
             //Override baseUri to match 5-bells integration tests:
-            baseUri = dev.getString(baseUri, Dev.uri);        
+            baseUri = dev.getString(baseUri, Dev.uri);
         }
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
                 .setBaseUri(baseUri)
@@ -122,7 +122,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         List<String> accounts = config.getStringList(Dev.accounts);
         LedgerAccountManager ledgerAccountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         for(String accountName : accounts) {
-            SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);                        
+            SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);
             Config accountConfig = config.getConfig(accountName);
             account.setBalance(accountConfig.getInt(0, Dev.balance));
             if(accountConfig.getBoolean(false, Dev.admin)) {
@@ -130,7 +130,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
             }
             account.setDisabled(accountConfig.getBoolean(false, Dev.disabled));
             account.setConnector(accountConfig.getString((String)null, Dev.connector));
-            ledgerAccountManager.addAccount(account);            
+            ledgerAccountManager.addAccount(account);
         }
     }
 

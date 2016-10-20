@@ -25,6 +25,8 @@ import org.interledger.ilp.common.api.handlers.DebugRequestHandler;
 import org.interledger.ilp.common.api.handlers.EndpointHandler;
 import org.interledger.ilp.common.api.handlers.IndexHandler;
 import org.interledger.ilp.common.config.Config;
+import org.interledger.ilp.core.DTTM;
+
 import static org.interledger.ilp.common.config.Key.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +123,10 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         log.debug("Init server");        
         server = vertx.createHttpServer(serverOptions);
         server.requestHandler  (router::accept);
-
+        boolean useMockClock = true; // TODO: FIXME get from serverOptions.
+        if (useMockClock) {
+            DTTM.mockDate = "2015-06-16T00:00:00.000Z";
+        }
 
         server.listen(listenHandler -> {
                     if (listenHandler.succeeded()) {
