@@ -11,6 +11,7 @@ import javax.money.MonetaryAmount;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
+import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
@@ -121,6 +122,9 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         executeLocalTransfer(sender, recipient, amount);
         transfer.setTransferStatus(TransferStatus.PREPARED);
         transfer.setTransferStatus(TransferStatus.EXECUTED);
+        transfer.setDTTM_prepared(DTTM.getNow());
+        transfer.setDTTM_executed(DTTM.getNow());
+        
     }
 
     @Override

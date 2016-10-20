@@ -286,7 +286,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
             jo.put("timeline", timeline);
         }
-        jo.put("expires_at", this.DTTM_expires.toString());
+        // jo.put("expires_at", this.DTTM_expires.toString());
         String result = jo.encode(); // FIXME: Recheck
         return result;
     }
@@ -299,6 +299,9 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             JsonObject jo = new JsonObject();
             jo.put("account", entry.account.getUri());
             jo.put( "amount", ""+amount);
+            if (entry instanceof Debit) {
+                jo.put("authorized", ((Debit) entry).getAuthorized());
+            }
             ja.add(jo);
         }
         return ja;
