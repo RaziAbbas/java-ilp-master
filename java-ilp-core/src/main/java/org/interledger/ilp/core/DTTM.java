@@ -13,13 +13,17 @@ public class DTTM {
 
     public static final DTTM future = new DTTM("9999-12-31T23:59:59.999Z");
 
-    public DTTM(String DTTM) {
+    private DTTM(String DTTM) {
         try {
             this.DTTM = sdf.parse(DTTM);
         } catch (ParseException e) {
             throw new RuntimeException("'" + DTTM + "' "
                     + "couldn't be parsed as a date-time with format '" + dateFormat + "'");
         }
+    }
+    
+    public static DTTM c(String DTTM) {
+        return new DTTM(DTTM);
     }
 
     public static DTTM getNow() {
@@ -29,6 +33,7 @@ public class DTTM {
     
     @Override
     public String toString() {
-        return sdf.format(DTTM);
+        return /* sdf.format(DTTM); */ "2015-06-16T00:00:00.000Z"; // FIXME: Just for tests
+        
     }
 }

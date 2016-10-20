@@ -145,7 +145,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         String noteToSelf = ""; // Not used
         DTTM DTTM_proposed = DTTM.getNow();
         DTTM DTTM_expires = requestBody.getString("expires_at") != null
-                ? new DTTM(requestBody.getString("expires_at"))
+                ? DTTM.c(requestBody.getString("expires_at"))
                 : DTTM.future; // TODO: RECHECK
         ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
                 ? ConditionURI.c(requestBody.getString("execution_condition"))

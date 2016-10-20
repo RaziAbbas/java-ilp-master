@@ -89,7 +89,7 @@ public class SimpleLedgerTest {
                         new Debit[]{debit}, new Credit[] {credit},
                         ConditionURI.c("cc:execution"),
                         ConditionURI.c("cc:cancelation"),
-                        new DTTM(""), new DTTM(""),
+                        DTTM.c(""), DTTM.c(""),
                         "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED);
         instance.send(transfer);
         assertEquals(90, accountManager.getAccountByName(ALICE).getBalance().getNumber().intValue());
