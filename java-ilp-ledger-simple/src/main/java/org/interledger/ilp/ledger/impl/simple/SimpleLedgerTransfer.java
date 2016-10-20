@@ -22,6 +22,7 @@ import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 
+// FIXME: Allow multiple debit/credits (Remove all code related to index [0]
 
 public class SimpleLedgerTransfer implements LedgerTransfer {
     final InterledgerPacketHeader ph = null; // FIXME. Really needed?
@@ -305,4 +306,12 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         }
         return ja;
     }
+    
+    @Override
+    public boolean isLocal() {
+        return this.debit_list[0].account.getLedgerUri().equals(
+                    this.credit_list[0].account.getLedgerUri() );
+    }
+
+
 }

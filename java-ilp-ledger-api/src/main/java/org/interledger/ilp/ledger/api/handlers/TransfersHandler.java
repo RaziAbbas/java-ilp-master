@@ -75,7 +75,7 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
             return;
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        ConditionURI executionCondition = new ConditionURI(context.request().getParam(execCondition));
+        ConditionURI executionCondition = ConditionURI.c(context.request().getParam(execCondition));
         List<LedgerTransfer> transferList = tm.getTransfersByExecutionCondition(executionCondition);
         String[] transferStringifiedList =  transferList.stream()
             .map(new Function<LedgerTransfer, String>() {

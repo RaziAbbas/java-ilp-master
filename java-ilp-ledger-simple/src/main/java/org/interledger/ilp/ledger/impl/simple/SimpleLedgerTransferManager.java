@@ -82,19 +82,17 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         return result;
     }
 
-    private boolean isLocalTransaction(LedgerTransfer transfer) {
-        // FIXME: TODO: Only the first debit/credit are compared
-        // FIXME: TODO: Check getLedgerUri for debits equals local ledger or raise Exception.
-        return  (transfer. getDebits()[0]).account.getLedgerUri().equals(
-                (transfer.getCredits()[0]).account.getLedgerUri()) ;
-    }
-
     @Override
     public void createNewRemoteILPTransfer(LedgerTransfer newTransfer) {
-        System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
-        if (isLocalTransaction(newTransfer)) {
-            throw new RuntimeException("transaction is local but remote transaction handling invoqued");
+        
+        if (newTransfer.isLocal() && 
+            newTransfer.getURIExecutionCondition().equals(ConditionURI.EMPTY)) {
+            // local transfer with no execution condition => execute and "forget" 
+            executeLocalTransfer(newTransfer);
+            return;
         }
+        System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
+
         if (transferExists(newTransfer.getTransferID())) {
             throw new RuntimeException("trying to create new transfer "
                     + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "

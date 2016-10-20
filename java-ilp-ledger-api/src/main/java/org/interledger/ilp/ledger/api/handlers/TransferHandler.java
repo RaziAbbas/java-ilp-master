@@ -141,73 +141,53 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         // TODO: IMPROVEMENT: isLocalTransaction check and related logic must be done in 
         // LedgerTransferManager using the private isLocalTransaction(LedgerTransfer transfer)
-        boolean isLocalTransaction = fromURI0.getLedgerUri().equals(toURI0.getLedgerUri());
-        log.debug(">>> is local lransaction?: " + isLocalTransaction);
         String data = ""; // Not used
         String noteToSelf = ""; // Not used
         DTTM DTTM_proposed = DTTM.getNow();
         DTTM DTTM_expires = requestBody.getString("expires_at") != null
                 ? new DTTM(requestBody.getString("expires_at"))
                 : DTTM.future; // TODO: RECHECK
-        ConditionURI URIExecutionCond = isLocalTransaction 
-                ? ConditionURI.EMPTY
-                : new ConditionURI(requestBody.getString("execution_condition"));
+        ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
+                ? ConditionURI.c(requestBody.getString("execution_condition"))
+                : ConditionURI.EMPTY ;
         String cancelation_condition = requestBody.getString("cancelation_condition");
         ConditionURI URICancelationCond = (cancelation_condition != null)
-                        ?  ( isLocalTransaction 
-                                ? ConditionURI.EMPTY
-                                : new ConditionURI(cancelation_condition) )
-                        : ConditionURI.EMPTY;
+                ? ConditionURI.c(cancelation_condition)
+                : ConditionURI.EMPTY ;
         LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID,
                 new Debit[]{debit0}, new Credit[]{credit0},
                 URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
                 data, noteToSelf, TransferStatus.PROPOSED);
-        if (isLocalTransaction) {
-            if (!debit0_ammount.equals(credit0_ammount)) {
-                throw new RuntimeException("WARN: SECURITY EXCEPTION: "
-                        + "debit '" + debit0_ammount.toString() + "' is different to "
-                        + "credit '" + credit0_ammount.toString() + "'");
+        
+        boolean isNewTransfer = !tm.transferExists(transferID);
+        log.debug(">>> is new transfer?: " + isNewTransfer);
+        LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
+        if (!isNewTransfer) {
+            // Check that received json data match existing transaction.
+            if (!effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
+                    || !effectiveTransfer.getDebits()[0].equals(receivedTransfer.getDebits()[0])) {
+                throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
             }
-            tm.executeLocalTransfer(receivedTransfer);
-            // tm.executeLocalTransfer(fromURI0, toURI0, debit0_ammount);
-            // response(context, HttpResponseStatus.CREATED, requestBody);
-            String response = ((SimpleLedgerTransfer) receivedTransfer).toWalletJSONFormat();
-            context.response()
-                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
-                .setStatusCode(HttpResponseStatus.CREATED.code())
-                .end(response);
         } else {
-            boolean isNewTransfer = !tm.transferExists(transferID);
-            log.debug(">>> is new transfer?: " + isNewTransfer);
-            LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
-            if (!isNewTransfer) {
-                // Check that received json data match existing transaction.
-                if (!effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
-                        || !effectiveTransfer.getDebits()[0].equals(receivedTransfer.getDebits()[0])) {
-                    throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
-                }
-            } else {
-                tm.createNewRemoteILPTransfer(receivedTransfer);
-            }
-            try {
-                String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONFormat();
-                log.debug("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
-                TransferWSEventHandler.notifyILPConnector(context,
-                        notification);
-            } catch (Exception e) {
-                log.warn("transaction created correctly but ilp-connector couldn't be notified due to " + e.toString());
-                /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
-                 *     send to the connector once the (websocket) connection is restablished.
-                 */
-            }
-            String response = ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONFormat();
-            context.response()
-                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
-                .setStatusCode(isNewTransfer ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.ACCEPTED.code())
-                .end(response);
+            tm.createNewRemoteILPTransfer(receivedTransfer);
         }
+        try {
+            String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONFormat();
+            log.debug("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
+            TransferWSEventHandler.notifyILPConnector(context,
+                    notification);
+        } catch (Exception e) {
+            log.warn("transaction created correctly but ilp-connector couldn't be notified due to " + e.toString());
+            /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
+             *     send to the connector once the (websocket) connection is restablished.
+             */
+        }
+        String response = ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONFormat();
+        context.response()
+            .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+            .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
+            .setStatusCode(isNewTransfer ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.ACCEPTED.code())
+            .end(response);
     }
 
     @Override

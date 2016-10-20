@@ -87,8 +87,8 @@ public class SimpleLedgerTest {
         LedgerTransfer transfer
                 = new SimpleLedgerTransfer(transferID,
                         new Debit[]{debit}, new Credit[] {credit},
-                        new ConditionURI("cc:execution"),
-                        new ConditionURI("cc:cancelation"),
+                        ConditionURI.c("cc:execution"),
+                        ConditionURI.c("cc:cancelation"),
                         new DTTM(""), new DTTM(""),
                         "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED);
         instance.send(transfer);
