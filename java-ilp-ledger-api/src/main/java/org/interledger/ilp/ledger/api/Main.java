@@ -129,7 +129,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
             }
             account.setDisabled(accountConfig.getBoolean(false, Dev.disabled));
             account.setConnector(accountConfig.getString((String)null, Dev.connector));
-            ledgerAccountManager.addAccount(account);
+            ledgerAccountManager.store(account);
         }
     }
 
