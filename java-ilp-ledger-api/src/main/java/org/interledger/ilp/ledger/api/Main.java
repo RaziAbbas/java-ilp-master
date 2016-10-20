@@ -120,6 +120,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         log.info("Preparing development environment");
         List<String> accounts = config.getStringList(Dev.accounts);
         LedgerAccountManager ledgerAccountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
+        
         for (String accountName : accounts) {
             SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);
             Config accountConfig = config.getConfig(accountName);
@@ -129,7 +130,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
             }
             account.setDisabled(accountConfig.getBoolean(false, Dev.disabled));
             account.setConnector(accountConfig.getString((String) null, Dev.connector));
-            ledgerAccountManager.addAccount(account);
+            ledgerAccountManager.store(account);
         }
     }
 

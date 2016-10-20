@@ -3,6 +3,7 @@ package org.interledger.ilp.ledger.impl.simple;
 import java.util.Currency;
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
+import javax.money.NumberValue;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.MoneyUtils;
@@ -34,9 +35,13 @@ public class SimpleLedgerAccount implements LedgerAccount {
     }
 
     public SimpleLedgerAccount(String name, String currencyCode) {
-        if (name         == null ) throw new RuntimeException("name         null at SimpleLedgerAccount constructor");
-        if (currencyCode == null ) throw new RuntimeException("currencyCode null at SimpleLedgerAccount constructor");
-        
+        if (name == null) {
+            throw new IllegalArgumentException("name         null at SimpleLedgerAccount constructor");
+        }
+        if (currencyCode == null) {
+            throw new IllegalArgumentException("currencyCode null at SimpleLedgerAccount constructor");
+        }
+
         this.name = name;
         this.currencyCode = currencyCode;
         this.balance = Money.of(0, currencyCode);
@@ -120,7 +125,11 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public String getBalanceAsString() {
-        return getBalance().getNumber().toString();
+        NumberValue balance = getBalance().getNumber();
+        if(balance.getAmountFractionDenominator() == 0) {
+            return String.valueOf(balance.longValueExact());
+        }
+        return String.valueOf(balance.doubleValueExact());
     }
 
     public void setConnector(String connector) {

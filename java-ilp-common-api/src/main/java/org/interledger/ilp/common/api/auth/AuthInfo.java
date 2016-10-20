@@ -16,8 +16,8 @@ public class AuthInfo implements Iterable<Map.Entry<String, Object>>, ClusterSer
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
 
-    private JsonObject principalDelegate;
-    private String credentialKey;
+    private final JsonObject principalDelegate;
+    private final String credentialKey;
 
     private AuthInfo(JsonObject delegate, String credentialKey) {
         this.principalDelegate = delegate;
@@ -80,7 +80,7 @@ public class AuthInfo implements Iterable<Map.Entry<String, Object>>, ClusterSer
 
     @Override
     public String toString() {
-        return principalDelegate.toString();
+        return principalDelegate == null ? null : principalDelegate.toString();
     }
 
 }

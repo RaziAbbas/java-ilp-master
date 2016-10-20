@@ -146,7 +146,8 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         log.debug("Response error", t);
         response(context,
                 responseStatus,
-                buildJSON(responseStatus.codeAsText(),
+                buildJSON(responseStatus.reasonPhrase().toString(),
+                        //TODO filter messages for dev/prod environments
                         t == null ? responseStatus.reasonPhrase() : t.getMessage()
                 )
         );

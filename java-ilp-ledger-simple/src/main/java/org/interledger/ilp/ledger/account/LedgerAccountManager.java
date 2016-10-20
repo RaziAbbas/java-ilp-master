@@ -4,24 +4,25 @@ import java.util.Collection;
 import org.interledger.ilp.core.AccountUri;
 
 /**
- * Defines account management.
+ * Defines an account manager.
  *
  * @author mrmx
  */
 public interface LedgerAccountManager {
 
-    // TODO: recheck whether create is necesary.
-    LedgerAccount create(String name);
+    LedgerAccount create(String name) throws AccountExistsException;
 
     int getTotalAccounts();
 
-    void addAccount(LedgerAccount account);
+    void store(LedgerAccount account);
+
+    boolean hasAccount(String name);
 
     LedgerAccount getAccountByName(String name) throws AccountNotFoundException;
 
     Collection<LedgerAccount> getAccounts(int page, int pageSize);
-        
+
     AccountUri getAccountUri(LedgerAccount account);
-    
+
     LedgerAccount getHOLDAccountILP();
 }

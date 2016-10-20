@@ -12,11 +12,6 @@ import javax.money.MonetaryAmount;
  * @author mrmx
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
-/*
-@JsonPropertyOrder({ 
-    "id", "name", "balance", "connector", "is_admin" , "is_disabled", 
-    "minimum_allowed_balance",
-})*/
 public interface LedgerAccount {
 
     @JsonProperty("id")

@@ -1,4 +1,4 @@
-package org.interledger.ilp.common.api.util;
+package org.interledger.ilp.common.api.core;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;

@@ -1,11 +1,14 @@
 package org.interledger.ilp.ledger.impl.simple;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerFactory;
+import org.interledger.ilp.ledger.account.AccountExistsException;
 import org.interledger.ilp.ledger.account.AccountNotFoundException;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
@@ -24,15 +27,15 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     }
     
     @Override
-    public LedgerAccount create(String name) {
+    public LedgerAccount create(String name) throws AccountExistsException {
         if (accountMap.containsKey(name)) {
-            throw new RuntimeException("account '"+name+"' already exists");
+            throw new AccountExistsException("account '"+name+"' already exists");
         }
         return new SimpleLedgerAccount(name, getLedgerInfo().getCurrencyCode());
     }
 
     @Override
-    public void addAccount(LedgerAccount account) {
+    public void store(LedgerAccount account) {
         accountMap.put(account.getName(), account);
     }
 
@@ -42,17 +45,26 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     }    
 
     @Override
+    public boolean hasAccount(String name) {
+        return accountMap.containsKey(name);
+    }
+    
+    @Override
     public LedgerAccount getAccountByName(String name) throws AccountNotFoundException {
-        if (!accountMap.containsKey(name)) {
+        if (!hasAccount(name)) {
             throw new AccountNotFoundException(name);
         }
         return accountMap.get(name);
     }
 
     @Override
-    public Collection<LedgerAccount> getAccounts(int page, int pageSize) {
-        // TODO
-        return accountMap.values();
+    public Collection<LedgerAccount> getAccounts(int page, int pageSize) {        
+        List<LedgerAccount> accounts = new ArrayList<>();
+        accountMap.values()
+                .stream()
+                .filter((LedgerAccount a) -> !a.getName().equals(ILP_HOLD_ACCOUNT))
+                .forEach(accounts::add);
+        return accounts;
     }
 
     @Override

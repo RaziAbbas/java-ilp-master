@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
  * @author mrmx
  */
 public class RoleUser extends AuthUser {
+    
+    public static final String ROLE_ADMIN   =   "admin";
 
     private static final Logger log = LoggerFactory.getLogger(RoleUser.class);
 

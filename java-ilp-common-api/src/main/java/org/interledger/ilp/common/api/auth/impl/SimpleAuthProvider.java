@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.interledger.ilp.common.api.auth.AuthInfo;
+import org.interledger.ilp.common.api.auth.AuthUserSupplier;
 import org.interledger.ilp.common.api.auth.RoleUser;
 import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.common.config.core.Configurable;
@@ -22,7 +23,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mrmx
  */
-public class SimpleAuthProvider implements Configurable, AuthProvider {
+public class SimpleAuthProvider implements Configurable, AuthProvider , AuthUserSupplier<SimpleAuthProvider.SimpleUser> {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleAuthProvider.class);
 
@@ -60,9 +61,14 @@ public class SimpleAuthProvider implements Configurable, AuthProvider {
     }
 
     @Override
+    public SimpleUser getAuthUser(AuthInfo authInfo) {
+        return users.get(authInfo.getUsername());
+    }
+    
+    @Override
     public void authenticate(JsonObject auth, Handler<AsyncResult<User>> resultHandler) {
         AuthInfo authInfo = AuthInfo.basic(auth);
-        SimpleUser user = users.get(authInfo.getUsername());
+        SimpleUser user = getAuthUser(authInfo);
         if (user != null && user.getPassword().equals(authInfo.getCredential())) {
             resultHandler.handle(Future.succeededFuture(user));
         } else {

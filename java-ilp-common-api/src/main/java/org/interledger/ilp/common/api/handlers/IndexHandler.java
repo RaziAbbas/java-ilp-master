@@ -4,7 +4,7 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import java.util.HashMap;
 import java.util.Map;
-import org.interledger.ilp.common.api.util.JsonResultHandler;
+import org.interledger.ilp.common.api.core.JsonResultHandler;
 
 /**
  * Handler for the index route.

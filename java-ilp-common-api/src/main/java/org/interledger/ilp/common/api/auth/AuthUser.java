@@ -12,8 +12,9 @@ import io.vertx.ext.auth.AuthProvider;
 public abstract class AuthUser extends AbstractUser {
 
     private final AuthInfo authInfo;
+    private AuthProvider authProvider;
 
-    public AuthUser(AuthInfo authInfo) {
+    AuthUser(AuthInfo authInfo) {
         this.authInfo = authInfo;
     }
 
@@ -33,7 +34,7 @@ public abstract class AuthUser extends AbstractUser {
 
     @Override
     public void setAuthProvider(AuthProvider authProvider) {
-        throw new UnsupportedOperationException("Not supported " + authProvider);
+        this.authProvider = authProvider;
     }
 
     @Override

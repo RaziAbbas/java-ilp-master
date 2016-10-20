@@ -78,8 +78,8 @@ public class SimpleLedgerTest {
         LedgerAccount alice = new SimpleLedgerAccount(ALICE, CURRENCY.code()).setBalance(100);
         LedgerAccount bob = new SimpleLedgerAccount(BOB, CURRENCY.code()).setBalance(100);
         LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-        accountManager.addAccount(alice);
-        accountManager.addAccount(bob);
+        accountManager.store(alice);
+        accountManager.store(bob);
         MonetaryAmount money = Money.of(10, CURRENCY.code());
         Debit   debit = new  Debit(accountManager.getAccountUri(alice) , money);
         Credit credit = new Credit(new AccountUri("http://ledger", BOB), money);

@@ -14,7 +14,7 @@ public class LedgerAccountManagerFactory {
     static {
         instance = new SimpleLedgerAccountManager();
         // Create HOLD account required by ILP Protocol.
-        instance.addAccount(instance.getHOLDAccountILP());
+        instance.store(instance.getHOLDAccountILP());
     }
 
     public static LedgerAccountManager getLedgerAccountManagerSingleton() {
