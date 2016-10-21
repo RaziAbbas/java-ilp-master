@@ -26,15 +26,13 @@ import org.slf4j.LoggerFactory;
 public class TransfersHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(TransfersHandler.class);
-    private final static String transferUUID  = "transferUUID",
-                                execCondition = "execCondition";
+    private final static String execCondition = "execCondition";
     // GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
 
     public TransfersHandler() {
         // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
         super("transfer", new String[] 
             {
-                "transfers/:" + transferUUID,
                 "transfers/byExecutionCondition/:" + execCondition
             });
         accept(GET);

@@ -50,7 +50,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         super("transfer", new String[] 
             {
                 "transfers/:" + transferUUID,
-                "transfers/byExecutionCondition/:" + execCondition
             });
         accept(GET,POST, PUT);
     }
@@ -202,7 +201,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransfer transfer = tm.getTransferById(transferID);
 
-        response(context, HttpResponseStatus.ACCEPTED,
+        response(context, HttpResponseStatus.OK,
                 buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONFormat()));
     }
 }
