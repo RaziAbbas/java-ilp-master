@@ -5,6 +5,7 @@ import static io.vertx.core.http.HttpMethod.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;
+import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.AuthInfo;
 import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.auth.RoleUser;
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mrmx
  */
-public class AccountHandler extends RestEndpointHandler {
+public class AccountHandler extends RestEndpointHandler  implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(AccountHandler.class);
 
