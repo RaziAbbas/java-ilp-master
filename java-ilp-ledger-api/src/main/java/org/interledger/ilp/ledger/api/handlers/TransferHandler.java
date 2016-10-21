@@ -101,9 +101,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          */
 
         JsonObject requestBody = getBodyAsJson(context);
-        String sTransferID = requestBody.getString("ledger")
-                + "/transfers/" + context.request().getParam(transferUUID);
-        TransferID transferID = new TransferID(sTransferID);
+        TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         
         // TODO: Check equestBody.getString("ledger") match ledger host/port
 
@@ -207,7 +205,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         response(context, HttpResponseStatus.ACCEPTED,
                 buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONFormat()));
     }
-
 }
 
 
