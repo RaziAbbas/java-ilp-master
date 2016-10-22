@@ -72,6 +72,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             return;
         }
         log.debug(this.getClass().getName() + "handlePut invoqued ");
+        log.debug(context.getBodyAsString());
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -98,7 +99,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
          *     "timeline":{"proposed_at":"2015-06-16T00:00:00.000Z"}
          *     }
          */
-
         JsonObject requestBody = getBodyAsJson(context);
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         
@@ -141,13 +141,15 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         String data = ""; // Not used
         String noteToSelf = ""; // Not used
         DTTM DTTM_proposed = DTTM.getNow();
+        log.debug(transferID.transferID+" expires_at == null" + (requestBody.getString("expires_at") == null));
         DTTM DTTM_expires = requestBody.getString("expires_at") != null
                 ? DTTM.c(requestBody.getString("expires_at"))
                 : DTTM.future; // TODO: RECHECK
         ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
                 ? ConditionURI.c(requestBody.getString("execution_condition"))
                 : ConditionURI.EMPTY ;
-        String cancelation_condition = requestBody.getString("cancelation_condition");
+        String cancelation_condition = requestBody.getString("cancellation_condition");
+                                                              
         ConditionURI URICancelationCond = (cancelation_condition != null)
                 ? ConditionURI.c(cancelation_condition)
                 : ConditionURI.EMPTY ;
@@ -169,7 +171,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             tm.createNewRemoteILPTransfer(receivedTransfer);
         }
         try {
-            String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONFormat();
+            String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat();
             log.debug("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
             TransferWSEventHandler.notifyILPConnector(context,
                     notification);
@@ -179,7 +181,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
              *     send to the connector once the (websocket) connection is restablished.
              */
         }
-        String response = ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONFormat();
+        String response = ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONStringifiedFormat(false);
+
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
@@ -202,7 +205,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransfer transfer = tm.getTransferById(transferID);
 
         response(context, HttpResponseStatus.OK,
-                buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONFormat()));
+                buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONStringifiedFormat(false /*bInclude Exec|Cancel Conditions*/)));
     }
 }
 

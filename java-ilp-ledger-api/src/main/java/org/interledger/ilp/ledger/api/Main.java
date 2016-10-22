@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.api;
 
 import com.google.common.base.Optional;
+
 import io.vertx.ext.web.Router;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +25,8 @@ import org.interledger.ilp.ledger.api.handlers.ConnectorsHandler;
 import org.interledger.ilp.ledger.api.handlers.HealthHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler;
+import org.interledger.ilp.ledger.api.handlers.TransfersHandler;
+import org.interledger.ilp.ledger.api.handlers.ReceiptHandler;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +102,10 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 AccountsHandler.create(),
                 AccountHandler.create(),
                 TransferHandler.create(),
-                TransferWSEventHandler.create()
+                TransferWSEventHandler.create(),
+                TransfersHandler.create(),
+                ReceiptHandler.create()
+
         );
     }
 

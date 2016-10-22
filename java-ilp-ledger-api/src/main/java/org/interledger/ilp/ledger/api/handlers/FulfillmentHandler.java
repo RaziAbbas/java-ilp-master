@@ -137,7 +137,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
             .setStatusCode(!ffExisted ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.ACCEPTED.code())
             .end(fulfillmentURI);
-        String notification = ((SimpleLedgerTransfer) transfer).toILPJSONFormat();
+        String notification = ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat();
         TransferWSEventHandler.notifyILPConnector(context, notification);
     }
 

@@ -8,12 +8,12 @@ import org.junit.Test;
 public class TransferIDTest {
     // TODO: Add more test (compare objects, ...)
     @Test
-    public void testCreateTransferID() {
+    public void testCreateTransferIDFullURI() {
         new TransferID("http://ledger:3000/transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204");
     }
 
-    @Test (expected = RuntimeException.class)
-    public void testCreateTransferIDWithWrongURI() {
+    @Test
+    public void testCreateTransferID() {
         new TransferID("3a2a1d9e-8640-4d2d-b06c-84f2cd613204");
     }
 

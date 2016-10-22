@@ -41,9 +41,7 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
             throw new RuntimeException(e.toString(), e);
         }
     }
-    // GET     /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
-    // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-    // GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN6RGDx9F4f4z0wtOIgsIdCmbgv06ceI:7 
+    // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
     public ReceiptHandler() {
         // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
         super("transfer", new String[] 

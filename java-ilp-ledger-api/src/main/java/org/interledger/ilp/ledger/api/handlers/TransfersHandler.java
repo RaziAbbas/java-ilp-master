@@ -6,12 +6,16 @@ import java.util.function.Function;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import static io.vertx.core.http.HttpMethod.GET;
 
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.LedgerTransfer;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransfer;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 import org.slf4j.Logger;
@@ -75,15 +79,16 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         ConditionURI executionCondition = ConditionURI.c(context.request().getParam(execCondition));
         List<LedgerTransfer> transferList = tm.getTransfersByExecutionCondition(executionCondition);
-        String[] transferStringifiedList =  transferList.stream()
-            .map(new Function<LedgerTransfer, String>() {
-                        @Override
-                        public String apply(LedgerTransfer transfer) {
-                           return "";
-                        }
-                    }).toArray(String[]::new);
-        response(context, HttpResponseStatus.ACCEPTED,
-                buildJSONWith((Object[])transferStringifiedList));
+        JsonArray ja = new JsonArray();
+        for (LedgerTransfer transfer : transferList) {
+            ja.add(((SimpleLedgerTransfer)transfer).toJSONWalletFormat(true /*include exec|cancel conditions in response*/));
+        }
+        String response = ja.encode();
+        context.response()
+            .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+            .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
+            .setStatusCode(HttpResponseStatus.OK.code())
+            .end(response);
     }
 
     /*
