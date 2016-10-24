@@ -163,14 +163,10 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
-        log.info(">>> deleteme 1 transferID "+transferID.transferID);
-        log.info(">>> deleteme 2 isFulfillment "+isFulfillment);
         LedgerTransfer transfer = tm.getTransferById(transferID);
-        log.info(">>> deleteme 3 isFulfillment "+isFulfillment);
         String fulfillmentURI = (isFulfillment) 
                 ? transfer.getURIExecutionFulfillment().URI
                 : transfer.getURICancelationFulfillment().URI;
-        log.info(">>> deleteme 4 isFulfillment "+isFulfillment);
 
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")

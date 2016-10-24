@@ -54,15 +54,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                     break;
             }
         } catch (InterledgerException ex ) {
-            // FIXME: Check this code match 
             response(context, ex.getException().getHTTPErrorCode(), buildJSON(ex.getException().getsID(), ex.getDescription()));
-//
-//            String jsonResponse  = "{ id: '"+ex.getException().getsID()+"', message: '"+ex.getDescription()+"'}"; // TODO
-//            context.response()
-//            .putHeader(HttpHeaders.CONTENT_TYPE, MIME_JSON_WITH_ENCODING)
-//            .putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(jsonResponse.length()))
-//            .setStatusCode(ex.getException().getHTTPErrorCode())
-//            .end(jsonResponse);
         } catch (RestEndpointException rex) {
             log.error("RestEndpointException {} -> {}\n", rex.getResponseStatus(), rex.getResponse(), rex.toString());
             response(context, rex.getResponseStatus(), rex.getResponse());

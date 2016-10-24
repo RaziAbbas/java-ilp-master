@@ -151,11 +151,6 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
         response(context, HttpResponseStatus.OK, result);
     }
 
-//    private void handleUnAuthorized(RoutingContext context, AuthInfo authInfo) {
-//        log.info("handleUnAuthorized {}", authInfo);
-//        throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
-//    }
-
     private JsonObject accountToJsonObject(LedgerAccount account) {
         return JsonObjectBuilder.create()
                 .put("id", account.getUri())
