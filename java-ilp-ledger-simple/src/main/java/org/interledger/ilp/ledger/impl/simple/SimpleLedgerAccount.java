@@ -4,6 +4,7 @@ import java.util.Currency;
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
 import javax.money.NumberValue;
+import org.interledger.ilp.common.util.NumberConversionUtil;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.MoneyUtils;
@@ -102,7 +103,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public String getMinimumAllowedBalanceAsString() {
-        return getMinimumAllowedBalance().getNumber().toString();
+        return NumberConversionUtil.toString(getMinimumAllowedBalance().getNumber());        
     }
 
     @Override

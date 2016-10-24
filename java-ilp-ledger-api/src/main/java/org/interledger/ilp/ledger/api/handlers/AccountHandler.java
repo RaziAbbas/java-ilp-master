@@ -12,12 +12,13 @@ import org.interledger.ilp.common.api.auth.RoleUser;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
-import org.interledger.ilp.common.api.util.NumberConversionUtils;
+import org.interledger.ilp.common.util.NumberConversionUtil;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +34,13 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
     private final static String PARAM_NAME = "name";
     private final static String PARAM_BALANCE = "balance";
     private final static String PARAM_MIN_ALLOWED_BALANCE = "minimum_allowed_balance";
+    private final static String PARAM_DISABLED = "is_disabled";
 
     public AccountHandler() {
-        super("account", "accounts/:" + PARAM_NAME);
+        super("account", 
+              "accounts/:" + PARAM_NAME,
+              "ACCOUNTS/:" + PARAM_NAME
+        );
         accept(GET, PUT);
     }
 
@@ -77,19 +82,29 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
         }
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
         String accountName = getAccountName(context);
-        JsonObject data = getBodyAsJson(context);
-        log.debug("Put data: {}", data);
-        Number balance = NumberConversionUtils.toNumber(data.getValue(PARAM_BALANCE, 100d));
-        Number minAllowedBalance = NumberConversionUtils.toNumber(data.getValue(PARAM_MIN_ALLOWED_BALANCE, 0d));
-
-        log.debug("Put account {} balance: {}{}", accountName, balance, ledgerInfo.getCurrencyCode());
-        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
+        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();        
         boolean exists = accountManager.hasAccount(accountName);
+        JsonObject data = getBodyAsJson(context);
+        if(exists && !accountName.equalsIgnoreCase(data.getString(PARAM_NAME))) {
+            bad(context, accountName);
+            return;
+        }
+        log.debug("Put data: {} to account {}", data,accountName);
+        Number balance = null;
+        Number minAllowedBalance = NumberConversionUtil.toNumber(data.getValue(PARAM_MIN_ALLOWED_BALANCE, 0d));
+
         LedgerAccount account = exists
                 ? accountManager.getAccountByName(accountName)
                 : accountManager.create(accountName);
-        account.setBalance(balance);
+        if(data.containsKey(PARAM_BALANCE)) {
+            balance = NumberConversionUtil.toNumber(data.getValue(PARAM_BALANCE));
+            account.setBalance(balance);
+        }        
         account.setMinimumAllowedBalance(minAllowedBalance);
+        if(data.containsKey(PARAM_DISABLED)) {
+            ((SimpleLedgerAccount)account).setDisabled(data.getBoolean(PARAM_DISABLED, false));
+        }
+        log.debug("Put account {} balance: {}{}", accountName, balance, ledgerInfo.getCurrencyCode());        
         accountManager.store(account);
         response(context, exists ? HttpResponseStatus.OK : HttpResponseStatus.CREATED,
                 JsonObjectBuilder.create().from(account));
@@ -102,11 +117,12 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
     }
 
     private String getAccountName(RoutingContext context) {
-        return context.request().getParam(PARAM_NAME);
+        String accountName = context.request().getParam(PARAM_NAME);        
+        return accountName == null ? null : accountName.trim().toLowerCase();
     }
 
     private String getAccountNameOrThrowException(RoutingContext context) {
-        String accountName = context.request().getParam(PARAM_NAME);
+        String accountName = getAccountName(context);
         if (StringUtils.isBlank(accountName)) {
             throw new RestEndpointException(HttpResponseStatus.BAD_REQUEST, accountName);
         }
@@ -127,6 +143,10 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
                         .put("ledger", LedgerFactory.getDefaultLedger().getInfo().getBaseUri())
                         .get();
             } else {
+                if(account.isDisabled()) {
+                    forbidden(context);
+                    return;
+                } 
                 result = accountToJsonObject(account);
             }
         }

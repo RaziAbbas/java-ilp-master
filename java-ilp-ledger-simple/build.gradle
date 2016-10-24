@@ -26,6 +26,7 @@ dependencies {
     compile     project(':java-crypto-conditions')
     compile     project(':java-ilp-common-api')
     compile     project(':java-ilp-core')
+    compile     project(':java-ilp-common')
     compile     "ch.qos.logback:logback-classic:${logback_classic_version}"
     compile     "org.javamoney:moneta:${moneta_version}"
     compile     "commons-lang:commons-lang:${commons_lang_version}"

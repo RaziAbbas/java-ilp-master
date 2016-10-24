@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import io.vertx.ext.web.Router;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.interledger.ilp.common.api.AbstractMainEntrypointVerticle;
 import org.interledger.ilp.common.api.handlers.EndpointHandler;
 import org.interledger.ilp.common.api.handlers.IndexHandler;
@@ -13,6 +14,7 @@ import org.interledger.ilp.common.config.Config;
 import static org.interledger.ilp.common.config.Key.*;
 import org.interledger.ilp.common.config.core.Configurable;
 import org.interledger.ilp.common.config.core.ConfigurationException;
+import org.interledger.ilp.common.util.NumberConversionUtil;
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
@@ -44,6 +46,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     private static final String DEFAULT_LEDGER_NAME = "ledger-simple";
+    private static final String MIN_ALLOWED_BALANCE_INFINITY = "-infinity";
 
     private String ilpPrefix;
     private Ledger ledger;
@@ -52,7 +55,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     enum Dev {
         uri,
         accounts,
-        balance,
+        balance, minimum_allowed_balance,
         admin, disabled,
         connector
     }
@@ -127,7 +130,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         log.info("Preparing development environment");
         List<String> accounts = config.getStringList(Dev.accounts);
         LedgerAccountManager ledgerAccountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-        for(String accountName : accounts) {
+        for (String accountName : accounts) {
             SimpleLedgerAccount account = (SimpleLedgerAccount) ledgerAccountManager.create(accountName);
             Config accountConfig = config.getConfig(accountName);
             account.setBalance(accountConfig.getInt(0, Dev.balance));
@@ -135,7 +138,11 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 account.setAdmin(true);
             }
             account.setDisabled(accountConfig.getBoolean(false, Dev.disabled));
-            account.setConnector(accountConfig.getString((String)null, Dev.connector));
+            account.setConnector(accountConfig.getString((String) null, Dev.connector));
+            String minAllowedBalance = accountConfig.getString((String) null, Dev.minimum_allowed_balance);
+            if (StringUtils.isNoneBlank(minAllowedBalance)) {
+                account.setMinimumAllowedBalance(NumberConversionUtil.toNumber(minAllowedBalance, 0));
+            }
             ledgerAccountManager.store(account);
         }
     }
