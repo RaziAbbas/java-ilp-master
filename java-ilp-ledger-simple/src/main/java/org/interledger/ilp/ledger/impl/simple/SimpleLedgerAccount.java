@@ -103,7 +103,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
 
     @Override
     public String getMinimumAllowedBalanceAsString() {
-        return NumberConversionUtil.toString(getMinimumAllowedBalance().getNumber());        
+        return NumberConversionUtil.toString(getMinimumAllowedBalance().getNumber());
     }
 
     @Override

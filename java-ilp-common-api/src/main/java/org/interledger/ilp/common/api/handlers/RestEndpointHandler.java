@@ -24,12 +24,8 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     private final static String PARAM_ENCODE_PLAIN_JSON = "plainjson";
     private final static String MIME_JSON_WITH_ENCODING = "application/json; charset=utf-8";
-
-    private final static String UNAUTHORIZED_ERROR_ID = "UnauthorizedError";
-    private final static String UNAUTHORIZED_ERROR_MSG = "Unknown or invalid account / password";
-    private final static String BAD_REQUEST_ERROR_ID = "BadRequestError";
-    private final static String FORBIDDEN_ERROR_ID = "ForbiddenError";
-    private final static String FORBIDDEN_ERROR_MSG = "Forbidden";
+//    private final static String UNAUTHORIZED_ERROR_MSG = "Unknown or invalid account / password";
+//    private final static String FORBIDDEN_ERROR_MSG = "Forbidden";
 
     public RestEndpointHandler(String name) {
         this(name, name);
@@ -133,19 +129,6 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     protected static Supplier<JsonObject> buildJSONWith(Object... pairs) {
         return JsonObjectBuilder.create().with(pairs);
     }
-
-//    protected void unauthorized(RoutingContext context, String realm) {
-//        context.response().putHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
-//        response(context, HttpResponseStatus.UNAUTHORIZED, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
-//    }
-
-//    protected void forbidden(RoutingContext context) {
-//        response(context, HttpResponseStatus.FORBIDDEN, buildJSON(FORBIDDEN_ERROR_ID, FORBIDDEN_ERROR_MSG));
-//    }
-
-//    protected void bad(RoutingContext context, String msg) {
-//        response(context, HttpResponseStatus.BAD_REQUEST, buildJSON(BAD_REQUEST_ERROR_ID, msg));
-//    }
 
     protected void response(RoutingContext context, HttpResponseStatus responseStatus) {
         response(context, responseStatus, (Throwable) null);

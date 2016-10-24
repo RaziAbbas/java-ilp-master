@@ -82,12 +82,11 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
         }
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
         String accountName = getAccountName(context);
-        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();        
+        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         boolean exists = accountManager.hasAccount(accountName);
         JsonObject data = getBodyAsJson(context);
         if(exists && !accountName.equalsIgnoreCase(data.getString(PARAM_NAME))) {
-            bad(context, accountName);
-            return;
+            throw new InterledgerException(InterledgerException.RegisteredException.BadRequestError, accountName);
         }
         log.debug("Put data: {} to account {}", data,accountName);
         Number balance = null;
@@ -144,8 +143,7 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
                         .get();
             } else {
                 if(account.isDisabled()) {
-                    forbidden(context);
-                    return;
+                    throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
                 } 
                 result = accountToJsonObject(account);
             }
