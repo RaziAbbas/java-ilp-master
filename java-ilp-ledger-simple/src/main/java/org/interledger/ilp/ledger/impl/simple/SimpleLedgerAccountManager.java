@@ -7,9 +7,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.ledger.LedgerFactory;
-import org.interledger.ilp.ledger.account.AccountExistsException;
-import org.interledger.ilp.ledger.account.AccountNotFoundException;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 
@@ -27,9 +26,10 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     }
     
     @Override
-    public LedgerAccount create(String name) throws AccountExistsException {
+    public LedgerAccount create(String name) throws InterledgerException {
         if (accountMap.containsKey(name)) {
-            throw new AccountExistsException("account '"+name+"' already exists");
+            throw new InterledgerException(InterledgerException.RegisteredException.AccountExists, "account '"+name+"' already exists");
+
         }
         return new SimpleLedgerAccount(name, getLedgerInfo().getCurrencyCode());
     }
@@ -50,9 +50,10 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     }
     
     @Override
-    public LedgerAccount getAccountByName(String name) throws AccountNotFoundException {
+    public LedgerAccount getAccountByName(String name) throws InterledgerException {
         if (!hasAccount(name)) {
-            throw new AccountNotFoundException(name);
+            throw new InterledgerException(InterledgerException.RegisteredException.AccountNotFoundError, name);
+
         }
         return accountMap.get(name);
     }

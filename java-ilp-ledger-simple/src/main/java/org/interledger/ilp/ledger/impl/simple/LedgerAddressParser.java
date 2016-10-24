@@ -6,7 +6,7 @@ package org.interledger.ilp.ledger.impl.simple;
  * @author mrmx
  */
 interface LedgerAddressParser {
-   void parse(String address) throws LedgerAddressParserException;
+   void parse(String address);
    String getAccountName();
    String getLedgerName();
 }

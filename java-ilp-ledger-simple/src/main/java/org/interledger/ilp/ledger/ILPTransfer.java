@@ -5,7 +5,7 @@ import java.util.Date;
 import org.interledger.cryptoconditions.Condition;
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.LedgerTransferStatus;
-import org.interledger.ilp.core.exceptions.LedgerTransferException;
+import org.interledger.ilp.common.api.core.InterledgerException;
 
 /*
  * ILPTransfer entities are created for ILP aware transfer.
@@ -31,7 +31,7 @@ public class ILPTransfer {
 
     ILPTransfer(String id, String ledger, Condition condition, Date expirationAt) {
         if (id == null || ledger == null || condition == null || expirationAt == null) {
-            throw new LedgerTransferException(getClass().getSimpleName() + " constructor params can't be null");
+            throw new InterledgerException(InterledgerException.RegisteredException.InternalError, "constructor params can't be null");
         }
         this.id = id;        
         this.ledger = ledger;
@@ -85,24 +85,24 @@ public class ILPTransfer {
         // Note: This logic could be placed in a "higher" level class.
         // For now is enought. (Simple implementation)
         if (new_status == LedgerTransferStatus.PROPOSED) {
-            throw new LedgerTransferException("new state " + status + " not allowed");
+            throw new InterledgerException(InterledgerException.RegisteredException.InternalError, "new state " + status + " not allowed");
         }
 
         if (new_status == LedgerTransferStatus.PREPARED) {
             if (status != LedgerTransferStatus.PROPOSED) {
-                throw new LedgerTransferException("new state " + status + " not allowed");
+                throw new InterledgerException(InterledgerException.RegisteredException.InternalError, "new state " + status + " not allowed");
             }
             this.preparedAt = getCurrentTime();
         }
         if (new_status == LedgerTransferStatus.EXECUTED) {
             if (status != LedgerTransferStatus.PREPARED) {
-                throw new LedgerTransferException("new state " + status + " not allowed");
+                throw new InterledgerException(InterledgerException.RegisteredException.InternalError, "new state " + status + " not allowed");
             }
             this.executedAt = getCurrentTime();
         }
         if (new_status == LedgerTransferStatus.REJECTED) {
             if (status == LedgerTransferStatus.EXECUTED) {
-                throw new LedgerTransferException("new state " + status + " not allowed");
+                throw new InterledgerException(InterledgerException.RegisteredException.InternalError, "new state " + status + " not allowed");
             }
             this.rejectedAt = getCurrentTime();
         }

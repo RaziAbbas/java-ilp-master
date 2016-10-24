@@ -16,6 +16,7 @@ import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
@@ -56,7 +57,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     public LedgerTransfer getTransferById(TransferID transferId) {
         LedgerTransfer result = transferMap.get(transferId);
         if (result == null) {
-            throw new RuntimeException("No transaction found for transferId "+ transferId.toString());
+            throw new InterledgerException(InterledgerException.RegisteredException.TransferNotFoundError, "This transfer does not exist");
         }
         return result;
     }

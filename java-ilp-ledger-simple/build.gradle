@@ -24,6 +24,7 @@ repositories {
 
 dependencies {
     compile     project(':java-crypto-conditions')
+    compile     project(':java-ilp-common-api')
     compile     project(':java-ilp-core')
     compile     "ch.qos.logback:logback-classic:${logback_classic_version}"
     compile     "org.javamoney:moneta:${moneta_version}"

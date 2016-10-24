@@ -14,6 +14,7 @@ import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
@@ -68,8 +69,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            forbidden(context);
-            return;
+          throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         log.debug(this.getClass().getName() + "handlePut invoqued ");
         log.debug(context.getBodyAsString());
@@ -197,8 +197,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            forbidden(context);
-            return;
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));

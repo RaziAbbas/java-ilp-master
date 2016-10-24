@@ -7,9 +7,9 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
-import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.api.util.VertxUtils;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +57,16 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                 default: // CONNECT, DELETE, HEAD, OPTIONS, OTHER, PATCH, TRACE:
                     break;
             }
+        } catch (InterledgerException ex ) {
+            // FIXME: Check this code match 
+            response(context, ex.getException().getHTTPErrorCode(), buildJSON(ex.getException().getsID(), ex.getDescription()));
+//
+//            String jsonResponse  = "{ id: '"+ex.getException().getsID()+"', message: '"+ex.getDescription()+"'}"; // TODO
+//            context.response()
+//            .putHeader(HttpHeaders.CONTENT_TYPE, MIME_JSON_WITH_ENCODING)
+//            .putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(jsonResponse.length()))
+//            .setStatusCode(ex.getException().getHTTPErrorCode())
+//            .end(jsonResponse);
         } catch (RestEndpointException rex) {
             log.error("RestEndpointException {} -> {}\n", rex.getResponseStatus(), rex.getResponse(), rex.toString());
             response(context, rex.getResponseStatus(), rex.getResponse());
@@ -96,13 +106,13 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         User user = context.user();
         if (user == null) {
             log.warn("No user present in request in checkAuth with {}", authority);
-            unauthorized(context, AuthManager.DEFAULT_BASIC_REALM);
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         } else {
             user.isAuthorised(authority, res -> {
                 if (res.succeeded()) {
                     handleAuthorized(context);
                 } else {
-                    handleUnAuthorized(context);
+                    throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
                 }
             });
         }
@@ -112,10 +122,9 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         response(context, HttpResponseStatus.NOT_IMPLEMENTED);
     }
 
-    protected void handleUnAuthorized(RoutingContext context) {
-        log.debug("Unauthorized access!");
-        forbidden(context);
-    }
+//    protected void handleUnAuthorized(RoutingContext context) {
+//        throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
+//    }
 
     protected static Supplier<JsonObject> buildJSON(CharSequence id, CharSequence message) {
         return buildJSONWith("id", id, "message", message);
@@ -125,18 +134,18 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         return JsonObjectBuilder.create().with(pairs);
     }
 
-    protected void unauthorized(RoutingContext context, String realm) {
-        context.response().putHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
-        response(context, HttpResponseStatus.UNAUTHORIZED, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
-    }
+//    protected void unauthorized(RoutingContext context, String realm) {
+//        context.response().putHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
+//        response(context, HttpResponseStatus.UNAUTHORIZED, buildJSON(UNAUTHORIZED_ERROR_ID, UNAUTHORIZED_ERROR_MSG));
+//    }
 
-    protected void forbidden(RoutingContext context) {
-        response(context, HttpResponseStatus.FORBIDDEN, buildJSON(FORBIDDEN_ERROR_ID, FORBIDDEN_ERROR_MSG));
-    }
+//    protected void forbidden(RoutingContext context) {
+//        response(context, HttpResponseStatus.FORBIDDEN, buildJSON(FORBIDDEN_ERROR_ID, FORBIDDEN_ERROR_MSG));
+//    }
 
-    protected void bad(RoutingContext context, String msg) {
-        response(context, HttpResponseStatus.BAD_REQUEST, buildJSON(BAD_REQUEST_ERROR_ID, msg));
-    }
+//    protected void bad(RoutingContext context, String msg) {
+//        response(context, HttpResponseStatus.BAD_REQUEST, buildJSON(BAD_REQUEST_ERROR_ID, msg));
+//    }
 
     protected void response(RoutingContext context, HttpResponseStatus responseStatus) {
         response(context, responseStatus, (Throwable) null);
@@ -200,11 +209,5 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     }
 
-    protected RestEndpointException notFound(CharSequence message) {
-        return new RestEndpointException(
-                HttpResponseStatus.NOT_FOUND,
-                buildJSON("NotFoundError", message)
-        );
-    }
 
 }

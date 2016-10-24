@@ -27,6 +27,7 @@ import org.interledger.ilp.ledger.api.handlers.TransferHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler;
 import org.interledger.ilp.ledger.api.handlers.TransfersHandler;
 import org.interledger.ilp.ledger.api.handlers.ReceiptHandler;
+import org.interledger.ilp.ledger.api.handlers.FulfillmentHandler;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,8 +105,8 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 TransferHandler.create(),
                 TransferWSEventHandler.create(),
                 TransfersHandler.create(),
-                ReceiptHandler.create()
-
+                ReceiptHandler.create(),
+                FulfillmentHandler.create()
         );
     }
 

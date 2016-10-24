@@ -1,17 +1,16 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import java.util.List;
-import java.util.function.Function;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.LedgerTransfer;
@@ -68,13 +67,12 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
          *          {"account":"http://localhost/accounts/alice","amount":"10","authorized":true}],
          *        "credits":[{"account":"http://localhost/accounts/bob","amount":"10"}]}]
          */
-        log.debug(this.getClass().getName() + "handleGet invoqued ");
+        log.info(this.getClass().getName() + "handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            forbidden(context);
-            return;
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         ConditionURI executionCondition = ConditionURI.c(context.request().getParam(execCondition));

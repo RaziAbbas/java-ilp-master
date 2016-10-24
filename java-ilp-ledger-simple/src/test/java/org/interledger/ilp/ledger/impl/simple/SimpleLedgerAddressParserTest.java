@@ -1,6 +1,8 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import static org.junit.Assert.*;
+import org.interledger.ilp.common.api.core.InterledgerException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +35,7 @@ public class SimpleLedgerAddressParserTest {
     /**
      * Test of parse method, of class SimpleLedgerAddressParser.
      */
-    @Test(expected = LedgerAddressParserException.class)
+    @Test(expected = InterledgerException.class)
     public void testParseMalformedAccount() {
         System.out.println("parse malformed account");
         String address = "@ledger";
@@ -44,7 +46,7 @@ public class SimpleLedgerAddressParserTest {
     /**
      * Test of parse method, of class SimpleLedgerAddressParser.
      */
-    @Test(expected = LedgerAddressParserException.class)
+    @Test(expected = InterledgerException.class)
     public void testParseMalformedLedger() {
         System.out.println("parse malformed ledger");
         String address = "account@";
@@ -55,7 +57,7 @@ public class SimpleLedgerAddressParserTest {
     /**
      * Test of parse method, of class SimpleLedgerAddressParser.
      */
-    @Test(expected = LedgerAddressParserException.class)
+    @Test(expected = InterledgerException.class)
     public void testParseMalformedAddress() {
         System.out.println("parse malformed address");
         String address = "account.ledger";

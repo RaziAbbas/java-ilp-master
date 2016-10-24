@@ -9,6 +9,7 @@ import io.vertx.ext.web.RoutingContext;
 
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 
 import org.interledger.ilp.core.LedgerTransfer;
@@ -82,8 +83,7 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            forbidden(context);
-            return;
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         String transferId = context.request().getParam(transferUUID);
         TransferID transferID = new TransferID(transferId);

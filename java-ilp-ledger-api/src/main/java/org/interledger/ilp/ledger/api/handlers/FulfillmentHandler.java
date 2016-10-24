@@ -13,6 +13,7 @@ import org.interledger.cryptoconditions.FulfillmentFactory;
 import org.interledger.cryptoconditions.types.MessagePayload;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.LedgerTransfer;
@@ -58,7 +59,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         // FIXME: If debit's account owner != request credentials throw exception.
         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-        log.debug(this.getClass().getName() + "handlePut invoqued ");
+        log.info(this.getClass().getName() + "handlePut invoqued ");
         boolean isFulfillment = false, isRejection   = false;
         if (context.request().path().endsWith("/fulfillment")){
             isFulfillment = true;
@@ -145,13 +146,12 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
     protected void handleGet(RoutingContext context) {
         // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         //                                                    /rejection
-        log.debug(this.getClass().getName() + " handleGet invoqued ");
+        log.info(this.getClass().getName() + " handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-            forbidden(context);
-            return;
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         boolean isFulfillment = false; // false => isRejection
         if (context.request().path().endsWith("/fulfillment")){
@@ -163,15 +163,22 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
+        log.info(">>> deleteme 1 transferID "+transferID.transferID);
+        log.info(">>> deleteme 2 isFulfillment "+isFulfillment);
         LedgerTransfer transfer = tm.getTransferById(transferID);
+        log.info(">>> deleteme 3 isFulfillment "+isFulfillment);
         String fulfillmentURI = (isFulfillment) 
                 ? transfer.getURIExecutionFulfillment().URI
                 : transfer.getURICancelationFulfillment().URI;
+        log.info(">>> deleteme 4 isFulfillment "+isFulfillment);
+
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
             .setStatusCode(HttpResponseStatus.ACCEPTED.code())
             .end(fulfillmentURI);
+        log.info(">>> deleteme end ");
+
     }
 }
 

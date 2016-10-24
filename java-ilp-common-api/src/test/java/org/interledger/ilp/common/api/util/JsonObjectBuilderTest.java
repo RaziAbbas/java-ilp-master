@@ -23,7 +23,6 @@ public class JsonObjectBuilderTest {
             return string;
         }
         
-        @SuppressWarnings("unused")
         public void setString(String string) {
             this.string = string;
         }

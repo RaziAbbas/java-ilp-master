@@ -9,13 +9,13 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.AuthInfo;
 import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.auth.RoleUser;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.api.util.NumberConversionUtils;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
-import org.interledger.ilp.ledger.account.AccountNotFoundException;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.slf4j.Logger;
@@ -54,10 +54,10 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
                 if (StringUtils.isNotBlank(accountName)) {
                     handleAuthorizedGet(context, null);
                 } else {
-                    bad(context, "Required param " + PARAM_NAME);
+                    throw new InterledgerException(InterledgerException.RegisteredException.BadRequestError, "Required param " + PARAM_NAME);
                 }
             } else {
-                handleUnAuthorized(context, authInfo);
+                throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
             }
         });
     }
@@ -68,14 +68,12 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
 
         AuthInfo authInfo = AuthManager.getInstance().getAuthInfo(context);
         if (authInfo.isEmpty()) {
-            unauthorized(context, AuthManager.DEFAULT_BASIC_REALM); //TODO sync realm name with config value
-            return;
+            throw new InterledgerException(InterledgerException.RegisteredException.UnauthorizedError, AuthManager.DEFAULT_BASIC_REALM);
         }
         RoleUser user = AuthManager.getInstance().getAuthUser(authInfo);
         log.debug("put with user {}", user);
         if (user == null || !user.hasRole(RoleUser.ROLE_ADMIN)) {
-            forbidden(context);
-            return;
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
         String accountName = getAccountName(context);
@@ -100,12 +98,7 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
     private LedgerAccount getAccountByName(RoutingContext context) {
         String accountName = getAccountNameOrThrowException(context);
         log.debug("Get account {}", accountName);
-        try {
-            return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountByName(accountName);
-        } catch (AccountNotFoundException ex) {
-            throw notFound("Unknown account");
-        }
-
+        return LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountByName(accountName);
     }
 
     private String getAccountName(RoutingContext context) {
@@ -140,10 +133,10 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
         response(context, HttpResponseStatus.OK, result);
     }
 
-    private void handleUnAuthorized(RoutingContext context, AuthInfo authInfo) {
-        log.info("handleUnAuthorized {}", authInfo);
-        forbidden(context);
-    }
+//    private void handleUnAuthorized(RoutingContext context, AuthInfo authInfo) {
+//        log.info("handleUnAuthorized {}", authInfo);
+//        throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
+//    }
 
     private JsonObject accountToJsonObject(LedgerAccount account) {
         return JsonObjectBuilder.create()

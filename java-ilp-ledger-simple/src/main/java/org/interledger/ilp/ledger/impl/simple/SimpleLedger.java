@@ -7,7 +7,7 @@ import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.LedgerTransferRejectedReason;
 import org.interledger.ilp.core.events.LedgerEventHandler;
-import org.interledger.ilp.core.exceptions.InsufficientAmountException;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
@@ -48,7 +48,7 @@ public class SimpleLedger implements Ledger {
             debitFrom.debit(amount);
             creditTo.credit(amount);
         } else {
-            throw new InsufficientAmountException(amount.toString());
+            throw new InterledgerException(InterledgerException.RegisteredException.InsufficientAmountError, amount.toString());
         }
     }
 
