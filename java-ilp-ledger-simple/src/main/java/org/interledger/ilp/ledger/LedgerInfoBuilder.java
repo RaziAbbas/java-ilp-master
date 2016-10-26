@@ -13,9 +13,10 @@ import org.interledger.ilp.core.LedgerInfo;
  * @author mrmx
  */
 public class LedgerInfoBuilder {
-
-    private int precission;
-    private int scale;
+    // By default use same values defined at JS implementation 
+    // (five-bells-ledger/src/controllers/metadata.js)
+    private int precission = 10;
+    private int scale = 2;
     private String currencyCode;
     private String currencySymbol;
     private String baseUri;
