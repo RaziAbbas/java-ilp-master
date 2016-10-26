@@ -136,7 +136,7 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
 
         String response = jo.encode();
         context.response()
-        .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
         .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
         .setStatusCode(HttpResponseStatus.ACCEPTED.code())
         .end(response);

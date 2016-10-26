@@ -78,9 +78,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
 
     @Override
     public boolean transferExists(TransferID transferId) {
-        System.out.println("transferExists transferId:"+transferId.transferID);
         boolean result = transferMap.containsKey(transferId);
-        System.out.println("transferExists result:"+result);
         return result;
     }
 
