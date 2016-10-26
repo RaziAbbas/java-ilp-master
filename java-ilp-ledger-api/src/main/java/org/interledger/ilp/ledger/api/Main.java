@@ -7,6 +7,9 @@ import io.vertx.ext.web.Router;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
 import org.apache.commons.lang3.StringUtils;
 import org.interledger.ilp.common.api.AbstractMainEntrypointVerticle;
 import org.interledger.ilp.common.api.handlers.EndpointHandler;
@@ -121,6 +124,26 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 .put("currency_symbol", ledgerInfo.getCurrencySymbol())
                 .put("precision", ledgerInfo.getPrecision())
                 .put("scale", ledgerInfo.getScale());
+
+        Map<String, String > services = new HashMap<String, String >();
+
+        // REF: 
+        //   - five-bells-ledger/src/controllers/metadata.js
+        //   - plugin.js @ five-bells-plugin
+        //   The conector five-bells-plugin of the js-ilp-connector expect a 
+        //   map urls { health:..., transfer: ..., 
+        String base = ledgerInfo.getBaseUri();
+            services.put("health"              , base + "/health"                   );
+            services.put("transfer"            , base + "/transfers/:id"            );
+            services.put("transfer_fulfillment", base + "/transfers/:id/fulfillment");
+            services.put("transfer_rejection"  , base + "/transfers/:id/rejection"  );
+            services.put("transfer_state"      , base + "/transfers/:id/state"      );
+            services.put("accounts"            , base + "/accounts"                 );
+            services.put("account"             , base + "/accounts/:name"           );
+            services.put("account_transfers"   , base.replace("http://", "ws://") 
+                    + base.replace("https://", "ws://") + "/accounts/:name/transfers" );
+
+        indexHandler.put("urls", services);
     }
 
     private void configureDevelopmentEnvirontment(Config config) {
