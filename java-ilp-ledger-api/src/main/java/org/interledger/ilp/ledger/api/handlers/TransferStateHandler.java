@@ -28,9 +28,9 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author earizon
  */
-public class ReceiptHandler extends RestEndpointHandler implements ProtectedResource {
+public class TransferStateHandler extends RestEndpointHandler implements ProtectedResource {
 
-    private static final Logger log = LoggerFactory.getLogger(ReceiptHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(TransferStateHandler.class);
     private final static String transferUUID  = "transferUUID";
     private static final String RECEIPT_TYPE_ED25519 = "ed25519-sha512",
                                 RECEIPT_TYPE_SHA256  = "sha256";
@@ -43,7 +43,7 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
         }
     }
     // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/state|state?type=sha256 
-    public ReceiptHandler() {
+    public TransferStateHandler() {
         // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
         super("transfer", new String[] 
             {
@@ -53,8 +53,8 @@ public class ReceiptHandler extends RestEndpointHandler implements ProtectedReso
     }
     
 
-    public static ReceiptHandler create() {
-        return new ReceiptHandler(); // TODO: return singleton?
+    public static TransferStateHandler create() {
+        return new TransferStateHandler(); // TODO: return singleton?
     }
     
     private static JsonObject makeTransferStateMessage(String transferId, TransferStatus state, String receiptType) {

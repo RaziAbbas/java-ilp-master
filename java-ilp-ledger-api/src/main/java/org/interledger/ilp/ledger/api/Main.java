@@ -33,7 +33,7 @@ import org.interledger.ilp.ledger.api.handlers.HealthHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler;
 import org.interledger.ilp.ledger.api.handlers.TransfersHandler;
-import org.interledger.ilp.ledger.api.handlers.ReceiptHandler;
+import org.interledger.ilp.ledger.api.handlers.TransferStateHandler;
 import org.interledger.ilp.ledger.api.handlers.FulfillmentHandler;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.slf4j.Logger;
@@ -108,7 +108,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 TransferHandler.create(),
                 TransferWSEventHandler.create(),
                 TransfersHandler.create(),
-                ReceiptHandler.create(),
+                TransferStateHandler.create(),
                 FulfillmentHandler.create()
         );
     }
@@ -129,19 +129,26 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
 
         // REF: 
         //   - five-bells-ledger/src/controllers/metadata.js
-        //   - plugin.js @ five-bells-plugin
+        //   - plugin.js (REQUIRED_LEDGER_URLS) @ five-bells-plugin
         //   The conector five-bells-plugin of the js-ilp-connector expect a 
         //   map urls { health:..., transfer: ..., 
         String base = ledgerInfo.getBaseUri();
-            services.put("health"              , base + "/health"                   );
-            services.put("transfer"            , base + "/transfers/:id"            );
-            services.put("transfer_fulfillment", base + "/transfers/:id/fulfillment");
-            services.put("transfer_rejection"  , base + "/transfers/:id/rejection"  );
-            services.put("transfer_state"      , base + "/transfers/:id/state"      );
-            services.put("accounts"            , base + "/accounts"                 );
-            services.put("account"             , base + "/accounts/:name"           );
-            services.put("account_transfers"   , base.replace("http://", "ws://") 
-                    + base.replace("https://", "ws://") + "/accounts/:name/transfers" );
+        // [ '', '', '', '', '', 'message' ]
+
+            // Required by wallet
+            services.put("health"              , base + "health"                   );
+            services.put("accounts"            , base + "accounts"                 );
+            services.put("transfer_state"      , base + "transfers/:id/state"      );
+            services.put("account"             , base + "accounts/:name"           );
+            services.put("account_transfers"   , base.replace("http://", "ws://")
+                    .replace("https://", "ws://") + "accounts/:name/transfers" );
+            // Required by wallet & ilp (ilp-plugin-bells) connector
+            services.put("transfer"            , base + "transfers/:id"            );
+            services.put("transfer_fulfillment", base + "transfers/:id/fulfillment");
+            services.put("transfer_rejection"  , base + "transfers/:id/rejection"  );
+            // Required by ilp plugin connector
+            
+            services.put("message"             , base + "messages"                 );
 
         indexHandler.put("urls", services);
     }
