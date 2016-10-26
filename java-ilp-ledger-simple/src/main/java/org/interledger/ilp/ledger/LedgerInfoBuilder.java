@@ -52,17 +52,10 @@ public class LedgerInfoBuilder {
     } 
     
     public LedgerInfoBuilder setBaseUri(URL baseUri) {
-        return setBaseUri(baseUri.toString());
-    }
-    
-    public LedgerInfoBuilder setBaseUri(URI baseUri) {
-        return setBaseUri(baseUri.toString());
-    }
-
-    public LedgerInfoBuilder setBaseUri(String baseUri) {
-        this.baseUri = baseUri;
+        this.baseUri = baseUri.toString();
         return this;
     }
+
     
     public LedgerInfo build() {
         if(StringUtils.isBlank(currencyCode)) {

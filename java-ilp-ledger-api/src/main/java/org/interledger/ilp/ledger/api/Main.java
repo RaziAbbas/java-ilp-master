@@ -3,6 +3,8 @@ package org.interledger.ilp.ledger.api;
 import com.google.common.base.Optional;
 
 import io.vertx.ext.web.Router;
+
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -77,14 +79,9 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         ilpPrefix = config.getString(LEDGER, ILP, PREFIX);
         String ledgerName = config.getString(DEFAULT_LEDGER_NAME, LEDGER, NAME);
         String currencyCode = config.getString(LEDGER, CURRENCY, CODE);
-        String baseUri = getServerPublicURL().toString();
+        URL baseUri = getServerPublicURL();
         //Development config
         Optional<Config> devConfig = config.getOptionalConfig(Dev.class);
-        if (devConfig.isPresent()) {
-            Config dev = devConfig.get();
-            //Override baseUri to match 5-bells integration tests:
-            baseUri = dev.getString(baseUri, Dev.uri);
-        }
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
                 .setBaseUri(baseUri)
                 .setCurrencyCodeAndSymbol(currencyCode)
