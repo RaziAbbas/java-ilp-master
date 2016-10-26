@@ -42,6 +42,12 @@
     </dependency>
     <dependency>
       <groupId>org.interledger</groupId>
+      <artifactId>java-ilp-common-api</artifactId>
+      <version>0.6.0-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.interledger</groupId>
       <artifactId>java-ilp-core</artifactId>
       <version>0.5-SNAPSHOT</version>
       <scope>compile</scope>

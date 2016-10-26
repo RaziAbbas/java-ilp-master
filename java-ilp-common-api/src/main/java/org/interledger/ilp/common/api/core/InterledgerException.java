@@ -5,7 +5,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 /**
  * Base ILP exception
  *
- * @author Manuel Polo <mistermx@gmail.com>
+ * @author mrmx
  */
 public final class InterledgerException extends RuntimeException {
 
