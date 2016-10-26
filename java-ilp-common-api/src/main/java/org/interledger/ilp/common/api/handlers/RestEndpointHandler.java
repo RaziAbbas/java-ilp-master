@@ -41,6 +41,9 @@ public abstract class RestEndpointHandler extends EndpointHandler {
         log.debug("In handler {}", handlerName);
         try {
             switch (context.request().method()) {
+                case HEAD:
+                    handleHead(context);
+                break;
                 case GET:
                     handleGet(context);
                     break;
@@ -69,6 +72,10 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     }
 
     protected void handleGet(RoutingContext context) {
+        response(context, HttpResponseStatus.NOT_IMPLEMENTED);
+    }
+    
+    protected void handleHead(RoutingContext context) {
         response(context, HttpResponseStatus.NOT_IMPLEMENTED);
     }
 

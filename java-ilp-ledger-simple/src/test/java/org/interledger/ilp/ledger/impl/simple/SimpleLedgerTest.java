@@ -21,6 +21,9 @@ import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.javamoney.moneta.Money;
 import static org.junit.Assert.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import javax.money.MonetaryAmount;
 
 import org.junit.Before;
@@ -36,10 +39,17 @@ import org.junit.Test;
 public class SimpleLedgerTest {
 
     static final Currencies CURRENCY = Currencies.EURO;
-    static final LedgerInfo ledgerInfo = new LedgerInfoBuilder()
-            .setCurrency(CURRENCY)
-            .setBaseUri("https://ledger.example")
-            .build();
+    static final LedgerInfo ledgerInfo;
+    static {
+        try {
+            ledgerInfo = new LedgerInfoBuilder()
+                .setCurrency(CURRENCY)
+                .setBaseUri(new URL("https", "ledger.example", 80, ""))
+                .build();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e.toString(), e);
+        }
+    }
 
     SimpleLedger instance;
 

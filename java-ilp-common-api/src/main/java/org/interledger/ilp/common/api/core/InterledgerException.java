@@ -12,7 +12,8 @@ public final class InterledgerException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     public enum RegisteredException {
-
+        // TODO : Recheck
+        // FIXME: This enum must be in the core package.
         InternalError             (HttpResponseStatus.INTERNAL_SERVER_ERROR, "InternalErrorError"),
         InsufficientAmountError   (HttpResponseStatus.INTERNAL_SERVER_ERROR, "InsufficientAmountError"),
         InsufficientPrecisionError(HttpResponseStatus.INTERNAL_SERVER_ERROR, "InsufficientPrecisionError"),

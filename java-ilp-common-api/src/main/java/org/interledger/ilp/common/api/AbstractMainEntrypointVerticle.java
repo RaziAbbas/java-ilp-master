@@ -149,11 +149,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
 
     protected void initIndexHandler(Router router, IndexHandler indexHandler) {
         List<EndpointHandler> endpointHandlers = getEndpointHandlers(config);
-        if (endpointHandlers != null && !endpointHandlers.isEmpty()) {
-            indexHandler.put(KEY_INDEX_URLS, publish(router, endpointHandlers));
-        } else {
-            log.warn("No public endpoints?");
-        }
+        publish( router, endpointHandlers);
         router.route(HttpMethod.GET, prefixUri).handler(indexHandler);
     }
 

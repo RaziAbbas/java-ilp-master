@@ -23,7 +23,7 @@ public class IndexHandler implements Handler<RoutingContext> {
     public static IndexHandler create() {
         return new IndexHandler();
     }
-    
+
     public IndexHandler put(String key, Object value) {
         index.put(key, value);
         return this;

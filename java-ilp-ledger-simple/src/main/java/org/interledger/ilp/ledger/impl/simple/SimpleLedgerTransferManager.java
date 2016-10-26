@@ -44,7 +44,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
 
     private static final AccountUri HOLDS_URI = AccountUri.buildFromURI(
             LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().
-                getHOLDAccountILP().getUri());;
+                getHOLDAccountILP().getUri());
 
     // Make default constructor private to avoid instantiating new classes.
     private SimpleLedgerTransferManager() {}

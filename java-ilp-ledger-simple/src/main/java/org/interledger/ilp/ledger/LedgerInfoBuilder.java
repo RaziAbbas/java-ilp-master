@@ -13,9 +13,10 @@ import org.interledger.ilp.core.LedgerInfo;
  * @author mrmx
  */
 public class LedgerInfoBuilder {
-
-    private int precission;
-    private int scale;
+    // By default use same values defined at JS implementation 
+    // (five-bells-ledger/src/controllers/metadata.js)
+    private int precission = 10;
+    private int scale = 2;
     private String currencyCode;
     private String currencySymbol;
     private String baseUri;
@@ -52,17 +53,11 @@ public class LedgerInfoBuilder {
     } 
     
     public LedgerInfoBuilder setBaseUri(URL baseUri) {
-        return setBaseUri(baseUri.toString());
-    }
-    
-    public LedgerInfoBuilder setBaseUri(URI baseUri) {
-        return setBaseUri(baseUri.toString());
-    }
-
-    public LedgerInfoBuilder setBaseUri(String baseUri) {
-        this.baseUri = baseUri;
+        this.baseUri = baseUri.toString().replace(":80", "");
+        System.out.println(">>>>"+this.baseUri);
         return this;
     }
+
     
     public LedgerInfo build() {
         if(StringUtils.isBlank(currencyCode)) {
