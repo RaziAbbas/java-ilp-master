@@ -1,5 +1,6 @@
 package org.interledger.ilp.ledger.impl.simple;
 
+import java.net.URL;
 import java.util.Collection;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerInfo;
@@ -23,18 +24,19 @@ public class SimpleLedgerAccountManagerTest {
 
     LedgerAccountManager instance;
     
-    final static String URI_LEDGER_A = "https://ledger1.example/";
-    final static String URI_LEDGER_B = "https://ledger2.example/";
+    final static String URI_LEDGER_A = "ledger1.example";
+    final static String URI_LEDGER_B = "ledger2.example";
 
-    AccountUri aliceURI = new AccountUri(URI_LEDGER_A, "alice");
-    AccountUri bobURI = new AccountUri(URI_LEDGER_B, "bob");
+    AccountUri aliceURI = new AccountUri("https://"+URI_LEDGER_A, "alice");
+    AccountUri bobURI = new AccountUri("https://"+URI_LEDGER_B, "bob");
     
 
     @BeforeClass
-    public static void init() {
+    public static void init() throws Exception {
+        
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
             .setCurrency(Currencies.EURO)
-            .setBaseUri(URI_LEDGER_A)
+            .setBaseUri(new URL("https", URI_LEDGER_A, 80, ""))
             .build();        
         LedgerFactory.initialize(ledgerInfo, "test-ledger");
     }

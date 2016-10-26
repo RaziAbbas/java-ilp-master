@@ -9,6 +9,9 @@ import org.interledger.ilp.ledger.LedgerInfoBuilder;
 import static org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccountManagerTest.URI_LEDGER_A;
 import org.javamoney.moneta.Money;
 import static org.junit.Assert.*;
+
+import java.net.URL;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,10 +31,10 @@ public class SimpleLedgerAccountTest {
     AccountUri otherURI = new AccountUri(sOtherURI, "others");
 
     @BeforeClass
-    public static void init() {
+    public static void init() throws Exception {
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
                 .setCurrency(Currencies.EURO)
-                .setBaseUri(URI_LEDGER_A)
+                .setBaseUri(new URL("https", URI_LEDGER_A, 80, ""))
                 .build();
         LedgerFactory.initialize(ledgerInfo, "test-ledger");
     }

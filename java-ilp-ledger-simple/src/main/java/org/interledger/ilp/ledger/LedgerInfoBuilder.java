@@ -53,7 +53,8 @@ public class LedgerInfoBuilder {
     } 
     
     public LedgerInfoBuilder setBaseUri(URL baseUri) {
-        this.baseUri = baseUri.toString();
+        this.baseUri = baseUri.toString().replace(":80", "");
+        System.out.println(">>>>"+this.baseUri);
         return this;
     }
 
