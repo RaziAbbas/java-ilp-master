@@ -1,5 +1,6 @@
 package org.interledger.ilp.ledger;
 
+import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.core.Ledger;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
@@ -16,11 +17,11 @@ public class LedgerFactory {
     
     private static SimpleLedger defaultLedgerSingleton;
 
-    public static void initialize(LedgerInfo ledgerInfo, String ledgerName) {
+    public static void initialize(LedgerInfo ledgerInfo, String ledgerName, Config config) {
         if (defaultLedgerSingleton != null) {
             log.warn("{} already initialized",LoggerFactory.class.getSimpleName());
         }
-        defaultLedgerSingleton = new SimpleLedger(ledgerInfo, ledgerName);
+        defaultLedgerSingleton = new SimpleLedger(ledgerInfo, ledgerName, config);
     }
 
     public static Ledger getDefaultLedger() {

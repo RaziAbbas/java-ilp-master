@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import org.interledger.cryptoconditions.Fulfillment;
+import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
@@ -58,12 +59,14 @@ public class SimpleLedgerTest {
     
     @BeforeClass
     public static void init() {
-        LedgerFactory.initialize(ledgerInfo, "test-ledger");
+        Config config = Config.create();
+        LedgerFactory.initialize(ledgerInfo, "test-ledger", config);
     }
     
     @Before
     public void setUp() {
-        instance = new SimpleLedger(ledgerInfo, "test");
+        Config config = Config.create();
+        instance = new SimpleLedger(ledgerInfo, "test", config);
     }
 
     /**

@@ -6,7 +6,7 @@ import org.interledger.ilp.core.events.LedgerEventHandler;
 public interface Ledger {
 
     /**
-     * Retrieve some meta-data about the ledger.
+     * Retrieve some meta-data about the ledger. (useful for Wallet/ILP-connector)
      *
      * @return <code>LedgerInfo</code>
      */

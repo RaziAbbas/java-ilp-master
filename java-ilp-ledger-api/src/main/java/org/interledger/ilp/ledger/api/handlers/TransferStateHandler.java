@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+
 import static io.vertx.core.http.HttpMethod.GET;
 
 import io.vertx.core.http.HttpHeaders;
@@ -11,11 +12,13 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
+import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 import org.slf4j.Logger;
@@ -23,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import static org.interledger.ilp.common.config.Key.*;
 
 /**
  * TransferHandler handler
@@ -112,8 +117,12 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
             // REF: makeEd25519Receipt(transferId, transferState) @
             //      @ five-bells-ledger/src/models/transfers.js
             JsonObject message = makeTransferStateMessage(transferID, status, RECEIPT_TYPE_ED25519);
-            String public_key = "";  // FIXME: config.getIn(['keys', 'ed25519', 'public']),
             String signature = "";   // FIXME: sign(hashJSON(message))
+            
+            LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+            Config config = ((SimpleLedger)LedgerFactory.getDefaultLedger()).getConfig();
+            String public_key = config.getString(SERVER, ED25519, PUBLIC_KEY);
+
             jo.put("type", RECEIPT_TYPE_ED25519);
             jo.put("message", message);
             jo.put("signer", signer);

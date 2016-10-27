@@ -90,7 +90,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 .setCurrencyCodeAndSymbol(currencyCode)
                 //TODO precission and scale
                 .build();
-        LedgerFactory.initialize(ledgerInfo, ledgerName);
+        LedgerFactory.initialize(ledgerInfo, ledgerName, config);
         ledger = LedgerFactory.getDefaultLedger();
         //Development config
         if (devConfig.isPresent()) {
