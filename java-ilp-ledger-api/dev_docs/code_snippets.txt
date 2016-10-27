@@ -1,0 +1,3 @@
+        LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+        String baseUri = ledgerInfo.getBaseUri();
+
