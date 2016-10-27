@@ -1,6 +1,5 @@
 package org.interledger.ilp.ledger;
 
-import java.net.URI;
 import java.net.URL;
 import java.util.Currency;
 import javax.money.CurrencyUnit;
