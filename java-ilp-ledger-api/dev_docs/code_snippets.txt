@@ -1,6 +1,12 @@
-        LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
-        String baseUri = ledgerInfo.getBaseUri(); // Note the baseUri contains a trailing '/' character
+Get Config parameters related to ILP protocol:
+    LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+    String baseUri = ledgerInfo.getBaseUri(); // Note the baseUri contains a trailing '/' character
 
 -------------------
-        Config config = ((SimpleLedger)LedgerFactory.getDefaultLedger()).getConfig();
-        String ilpPrefix = config.getString(LEDGER, ILP, PREFIX);
+
+Get Internal Config parameters (related to ledger implementation):
+    Config config = ((SimpleLedger)LedgerFactory.getDefaultLedger()).getConfig();
+    String public_key = config.getString(SERVER, ED25519, PUBLIC_KEY);
+
+-------------------
+
