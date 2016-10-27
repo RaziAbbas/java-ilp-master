@@ -1,35 +1,20 @@
 package org.interledger.ilp.ledger.impl.simple;
 
-import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.common.config.Config;
-import org.interledger.ilp.core.AccountUri;
-import org.interledger.ilp.core.ConditionURI;
-import org.interledger.ilp.core.Credit;
-import org.interledger.ilp.core.DTTM;
-import org.interledger.ilp.core.Debit;
+
 import org.interledger.ilp.core.LedgerInfo;
-import org.interledger.ilp.core.LedgerTransfer;
-import org.interledger.ilp.core.LedgerTransferRejectedReason;
-import org.interledger.ilp.core.TransferID;
-import org.interledger.ilp.core.TransferStatus;
-import org.interledger.ilp.core.events.LedgerEventHandler;
+
 import org.interledger.ilp.ledger.Currencies;
-import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.LedgerInfoBuilder;
-import org.interledger.ilp.ledger.account.LedgerAccount;
-import org.interledger.ilp.ledger.account.LedgerAccountManager;
-import org.javamoney.moneta.Money;
+
 import static org.junit.Assert.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.money.MonetaryAmount;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -77,73 +62,6 @@ public class SimpleLedgerTest {
         System.out.println("getInfo");
         LedgerInfo result = instance.getInfo();
         assertNotNull(result);
-    }
-
-    /**
-     * Test of send method, of class SimpleLedger.
-     */
-    // FIXME: Recheck test
-    // @Test
-    public void testSend() {
-        System.out.println("send");
-        TransferID transferID = new TransferID("3a2a1d9e-8640-4d2d-b06c-84f2cd613204");
-
-        LedgerAccount alice = new SimpleLedgerAccount(ALICE, CURRENCY.code()).setBalance(100);
-        LedgerAccount bob = new SimpleLedgerAccount(BOB, CURRENCY.code()).setBalance(100);
-        LedgerAccountManager accountManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
-        accountManager.store(alice);
-        accountManager.store(bob);
-        MonetaryAmount money = Money.of(10, CURRENCY.code());
-        Debit   debit = new  Debit(accountManager.getAccountUri(alice) , money);
-        Credit credit = new Credit(new AccountUri("http://ledger", BOB), money);
-        
-        LedgerTransfer transfer
-                = new SimpleLedgerTransfer(transferID,
-                        new Debit[]{debit}, new Credit[] {credit},
-                        ConditionURI.c("cc:execution"),
-                        ConditionURI.c("cc:cancelation"),
-                        DTTM.c(""), DTTM.c(""),
-                        "" /* data*/, "" /* noteToSelf*/, TransferStatus.PROPOSED);
-        instance.send(transfer);
-        assertEquals(90, accountManager.getAccountByName(ALICE).getBalance().getNumber().intValue());
-        assertEquals(110, accountManager.getAccountByName(BOB).getBalance().getNumber().intValue());
-    }
-
-    /**
-     * Test of rejectTransfer method, of class SimpleLedger.
-     */
-    @Ignore
-    @Test
-    public void testRejectTransfer() {
-        System.out.println("rejectTransfer");
-        LedgerTransfer transfer = null;
-        LedgerTransferRejectedReason reason = null;
-        instance.rejectTransfer(transfer, reason);
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of fulfillCondition method, of class SimpleLedger.
-     */
-    @Ignore
-    @Test
-    public void testFulfillCondition() {
-        System.out.println("fulfillCondition");
-        Fulfillment fulfillment = null;
-        instance.fulfillCondition(fulfillment);
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of registerEventHandler method, of class SimpleLedger.
-     */
-    @Ignore
-    @Test
-    public void testRegisterEventHandler() {
-        System.out.println("registerEventHandler");
-        LedgerEventHandler<?> handler = null;
-        instance.registerEventHandler(handler);
-        fail("The test case is a prototype.");
     }
 
 }
