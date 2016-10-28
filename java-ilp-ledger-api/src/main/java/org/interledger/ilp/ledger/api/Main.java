@@ -33,6 +33,7 @@ import org.interledger.ilp.ledger.api.handlers.HealthHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler;
 import org.interledger.ilp.ledger.api.handlers.TransfersHandler;
+import org.interledger.ilp.ledger.api.handlers.UnitTestSupportHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferStateHandler;
 import org.interledger.ilp.ledger.api.handlers.FulfillmentHandler;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
@@ -51,7 +52,7 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     private static final String DEFAULT_LEDGER_NAME = "ledger-simple";
-    private static final String MIN_ALLOWED_BALANCE_INFINITY = "-infinity";
+//    private static final String MIN_ALLOWED_BALANCE_INFINITY = "-infinity";
 
     private String ilpPrefix;
     private Ledger ledger;
@@ -109,7 +110,8 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 TransferWSEventHandler.create(),
                 TransfersHandler.create(),
                 TransferStateHandler.create(),
-                FulfillmentHandler.create()
+                FulfillmentHandler.create(),
+                UnitTestSupportHandler.create()
         );
     }
 
