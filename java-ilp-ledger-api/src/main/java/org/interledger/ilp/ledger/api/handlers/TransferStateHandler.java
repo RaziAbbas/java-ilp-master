@@ -115,7 +115,7 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
             jo.put("message", message);
             jo.put("signer", signer);
             jo.put("public_key", public_key);
-            jo.put(signature, signature);
+            jo.put("signature", signature);
         } else {
             // REF: makeSha256Receipt(transferId, transferState, conditionState) @
             //      @ five-bells-ledger/src/models/transfers.js
