@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+
 import static io.vertx.core.http.HttpMethod.GET;
 
 import io.vertx.core.http.HttpHeaders;
@@ -11,10 +12,13 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
-
+import org.interledger.ilp.common.config.Config;
+import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
+import org.interledger.ilp.ledger.LedgerFactory;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 import org.slf4j.Logger;
@@ -22,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import static org.interledger.ilp.common.config.Key.*;
 
 /**
  * TransferHandler handler
@@ -57,10 +63,12 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
         return new TransferStateHandler(); // TODO: return singleton?
     }
     
-    private static JsonObject makeTransferStateMessage(String transferId, TransferStatus state, String receiptType) {
+    private static JsonObject makeTransferStateMessage(TransferID transferId, TransferStatus state, String receiptType) {
+        LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+        String baseUri = ledgerInfo.getBaseUri();
         JsonObject jo = new JsonObject();
-        jo.put("id", transferId);
-        jo.put("state", state);
+        jo.put("id", baseUri+ "transfers/" + transferId.transferID);
+        jo.put("state", state.toString());
         if (receiptType.equals(RECEIPT_TYPE_SHA256)) {
             String token = ""; // FIXME: sign(sha512(transferId + ':' + state))
             jo.put("token", token);
@@ -108,9 +116,13 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
         if (receiptType.equals(RECEIPT_TYPE_ED25519)) {
             // REF: makeEd25519Receipt(transferId, transferState) @
             //      @ five-bells-ledger/src/models/transfers.js
-            JsonObject message = makeTransferStateMessage(transferId, status, RECEIPT_TYPE_ED25519);
-            String public_key = "";  // FIXME: config.getIn(['keys', 'ed25519', 'public']),
+            JsonObject message = makeTransferStateMessage(transferID, status, RECEIPT_TYPE_ED25519);
             String signature = "";   // FIXME: sign(hashJSON(message))
+            
+            LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+            Config config = ((SimpleLedger)LedgerFactory.getDefaultLedger()).getConfig();
+            String public_key = config.getString(SERVER, ED25519, PUBLIC_KEY);
+
             jo.put("type", RECEIPT_TYPE_ED25519);
             jo.put("message", message);
             jo.put("signer", signer);
@@ -119,7 +131,7 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
         } else {
             // REF: makeSha256Receipt(transferId, transferState, conditionState) @
             //      @ five-bells-ledger/src/models/transfers.js
-            JsonObject message = makeTransferStateMessage(transferId, status, RECEIPT_TYPE_SHA256);
+            JsonObject message = makeTransferStateMessage(transferID, status, RECEIPT_TYPE_SHA256);
             String digest = sha256(message.encode());
             jo.put("type", RECEIPT_TYPE_SHA256);
             jo.put("message", message);
@@ -127,7 +139,7 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
             jo.put("digest", digest);
             String conditionState = context.request().getParam("condition_state");
             if (conditionState != null) {
-                JsonObject conditionMessage = makeTransferStateMessage(transferId, status, RECEIPT_TYPE_SHA256);
+                JsonObject conditionMessage = makeTransferStateMessage(transferID, status, RECEIPT_TYPE_SHA256);
                 String condition_digest = sha256(conditionMessage.encode());
                 jo.put("condition_state", conditionState);
                 jo.put("condition_digest", condition_digest);

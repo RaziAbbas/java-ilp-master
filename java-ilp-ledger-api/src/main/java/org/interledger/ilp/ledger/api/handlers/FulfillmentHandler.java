@@ -57,7 +57,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
     @Override
     protected void handlePut(RoutingContext context) {
         // FIXME: If debit's account owner != request credentials throw exception.
-        // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
+        // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
         log.info(this.getClass().getName() + "handlePut invoqued ");
         boolean isFulfillment = false, isRejection   = false;
@@ -164,17 +164,21 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransfer transfer = tm.getTransferById(transferID);
+        HttpResponseStatus httpStatus = HttpResponseStatus.OK; // default
         String fulfillmentURI = (isFulfillment) 
                 ? transfer.getURIExecutionFulfillment().URI
                 : transfer.getURICancelationFulfillment().URI;
+        if ( FulfillmentURI.MISSING.URI.equals(fulfillmentURI)) {
+            throw new InterledgerException(
+                InterledgerException.RegisteredException.MissingFulfillmentError,
+                "This transfer has not yet been fulfilled");
 
+        }
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
-            .setStatusCode(HttpResponseStatus.ACCEPTED.code())
+            .setStatusCode(httpStatus.code())
             .end(fulfillmentURI);
-        log.info(">>> deleteme end ");
-
     }
 }
 

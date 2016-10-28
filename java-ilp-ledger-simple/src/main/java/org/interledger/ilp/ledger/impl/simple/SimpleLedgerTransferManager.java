@@ -112,6 +112,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         accManager.getAccountByName(sender   .getAccountId()).debit (amount);
         accManager.getAccountByName(recipient.getAccountId()).credit(amount);
     }
+
     @Override
     public void executeLocalTransfer(LedgerTransfer transfer) {
         // AccountUri sender, AccountUri recipient, MonetaryAmount amount)
@@ -123,7 +124,6 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         transfer.setTransferStatus(TransferStatus.EXECUTED);
         transfer.setDTTM_prepared(DTTM.getNow());
         transfer.setDTTM_executed(DTTM.getNow());
-        
     }
 
     @Override
@@ -142,5 +142,15 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
             executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);
         }
     }
+
+    // UnitTest / function test realated code
+    public void unitTestsResetTransactionDDBB() {
+        transferMap = new HashMap<TransferID, LedgerTransfer>();
+    }
+    
+    public String unitTestsGetTotalTransactions() {
+        return ""+transferMap.keySet().size();
+    }
+    
 
 }

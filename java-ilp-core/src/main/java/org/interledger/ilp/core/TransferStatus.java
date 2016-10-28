@@ -40,8 +40,7 @@ public enum TransferStatus {
     public String toString() {
         switch (statusCode) {
         case -1:
-            throw new RuntimeException("NONEXISTENT TransferStatus must never be used except for "
-                    + "object equality comparation" );
+            return "nonexistent";
         case 0:
             return "proposed";
         case 1:

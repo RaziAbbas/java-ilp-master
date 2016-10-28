@@ -42,8 +42,8 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
      * will trigger a transaction just if the ConditionURI for Execution/Cancelation
      * are also empty.
      */
-    FulfillmentURI URIExecutionFF     = FulfillmentURI.EMPTY;
-    FulfillmentURI URICancelationFF   = FulfillmentURI.EMPTY;
+    FulfillmentURI URIExecutionFF     = FulfillmentURI.MISSING;
+    FulfillmentURI URICancelationFF   = FulfillmentURI.MISSING;
     String data = "";
     String noteToSelf = "";
 

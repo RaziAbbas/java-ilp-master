@@ -2,6 +2,8 @@ package org.interledger.ilp.ledger.impl.simple;
 
 import java.net.URL;
 import java.util.Collection;
+
+import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.Currencies;
@@ -33,12 +35,11 @@ public class SimpleLedgerAccountManagerTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        
         LedgerInfo ledgerInfo = new LedgerInfoBuilder()
             .setCurrency(Currencies.EURO)
             .setBaseUri(new URL("https", URI_LEDGER_A, 80, ""))
             .build();        
-        LedgerFactory.initialize(ledgerInfo, "test-ledger");
+        LedgerFactory.initialize(ledgerInfo, "test-ledger", Config.create());
     }
     
     @Before

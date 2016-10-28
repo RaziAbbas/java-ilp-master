@@ -25,7 +25,8 @@ public final class InterledgerException extends RuntimeException {
         FulfillmentNotFoundError  (HttpResponseStatus.NOT_FOUND            , "FulfillmentNotFoundError"),
         UnauthorizedError         (HttpResponseStatus.UNAUTHORIZED         , "UnauthorizedError"),
         ForbiddenError            (HttpResponseStatus.FORBIDDEN            , "UnauthorizedError"),
-        BadRequestError           (HttpResponseStatus.BAD_REQUEST          , "BadRequestError");
+        BadRequestError           (HttpResponseStatus.BAD_REQUEST          , "BadRequestError"),
+        MissingFulfillmentError   (HttpResponseStatus.NOT_FOUND            , "MissingFulfillmentError");
         private final HttpResponseStatus HTTPErrorCode;
         private final String sID;
 
