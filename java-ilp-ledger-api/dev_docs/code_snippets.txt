@@ -10,3 +10,22 @@ Get Internal Config parameters (related to ledger implementation):
 
 -------------------
 
+Abort request and Launch Exception:
+    if ("failed assertCondition") {
+        throw new InterledgerException(InterledgerException.RegisteredException.BadRequestError, "Required param ...");
+    }
+
+    Note:
+    This InterledgerException is captured by default in RestEndpointHandler.java and a JSON response mapping
+    the exception is returned. The RestEndpointHandler related code is similar to:
+        | try {
+        |     switch (context.request().method()) {
+        |         case GET:
+        |             handleGet(context);
+        |             break;
+        |         ...
+        |     }
+        | } catch (InterledgerException ex ) {
+        |     response(context, ex.getException().getHTTPErrorCode(), buildJSON(ex.getException().getsID(), ex.getDescription()));
+        | }
+
