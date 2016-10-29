@@ -72,7 +72,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
           throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         log.debug(this.getClass().getName() + "handlePut invoqued ");
-        log.debug(context.getBodyAsString());
+        log.info(context.getBodyAsString());
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -153,13 +153,21 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         ConditionURI URICancelationCond = (cancelation_condition != null)
                 ? ConditionURI.c(cancelation_condition)
                 : ConditionURI.EMPTY ;
+        TransferStatus status = TransferStatus.PROPOSED; // By default
+        if (requestBody.getString("state") != null) {
+          // TODO: Must status change be allowed or must we force it with
+          //     to PROPOSED and just change it with Execution|Cancellation Fulfillments
+          // For now it's allowed (to make it compliant with five-bells-ledger tests) 
+          status = TransferStatus.parse(requestBody.getString("state"));
+          System.out.println("deleteme put transfer status "+status);
+        }
         LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID,
                 new Debit[]{debit0}, new Credit[]{credit0},
                 URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
-                data, noteToSelf, TransferStatus.PROPOSED);
+                data, noteToSelf, status);
         
         boolean isNewTransfer = !tm.transferExists(transferID);
-        log.debug(">>> is new transfer?: " + isNewTransfer);
+        System.out.println("is new transfer?: " + isNewTransfer);
         LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
         if (!isNewTransfer) {
             // Check that received json data match existing transaction.
@@ -167,12 +175,13 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                     || !effectiveTransfer.getDebits()[0].equals(receivedTransfer.getDebits()[0])) {
                 throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
             }
+            
         } else {
             tm.createNewRemoteILPTransfer(receivedTransfer);
         }
         try {
             String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat();
-            log.debug("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
+            log.info("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
             TransferWSEventHandler.notifyILPConnector(context,
                     notification);
         } catch (Exception e) {
