@@ -57,6 +57,7 @@ public abstract class RestEndpointHandler extends EndpointHandler {
                     break;
             }
         } catch (InterledgerException ex ) {
+            log.error("{} -> {}\n", ex.getException() , ex.getDescription());
             response(context, ex.getException().getHTTPErrorCode(), buildJSON(ex.getException().getsID(), ex.getDescription()));
         } catch (RestEndpointException rex) {
             log.error("RestEndpointException {} -> {}\n", rex.getResponseStatus(), rex.getResponse(), rex.toString());
