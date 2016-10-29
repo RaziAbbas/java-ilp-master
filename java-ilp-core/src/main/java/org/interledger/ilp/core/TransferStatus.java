@@ -13,6 +13,16 @@ public enum TransferStatus {
     TransferStatus(int statusCode) {
         this.statusCode = statusCode;
     }
+    
+    @SuppressWarnings("unused")
+    public static TransferStatus parse(String status) {
+      status = status.toLowerCase();
+      if ("proposed".equals(status) || "0".equals(status)) { return PROPOSED; }
+      if ("prepared".equals(status) || "1".equals(status)) { return PREPARED; }
+      if ("executed".equals(status) || "2".equals(status)) { return EXECUTED; }
+      if ("rejected".equals(status) || "3".equals(status)) { return REJECTED; }
+      throw new RuntimeException("Can not parse String "+status+" as TransferStatus");
+    }
 
     public int getStatusCode() {
 		return statusCode;
@@ -51,6 +61,7 @@ public enum TransferStatus {
             return "rejected";
         default:
             throw new IllegalArgumentException("Invalid status " + statusCode);
+        }
     }
-    }
+
 }
