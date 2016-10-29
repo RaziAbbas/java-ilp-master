@@ -26,7 +26,8 @@ public final class InterledgerException extends RuntimeException {
         UnauthorizedError         (HttpResponseStatus.UNAUTHORIZED         , "UnauthorizedError"),
         ForbiddenError            (HttpResponseStatus.FORBIDDEN            , "UnauthorizedError"),
         BadRequestError           (HttpResponseStatus.BAD_REQUEST          , "BadRequestError"),
-        MissingFulfillmentError   (HttpResponseStatus.NOT_FOUND            , "MissingFulfillmentError");
+        MissingFulfillmentError   (HttpResponseStatus.NOT_FOUND            , "MissingFulfillmentError"),
+        AlreadyRolledBackError    (HttpResponseStatus.UNPROCESSABLE_ENTITY , "AlreadyRolledBackError");
         private final HttpResponseStatus HTTPErrorCode;
         private final String sID;
 
