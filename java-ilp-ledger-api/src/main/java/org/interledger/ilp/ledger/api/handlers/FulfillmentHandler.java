@@ -15,6 +15,7 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
+import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
@@ -164,7 +165,11 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         LedgerTransfer transfer = tm.getTransferById(transferID);
-        HttpResponseStatus httpStatus = HttpResponseStatus.OK; // default
+        if (ConditionURI.EMPTY.equals(transfer.getURIExecutionCondition())){
+            throw new InterledgerException(
+                    InterledgerException.RegisteredException.TransferNotConditionalError,
+                    "Transfer does not have any conditions");
+        }
         String fulfillmentURI = (isFulfillment) 
                 ? transfer.getURIExecutionFulfillment().URI
                 : transfer.getURICancelationFulfillment().URI;
@@ -172,12 +177,12 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             throw new InterledgerException(
                 InterledgerException.RegisteredException.MissingFulfillmentError,
                 "This transfer has not yet been fulfilled");
-
         }
+        
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
-            .setStatusCode(httpStatus.code())
+            .setStatusCode(HttpResponseStatus.OK.code())
             .end(fulfillmentURI);
     }
 }

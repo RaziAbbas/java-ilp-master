@@ -96,6 +96,18 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     @Override
     public void createNewRemoteILPTransfer(LedgerTransfer newTransfer) {
         System.out.println("createNewRemoteILPTransfer");
+        
+        if (transferExists(newTransfer.getTransferID())) {
+            throw new RuntimeException("trying to create new transfer "
+                    + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "
+                    + "Check transfer with SimpleLedgerTransferManager.transferExists before invoquing this function");
+        }
+        System.out.println("deleteme createNewRemoteILPTransfer newTransfer "+
+                newTransfer.getTransferID().transferID+", status: "+newTransfer.getTransferStatus().toString());
+
+        System.out.println("deleteme newTransfer.isLocal(): "+ newTransfer.isLocal());
+
+        transferMap.put(newTransfer.getTransferID(), newTransfer);
         if (newTransfer.isLocal() && 
             newTransfer.getURIExecutionCondition().equals(ConditionURI.EMPTY)) {
             System.out.println("createNewRemoteILPTransfer execute locally and forget");
@@ -103,15 +115,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
             executeLocalTransfer(newTransfer);
             return;
         }
-        System.out.println("createNewRemoteTransfer newTransfer:"+newTransfer.getTransferID().transferID);
 
-        if (transferExists(newTransfer.getTransferID())) {
-            throw new RuntimeException("trying to create new transfer "
-                    + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "
-                    + "Check transfer with SimpleLedgerTransferManager.transferExists before invoquing this function");
-        }
-        System.out.println("deleteme createNewRemoteILPTransfer newTransfer "+newTransfer.getTransferID().transferID+", status: "+newTransfer.getTransferStatus().toString());
-        transferMap.put(newTransfer.getTransferID(), newTransfer);
         // PUT Money on-hold:
         for (Debit debit : newTransfer.getDebits()) {
             executeLocalTransfer(debit.account, HOLDS_URI, debit.amount);
