@@ -82,13 +82,13 @@ public interface LedgerTransfer {
 
     public ConditionURI getURIExecutionCondition();
 
-    public ConditionURI getURICancelationCondition();
+    public ConditionURI getURICancellationCondition();
 
     public void           setURIExecutionFulfillment(FulfillmentURI ffURI);
     public FulfillmentURI getURIExecutionFulfillment();
 
     public void           setURICancelationFulfillment(FulfillmentURI ffURI);
-    public FulfillmentURI getURICancelationFulfillment();
+    public FulfillmentURI getURICancellationFulfillment();
     
     /**
      * @return true if the transaction is local between internal

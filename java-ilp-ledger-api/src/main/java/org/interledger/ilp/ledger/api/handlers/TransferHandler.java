@@ -146,12 +146,12 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                 ? DTTM.c(requestBody.getString("expires_at"))
                 : DTTM.future; // TODO: RECHECK
         ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
-                ? ConditionURI.c(requestBody.getString("execution_condition"))
+                ? ConditionURI.build(requestBody.getString("execution_condition"))
                 : ConditionURI.EMPTY ;
         String cancelation_condition = requestBody.getString("cancellation_condition");
-                                                              
+
         ConditionURI URICancelationCond = (cancelation_condition != null)
-                ? ConditionURI.c(cancelation_condition)
+                ? ConditionURI.build(cancelation_condition)
                 : ConditionURI.EMPTY ;
         TransferStatus status = TransferStatus.PROPOSED; // By default
         if (requestBody.getString("state") != null) {

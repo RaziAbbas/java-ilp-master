@@ -61,14 +61,14 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
         log.info(this.getClass().getName() + "handlePut invoqued ");
-        boolean isFulfillment = false, isRejection   = false;
-        if (context.request().path().endsWith("/fulfillment")){
-            isFulfillment = true;
-        } else if (context.request().path().endsWith("/rejection")){
-            isRejection = true;
-        } else {
-            throw new RuntimeException("path doesn't match /fulfillment | /rejection");
-        }
+        // boolean isFulfillment = false, isRejection   = false;
+//        if (context.request().path().endsWith("/fulfillment")){
+//            isFulfillment = true;
+//        } else if (context.request().path().endsWith("/rejection")){
+//            isRejection = true;
+//        } else {
+//            throw new RuntimeException("path doesn't match /fulfillment | /rejection");
+//        }
         /**********************
          * PUT/GET fulfillment (FROM ILP-CONNECTOR)
          *********************
@@ -117,9 +117,12 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         Fulfillment          ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
         MessagePayload message = new MessagePayload(new byte[]{});
         boolean ffExisted = false;
-        if (false) {
-            // 
-        } else if (isFulfillment && transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI()) ) {
+        System.out.println("deleteme transfer.getURIExecutionCondition().URI:"+transfer.getURIExecutionCondition().URI.toString());
+        System.out.println("deleteme transfer.getURICancellationCondition().URI:"+transfer.getURICancellationCondition().URI.toString());
+        System.out.println("deleteme request fulfillmentURI:"+fulfillmentURI);
+        System.out.println("deleteme request ff.getCondition().toURI():"+ff.getCondition().toURI());
+
+        if (/*isFulfillment && */transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI()) ) {
             ffExisted = transfer.getURIExecutionCondition().URI.equals(fulfillmentURI);
             if (!ffExisted) {
                 if (!ff.validate(message)){
@@ -128,8 +131,8 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                 transfer.setURIExecutionFulfillment(new FulfillmentURI(fulfillmentURI));
                 tm.executeRemoteILPTransfer(transfer);
             }
-        } else if (isRejection && transfer.getURICancelationCondition().URI.equals(ff.getCondition().toURI()) ){
-            ffExisted = transfer.getURICancelationCondition().URI.equals(fulfillmentURI);
+        } else if (/*isRejection && */transfer.getURICancellationCondition().URI.equals(ff.getCondition().toURI()) ){
+            ffExisted = transfer.getURICancellationCondition().URI.equals(fulfillmentURI);
             if (!ffExisted) {
                 if (!ff.validate(message)){
                     throw new RuntimeException("cancelation fulfillment doesn't validate");
@@ -179,7 +182,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         }
         String fulfillmentURI = (isFulfillment) 
                 ? transfer.getURIExecutionFulfillment().URI
-                : transfer.getURICancelationFulfillment().URI;
+                : transfer.getURICancellationFulfillment().URI;
         if ( FulfillmentURI.MISSING.URI.equals(fulfillmentURI)) {
             throw new InterledgerException(
                 InterledgerException.RegisteredException.MissingFulfillmentError,

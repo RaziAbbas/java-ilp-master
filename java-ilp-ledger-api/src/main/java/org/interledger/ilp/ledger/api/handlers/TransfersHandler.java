@@ -75,7 +75,7 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
             throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        ConditionURI executionCondition = ConditionURI.c(context.request().getParam(execCondition));
+        ConditionURI executionCondition = ConditionURI.build(context.request().getParam(execCondition));
         List<LedgerTransfer> transferList = tm.getTransfersByExecutionCondition(executionCondition);
         JsonArray ja = new JsonArray();
         for (LedgerTransfer transfer : transferList) {

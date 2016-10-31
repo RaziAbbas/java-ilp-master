@@ -17,7 +17,7 @@ public class ConditionURI {
      * @param URI
      * @return new Condition or (default) EMPTY one
      */
-    public static ConditionURI c(String URI){
+    public static ConditionURI build(String URI){
         if (URI.equals(EMPTY_CONDITION)) {
             // TODO: Improve URI equal "EMPTY CONDITION" logic
             return EMPTY;

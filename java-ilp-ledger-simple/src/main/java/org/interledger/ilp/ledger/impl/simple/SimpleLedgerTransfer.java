@@ -167,7 +167,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     }
 
     @Override
-    public ConditionURI getURICancelationCondition() {
+    public ConditionURI getURICancellationCondition() {
         return URICancelationCond;
     }
 
@@ -227,7 +227,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     }
     
     @Override
-    public FulfillmentURI getURICancelationFulfillment(){
+    public FulfillmentURI getURICancellationFulfillment(){
         return URICancelationFF;
     }
     
@@ -260,7 +260,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             JsonObject related_resources = new JsonObject();
             String URI_FF = (this.getTransferStatus() == TransferStatus.EXECUTED)
                     ? this.  getURIExecutionFulfillment().URI
-                    : this.getURICancelationFulfillment().URI;
+                    : this.getURICancellationFulfillment().URI;
             related_resources.put("execution_condition_fulfillment", URI_FF);
             jo.put("related_resources", related_resources);
         }
@@ -298,7 +298,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
       }
       if (bIncludeConditions) {
           jo.put(   "execution_condition", this.  getURIExecutionCondition().URI);
-          jo.put("cancellation_condition", this.getURICancelationCondition().URI);
+          jo.put("cancellation_condition", this.getURICancellationCondition().URI);
       }
       // jo.put("expires_at", this.DTTM_expires.toString());
       return jo;
