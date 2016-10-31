@@ -307,8 +307,9 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
 //             prepared_at: '2015-06-16T00:00:00.000Z',
 //             proposed_at: '2015-06-16T00:00:00.000Z' } }
       LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+      
       JsonObject jo = new JsonObject();
-      String id = "http://localhost" /*FIXME:(0) TODO URL of ledger as seen by clients */+ "/transfers/"+ transferID.transferID;
+      String id = ledgerInfo.getBaseUri() + "transfers/"+ transferID.transferID;
       jo.put("id", id);
       jo.put("state", this.getTransferStatus().toString());
       String ledger = ledgerInfo.getBaseUri();
