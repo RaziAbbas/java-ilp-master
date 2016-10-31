@@ -107,6 +107,11 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
          *     conditions (which append a prefix to this empty message)
          **/
         LedgerTransfer transfer = tm.getTransferById(transferID);
+        if (ConditionURI.EMPTY.equals(transfer.getURIExecutionCondition())){
+            throw new InterledgerException(
+                    InterledgerException.RegisteredException.TransferNotConditionalError,
+                    "Transfer is not conditional");
+        }
         String   fulfillmentURI = context.getBodyAsString();
         Fulfillment          ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
         MessagePayload message = new MessagePayload(new byte[]{});
