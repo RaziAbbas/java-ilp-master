@@ -123,7 +123,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         System.out.println("deleteme request ff.getCondition().toURI():"+ff.getCondition().toURI());
 
         if (/*isFulfillment && */transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI()) ) {
-            ffExisted = transfer.getURIExecutionCondition().URI.equals(fulfillmentURI);
+            ffExisted = transfer.getURIExecutionFulfillment().URI.equals(fulfillmentURI);
             if (!ffExisted) {
                 if (!ff.validate(message)){
                     throw new RuntimeException("execution fulfillment doesn't validate");
@@ -132,7 +132,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                 tm.executeRemoteILPTransfer(transfer);
             }
         } else if (/*isRejection && */transfer.getURICancellationCondition().URI.equals(ff.getCondition().toURI()) ){
-            ffExisted = transfer.getURICancellationCondition().URI.equals(fulfillmentURI);
+            ffExisted = transfer.getURICancellationFulfillment().URI.equals(fulfillmentURI);
             if (!ffExisted) {
                 if (!ff.validate(message)){
                     throw new RuntimeException("cancelation fulfillment doesn't validate");
@@ -144,10 +144,12 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             throw new InterledgerException(InterledgerException.RegisteredException.UnmetConditionError, "Fulfillment does not match any condition");
             // throw new InterledgerException(InterledgerException.RegisteredException.InvalidFulfillmentError);
         }
+        System.out.println("deleteme ffExisted:"+ffExisted);
+
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
-            .setStatusCode(!ffExisted ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.ACCEPTED.code())
+            .setStatusCode(!ffExisted ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.OK.code())
             .end(fulfillmentURI);
         String notification = ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat();
         TransferWSEventHandler.notifyILPConnector(context, notification);
