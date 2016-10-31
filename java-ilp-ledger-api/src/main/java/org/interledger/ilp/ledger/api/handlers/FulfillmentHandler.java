@@ -54,7 +54,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         return new FulfillmentHandler(); // TODO: return singleton?
     }
 
-    @SuppressWarnings("unused")
     @Override
     protected void handlePut(RoutingContext context) {
         // FIXME: If debit's account owner != request credentials throw exception.
@@ -128,8 +127,8 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                 if (!ff.validate(message)){
                     throw new RuntimeException("execution fulfillment doesn't validate");
                 }
-                transfer.setURIExecutionFulfillment(new FulfillmentURI(fulfillmentURI));
-                tm.executeRemoteILPTransfer(transfer);
+                tm.executeRemoteILPTransfer(transfer, new FulfillmentURI(fulfillmentURI));
+
             }
         } else if (/*isRejection && */transfer.getURICancellationCondition().URI.equals(ff.getCondition().toURI()) ){
             ffExisted = transfer.getURICancellationFulfillment().URI.equals(fulfillmentURI);
@@ -137,8 +136,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                 if (!ff.validate(message)){
                     throw new RuntimeException("cancelation fulfillment doesn't validate");
                 }
-                transfer.setURICancelationFulfillment(new FulfillmentURI(fulfillmentURI));
-                tm.abortRemoteILPTransfer(transfer);
+                tm.abortRemoteILPTransfer(transfer, new FulfillmentURI(fulfillmentURI));
             }
         } else {
             throw new InterledgerException(InterledgerException.RegisteredException.UnmetConditionError, "Fulfillment does not match any condition");

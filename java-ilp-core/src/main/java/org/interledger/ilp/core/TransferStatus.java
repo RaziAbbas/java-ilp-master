@@ -14,7 +14,6 @@ public enum TransferStatus {
         this.statusCode = statusCode;
     }
     
-    @SuppressWarnings("unused")
     public static TransferStatus parse(String status) {
       status = status.toLowerCase();
       if ("proposed".equals(status) || "0".equals(status)) { return PROPOSED; }

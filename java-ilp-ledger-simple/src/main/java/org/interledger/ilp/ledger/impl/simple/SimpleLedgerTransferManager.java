@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import java.util.HashMap;
+
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
+import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,9 +66,9 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         if (result == null) {
             throw new InterledgerException(InterledgerException.RegisteredException.TransferNotFoundError, "This transfer does not exist");
         }
-        System.out.println("deleteme getTransferById id: "+ result.getTransferID().transferID);
-        System.out.println("deleteme result status     : "+ result.getTransferStatus().toString());
-        if (result.getTransferStatus().equals(TransferStatus.REJECTED)) {
+        System.out.println(">>>>> deleteme getTransferById id: "+ result.getTransferID().transferID);
+        System.out.println(">>>>> deleteme result status     : "+ result.getTransferStatus().toString());
+        if (result.getTransferStatus() == TransferStatus.REJECTED) {
             throw new InterledgerException(InterledgerException.RegisteredException.AlreadyRolledBackError, "This transfer has already been rejected");
         }
     
@@ -145,20 +147,23 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     }
 
     @Override
-    public void executeRemoteILPTransfer(LedgerTransfer transfer) {
+    public void executeRemoteILPTransfer(LedgerTransfer transfer, FulfillmentURI executionFulfillmentURI) {
         // DisburseFunds:
         for (Credit debit : transfer.getCredits()) {
             executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);
         }
         transfer.setTransferStatus(TransferStatus.EXECUTED);
+        transfer.setURIExecutionFulfillment(executionFulfillmentURI);
     }
 
     @Override
-    public void abortRemoteILPTransfer(LedgerTransfer transfer) {
+    public void abortRemoteILPTransfer(LedgerTransfer transfer, FulfillmentURI cancellationFulfillmentURI) {
         // Return Held Funds
         for (Debit debit : transfer.getDebits()) {
             executeLocalTransfer(HOLDS_URI, debit.account, debit.amount);
         }
+        transfer.setTransferStatus(TransferStatus.REJECTED);
+        transfer.setURICancelationFulfillment(cancellationFulfillmentURI);
     }
 
     // UnitTest / function test realated code

@@ -2,6 +2,7 @@ package org.interledger.ilp.ledger.transfer;
 
 
 import org.interledger.ilp.core.ConditionURI;
+import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 
@@ -18,8 +19,8 @@ public  interface LedgerTransferManager {
 
     void executeLocalTransfer(LedgerTransfer transfer);
 
-    void executeRemoteILPTransfer(LedgerTransfer transfer);
+    void executeRemoteILPTransfer(LedgerTransfer transfer, FulfillmentURI executionFulfillmentURI);
 
-    void abortRemoteILPTransfer(LedgerTransfer transfer);
+    void abortRemoteILPTransfer(LedgerTransfer transfer, FulfillmentURI cancellationFulfillmentURI);
 
 }

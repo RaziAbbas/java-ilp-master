@@ -118,12 +118,15 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         return noteToSelf;
     }
 
+    // TODO: IMPROVEMENT. setTransferStatus Make private and change when providing
+    //       exec/cancel fulfillment. Ummm, What happens for non-conditional transactions?
     @Override
     public void setTransferStatus(TransferStatus transferStatus) {
         final String errorState = "new state '"+transferStatus.toString()+"' "
                 + "not compliant with Transfer State Machine. Current state: "
                 + this.transferStatus.toString();
-        // TODO: COMMENT next check commented to make five-bells-ledger tests pass
+        // TODO: COMMENT on ILP Ledger list. 
+        // next checks were commented to make five-bells-ledger tests pass
         //    anyway it looks sensible to have them in place.
         // switch(transferStatus){
         //     // TODO: RECHECK allowed state machine 
@@ -152,7 +155,6 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         // }
         this.transferStatus = transferStatus;
         System.out.println("deleteme SimpleLedgerTransfer setTransferStatus transferStatus:"+transferStatus.toString());
-
     }
 
     @Override
