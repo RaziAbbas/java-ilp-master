@@ -110,30 +110,34 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 //        }
 
         JsonArray debits = requestBody.getJsonArray("debits");
-        if (debits.size() > 1) {
-            throw new RuntimeException("Transactions from multiple source debits not implemented");
-        }
-        JsonObject jsonDebit0 = debits.getJsonObject(0);
-        // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
-        AccountUri fromURI0 = AccountUri.buildFromURI(jsonDebit0.getString("account") /*account URI*/);
-
+//        if (debits.size() > 1) {
+//            throw new RuntimeException("Transactions from multiple source debits not implemented");
+//        }
+        Debit[] debitList = new Debit[debits.size()];
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
-
         CurrencyUnit currencyUnit /*local ledger currency */ = Monetary.getCurrency(ledgerInfo.getCurrencyCode());
-        MonetaryAmount debit0_ammount = Money.of(Double.parseDouble(jsonDebit0.getString("amount")), currencyUnit);
-        Debit debit0 = new Debit(fromURI0, debit0_ammount);
 
+        for (int idx=0; idx < debits.size(); idx ++ )  {
+            JsonObject jsonDebit = debits.getJsonObject(idx);
+        // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
+            AccountUri fromURI = AccountUri.buildFromURI(jsonDebit.getString("account") /*account URI*/);
+            MonetaryAmount debit_ammount = Money.of(Double.parseDouble(jsonDebit.getString("amount")), currencyUnit);
+            debitList[idx] = new Debit(fromURI, debit_ammount);
+        }
         // REF: JsonArray ussage: http://www.programcreek.com/java-api-examples/index.php?api=io.vertx.core.json.JsonArray
         JsonArray credits = requestBody.getJsonArray("credits");
-        if (credits.size() > 1) {
-            throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
-        }
-        JsonObject jsonCredit0 = credits.getJsonObject(0);
-//        {"account":"http://localhost/accounts/bob","amount":"30"},
-        AccountUri toURI0 = AccountUri.buildFromURI(jsonCredit0.getString("account") /*accountURI */);
-        MonetaryAmount credit0_ammount = Money.of(Double.parseDouble(jsonCredit0.getString("amount")), currencyUnit);
-        Credit credit0 = new Credit(toURI0, credit0_ammount);
+//        if (credits.size() > 1) {
+//            throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
+//        }
+        Credit[] creditList = new Credit[credits.size()];
 
+        for (int idx=0; idx < credits.size(); idx ++ )  {
+            JsonObject jsonCredit = credits.getJsonObject(idx);
+    //        {"account":"http://localhost/accounts/bob","amount":"30"},
+            AccountUri toURI = AccountUri.buildFromURI(jsonCredit.getString("account") /*accountURI */);
+            MonetaryAmount credit_ammount = Money.of(Double.parseDouble(jsonCredit.getString("amount")), currencyUnit);
+            creditList[idx] = new Credit(toURI, credit_ammount);
+        }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         // TODO: IMPROVEMENT: isLocalTransaction check and related logic must be done in 
         // LedgerTransferManager using the private isLocalTransaction(LedgerTransfer transfer)
@@ -161,7 +165,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
           System.out.println("deleteme put transfer status "+status);
         }
         LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID,
-                new Debit[]{debit0}, new Credit[]{credit0},
+                debitList, creditList,
                 URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
                 data, noteToSelf, status);
         
@@ -170,11 +174,11 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
         if (!isNewTransfer) {
             // Check that received json data match existing transaction.
+            // TODO: Recheck (Multitransfer active now)
             if (!effectiveTransfer.getCredits()[0].equals(receivedTransfer.getCredits()[0])
                     || !effectiveTransfer.getDebits()[0].equals(receivedTransfer.getDebits()[0])) {
                 throw new RuntimeException("data for credits and/or debits doesn't match existing registry");
             }
-            
         } else {
             tm.createNewRemoteILPTransfer(receivedTransfer);
         }

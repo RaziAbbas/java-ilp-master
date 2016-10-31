@@ -22,6 +22,7 @@ import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
+import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,8 +98,8 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
 
     @Override
     public void createNewRemoteILPTransfer(LedgerTransfer newTransfer) {
-        System.out.println("createNewRemoteILPTransfer");
-        
+        System.out.println("deleteme >>>>> createNewRemoteILPTransfer");
+
         if (transferExists(newTransfer.getTransferID())) {
             throw new RuntimeException("trying to create new transfer "
                     + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "
@@ -136,10 +137,24 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
     @Override
     public void executeLocalTransfer(LedgerTransfer transfer) {
         // AccountUri sender, AccountUri recipient, MonetaryAmount amount)
-        AccountUri sender = transfer.getDebits()[0].account;
-        AccountUri recipient = transfer.getCredits()[0].account;
-        MonetaryAmount amount = transfer.getDebits()[0].amount;
-        executeLocalTransfer(sender, recipient, amount);
+        transfer.checkBalancedTransaction();
+        Debit[] debit_list = transfer.getDebits();
+        if (debit_list.length > 1) {
+            // STEP 1: Pass all debits to first account.
+            for (int idx=1; idx < debit_list.length ; idx++) {
+                AccountUri sender = debit_list[idx].account;
+                AccountUri recipient = debit_list[0].account;
+                MonetaryAmount amount = debit_list[idx].amount;
+                executeLocalTransfer(sender, recipient, amount);
+            }
+        }
+        // STEP 2: Pay crediters from first account:
+        AccountUri sender = debit_list[0].account;
+        for (Credit credit : transfer.getCredits()) {
+            AccountUri recipient = credit.account;
+            MonetaryAmount amount = credit.amount;
+            executeLocalTransfer(sender, recipient, amount);
+        }
         transfer.setTransferStatus(TransferStatus.PREPARED);
         transfer.setTransferStatus(TransferStatus.EXECUTED);
         transfer.setDTTM_prepared(DTTM.getNow());

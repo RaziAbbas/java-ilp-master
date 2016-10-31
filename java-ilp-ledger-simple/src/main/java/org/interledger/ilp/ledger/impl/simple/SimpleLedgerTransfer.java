@@ -9,6 +9,9 @@ import io.vertx.core.json.JsonObject;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.FulfillmentURI;
+
+import javax.money.MonetaryAmount;
+
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.InterledgerPacketHeader;
@@ -20,10 +23,13 @@ import org.interledger.ilp.core.TransferStatus;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
+import org.javamoney.moneta.Money;
 
 // FIXME: Allow multiple debit/credits (Remove all code related to index [0]
 
 public class SimpleLedgerTransfer implements LedgerTransfer {
+    // TODO: IMPROVEMENT. Mix of local/remote transactions not contemplated. Either all debit_list are remote or local
+    
     final InterledgerPacketHeader ph = null; // FIXME. Really needed?
     // TODO:(0) Use URI instead of string
     final TransferID transferID;
@@ -57,12 +63,16 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         ConditionURI URIExecutionCond, 
         ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
         String data, String noteToSelf, TransferStatus transferStatus ){
-        if (debit_list.length!=1) {
-            throw new RuntimeException("Only one debit is supported in this implementation");
-        }
-        if (credit_list.length!=1) {
-            throw new RuntimeException("Only one credit is supported in this implementation");
-        }
+        // TODO: Check that debit_list[idx].ammount.currency is always the same and match the ledger
+        // TODO: Check that credit_list[idx].ammount.currency is always the same.
+        //       For local transaction check also that it match the ledger
+        
+//        if (debit_list.length!=1) {
+//            throw new RuntimeException("Only one debit is supported in this implementation");
+//        }
+//        if (credit_list.length!=1) {
+//            throw new RuntimeException("Only one credit is supported in this implementation");
+//        }
         // TODO: FIXME: Check debit_list SUM of amounts equals credit_list SUM  of amounts.
 
         // FIXME: TODO: If fromAccount.ledger != "our ledger" throw RuntimeException.
@@ -86,6 +96,20 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         this.fromAccount = LedgerAccountManagerFactory.
                 getLedgerAccountManagerSingleton().
                     getAccountByName(credit_list[0].account.getAccountId());
+    }
+    
+    public void checkBalancedTransaction(){
+        MonetaryAmount totalDebits = Money.of(0, debit_list[0].amount.getCurrency());
+        for ( Debit debit : debit_list ) {
+            totalDebits.add(debit.amount);
+        }
+        MonetaryAmount totalCredits = Money.of(0, credit_list[0].amount.getCurrency());
+        for ( Credit credit : credit_list ) {
+            totalCredits.add(credit.amount);
+        }
+        if (! totalDebits.isEqualTo(totalCredits))  {
+            throw new RuntimeException("transfer not balanced between credits and debits");
+        }
     }
 
     @Override
@@ -330,8 +354,13 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     
     @Override
     public boolean isLocal() {
-        return this.debit_list[0].account.getLedgerUri().equals(
-                    this.credit_list[0].account.getLedgerUri() );
+        String localLedgerURI = debit_list[0].account.getLedgerUri();
+        for (Credit credit : credit_list) {
+            if (localLedgerURI.equals(credit.account.getLedgerUri() ) ) {
+                return false;
+            }
+        }
+        return true;
     }
 
 

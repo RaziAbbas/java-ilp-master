@@ -95,5 +95,8 @@ public interface LedgerTransfer {
      * ledgers accounts
      */
     public boolean isLocal();
+    
+    public void checkBalancedTransaction();
+
 
 }
