@@ -113,6 +113,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                     "Transfer is not conditional");
         }
         String   fulfillmentURI = context.getBodyAsString();
+        System.out.println("deleteme fulfillmentURI: "+fulfillmentURI);
         Fulfillment          ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
         MessagePayload message = new MessagePayload(new byte[]{});
         boolean ffExisted = false;
@@ -137,7 +138,8 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                 tm.abortRemoteILPTransfer(transfer);
             }
         } else {
-            throw new InterledgerException(InterledgerException.RegisteredException.InvalidFulfillmentError);
+            throw new InterledgerException(InterledgerException.RegisteredException.UnmetConditionError, "Fulfillment does not match any condition");
+            // throw new InterledgerException(InterledgerException.RegisteredException.InvalidFulfillmentError);
         }
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
