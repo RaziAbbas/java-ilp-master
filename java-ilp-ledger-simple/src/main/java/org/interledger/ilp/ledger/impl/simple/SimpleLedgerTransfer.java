@@ -311,7 +311,9 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
       String id = "http://localhost" /*FIXME:(0) TODO URL of ledger as seen by clients */+ "/transfers/"+ transferID.transferID;
       jo.put("id", id);
       jo.put("state", this.getTransferStatus().toString());
-      jo.put("ledger", ledgerInfo.getBaseUri());
+      String ledger = ledgerInfo.getBaseUri();
+      if (ledger.endsWith("/")) { ledger = ledger.substring(0, ledger.length()-1); }
+      jo.put("ledger", ledger);
       jo.put("credits", entryList2Json(credit_list));
       jo.put("debits" , entryList2Json( debit_list));
       {
@@ -356,7 +358,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     public boolean isLocal() {
         String localLedgerURI = debit_list[0].account.getLedgerUri();
         for (Credit credit : credit_list) {
-            if (localLedgerURI.equals(credit.account.getLedgerUri() ) ) {
+            if (! localLedgerURI.equals(credit.account.getLedgerUri() ) ) {
                 return false;
             }
         }
