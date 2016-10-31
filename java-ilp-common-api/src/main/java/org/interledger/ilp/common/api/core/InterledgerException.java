@@ -28,7 +28,9 @@ public final class InterledgerException extends RuntimeException {
         BadRequestError           (HttpResponseStatus.BAD_REQUEST          , "BadRequestError"),
         MissingFulfillmentError   (HttpResponseStatus.NOT_FOUND            , "MissingFulfillmentError"),
         AlreadyRolledBackError    (HttpResponseStatus.UNPROCESSABLE_ENTITY , "AlreadyRolledBackError"),
-        TransferNotConditionalError(HttpResponseStatus.UNPROCESSABLE_ENTITY , "TransferNotConditionalError");
+        TransferNotConditionalError(HttpResponseStatus.UNPROCESSABLE_ENTITY , "TransferNotConditionalError"),
+        InvalidFulfillmentError   (HttpResponseStatus.UNPROCESSABLE_ENTITY , "InvalidFulfillmentError");
+        
         private final HttpResponseStatus HTTPErrorCode;
         private final String sID;
 

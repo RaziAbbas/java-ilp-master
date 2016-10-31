@@ -132,7 +132,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                 tm.abortRemoteILPTransfer(transfer);
             }
         } else {
-            throw new RuntimeException("fulfillment doesn't match stored condition for transaction");
+            throw new InterledgerException(InterledgerException.RegisteredException.InvalidFulfillmentError);
         }
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
