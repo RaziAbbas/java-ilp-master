@@ -37,8 +37,9 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     @Override
     public void handle(RoutingContext context) {
-        String handlerName = getClass().getSimpleName();
+        String handlerName = getClass().getName();
         log.debug("In handler {}", handlerName);
+        log.debug("context.request().method():"+context.request().method());
         try {
             switch (context.request().method()) {
                 case HEAD:
