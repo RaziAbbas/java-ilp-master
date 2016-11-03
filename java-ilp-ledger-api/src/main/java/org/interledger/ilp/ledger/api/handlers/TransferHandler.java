@@ -193,7 +193,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
              *     send to the connector once the (websocket) connection is restablished.
              */
         }
-        String response = ((SimpleLedgerTransfer) effectiveTransfer).toWalletJSONStringifiedFormat(false);
+        String response = ((SimpleLedgerTransfer) effectiveTransfer).toJSONWalletFormat().encode();
 
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -216,7 +216,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransfer transfer = tm.getTransferById(transferID);
 
         response(context, HttpResponseStatus.OK,
-                buildJSON("result", ((SimpleLedgerTransfer) transfer).toWalletJSONStringifiedFormat(false /*bInclude Exec|Cancel Conditions*/)));
+                buildJSON("result", ((SimpleLedgerTransfer) transfer).toJSONWalletFormat().encode()));
     }
 }
 

@@ -39,10 +39,10 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
      *       "ilpConnectorIP" <-> "WebSocket Handler ID"
      *    to
      *              "account" <-> "WebSocket Handler ID"
-     *         Chang also:
+     *         Change also:
      *       notifyILPConnector(RoutingContext context, String message)
      *    to
-     *       notifyILPConnector(LedgerAccount[] affectedAccounts, String message)
+     *       notifyILPConnector(RoutingContext context, LedgerAccount[] affectedAccounts, String message)
      */
     private static Map<String /*ilpConnector remote IP*/, String /*ws ServerID*/> server2WSHandlerID
             = new HashMap<String, String>();
@@ -70,13 +70,14 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
          * and written to the underlying connection. This allows you to 
          * write data to other WebSockets which are owned by different event loops.
          */
-        sws.writeFinalTextFrame("Connected!");
+        // sws.writeFinalTextFrame("Connected!");
         registerServerWebSocket(sws);
     }
 
     private static void registerServerWebSocket(ServerWebSocket sws) {
-        String ilpConnectorIP = sws.remoteAddress().host();
+        String ilpConnectorIP = sws.remoteAddress().host()+":"+sws.remoteAddress().port();
         String handlerID = sws.textHandlerID(); // | binaryHandlerID
+        log.info("registering connection ip<->ws handlerID: " + ilpConnectorIP + "<->"+handlerID);
 
         server2WSHandlerID.put(ilpConnectorIP, handlerID);
         sws.frameHandler/* bytes read from the connector */(/*WebSocketFrame*/frame -> {
@@ -93,15 +94,12 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
             }
         });
 
-//        sws.handler/*data sent from the internal vertX components through the event-Bus */(new Handler<Buffer>() {
-//            @Override
-//            public void handle(final Buffer data) {
-//                String sData = data.toString();
-//                log.debug("received '"+sData+"' from internal *Manager:");
-//                sws.writeFinalTextFrame(sData);
-//                log.debug("message forwarded to ilp connector through websocket");
-//            }
-//        });
+        sws.handler/*data sent from the internal vertX components through the event-Bus */( /* Handler<Buffer> */ data -> {
+            String sData = data.toString();
+            log.debug("received '"+sData+"' from internal *Manager:");
+            sws.writeFinalTextFrame(sData);
+            log.debug("message forwarded to websocket peer through websocket");
+        });
     }
 
 //    public static String getServerWebSocketHandlerID(String connectorIP) {
@@ -118,8 +116,12 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
      */
     public static void notifyILPConnector(RoutingContext context, String message) {
         // Send notification to all existing webSockets
+
         for (String key : server2WSHandlerID.keySet()) {
             String wsID = server2WSHandlerID.get(key);
+            log.debug("{");
+            log.debug("sending message '"+message+"' to handlerID: "+wsID);
+            log.debug("}"); 
             context.vertx().eventBus().send(wsID, message);
         }
     }

@@ -79,7 +79,7 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
         List<LedgerTransfer> transferList = tm.getTransfersByExecutionCondition(executionCondition);
         JsonArray ja = new JsonArray();
         for (LedgerTransfer transfer : transferList) {
-            ja.add(((SimpleLedgerTransfer)transfer).toJSONWalletFormat(true /*include exec|cancel conditions in response*/));
+            ja.add(((SimpleLedgerTransfer)transfer).toJSONWalletFormat().encode());
         }
         String response = ja.encode();
         context.response()

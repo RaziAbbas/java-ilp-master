@@ -85,6 +85,9 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         this.URICancelationCond = URICancelationCond;
         this.DTTM_expires       = DTTM_expires      ;
         this.DTTM_proposed      = DTTM_proposed     ;
+        if (transferStatus.equals(TransferStatus.PROPOSED) && !URIExecutionCond.equals(ConditionURI.EMPTY)){
+            transferStatus = TransferStatus.PREPARED;
+        }
         this.transferStatus     = transferStatus    ;
         System.out.println("deleteme SimpleLedgerTransfer constructor transferStatus:"+transferStatus.toString());
         /*
@@ -293,19 +296,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         return jo.encode();
     }
 
-    public JsonObject toJSONWalletFormat(boolean bIncludeConditions /* , boolean bIncludeFulfillments */) {
-//      { id: 'http://localhost/transfers/155dff3f-4915-44df-a707-acc4b527bcbd',
-//          ledger: 'http://localhost',
-//          debits: 
-//           [ { account: 'http://localhost/accounts/alice',
-//               amount: '10',
-//               authorized: true } ],
-//          credits: [ { account: 'http://localhost/accounts/bob', amount: '10' } ],
-//          state: 'executed',
-//          timeline: 
-//           { executed_at: '2015-06-16T00:00:00.000Z',
-//             prepared_at: '2015-06-16T00:00:00.000Z',
-//             proposed_at: '2015-06-16T00:00:00.000Z' } }
+    public JsonObject toJSONWalletFormat() {
       LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
       
       JsonObject jo = new JsonObject();
@@ -325,18 +316,14 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
           if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
           jo.put("timeline", timeline);
       }
-      if (bIncludeConditions) {
+      if (!this.getURIExecutionCondition().URI.equals(ConditionURI.EMPTY)) {
           jo.put(   "execution_condition", this.  getURIExecutionCondition().URI);
+      }
+      if (!this.getURICancellationCondition().URI.equals(ConditionURI.EMPTY)) {
           jo.put("cancellation_condition", this.getURICancellationCondition().URI);
       }
       // jo.put("expires_at", this.DTTM_expires.toString());
       return jo;
-  }
-
-
-    public String toWalletJSONStringifiedFormat(boolean bIncludeConditions) {
-        String result = toJSONWalletFormat(bIncludeConditions).encode(); // FIXME: Recheck
-        return result;
     }
 
     private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
