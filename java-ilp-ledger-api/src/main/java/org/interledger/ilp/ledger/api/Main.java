@@ -30,6 +30,7 @@ import org.interledger.ilp.ledger.api.handlers.AccountHandler;
 import org.interledger.ilp.ledger.api.handlers.AccountsHandler;
 import org.interledger.ilp.ledger.api.handlers.ConnectorsHandler;
 import org.interledger.ilp.ledger.api.handlers.HealthHandler;
+import org.interledger.ilp.ledger.api.handlers.MessageHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler;
 import org.interledger.ilp.ledger.api.handlers.TransfersHandler;
@@ -111,7 +112,8 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
                 TransfersHandler.create(),
                 TransferStateHandler.create(),
                 FulfillmentHandler.create(),
-                UnitTestSupportHandler.create()
+                UnitTestSupportHandler.create(),
+                MessageHandler.create()
         );
     }
 
