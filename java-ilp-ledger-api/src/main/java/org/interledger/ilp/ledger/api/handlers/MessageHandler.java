@@ -1,13 +1,12 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import static io.vertx.core.http.HttpMethod.POST;
-
 import io.vertx.core.http.HttpHeaders;
+import static io.vertx.core.http.HttpMethod.POST;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.interledger.ilp.common.api.ProtectedResource;
-import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
+import org.interledger.ilp.common.api.auth.RoleUser;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.slf4j.Logger;
@@ -16,15 +15,16 @@ import org.slf4j.LoggerFactory;
 /**
  * TransferHandler handler
  *
- * @author earizon
  * REF: five-bells-ledger/src/controllers/transfers.js
+ * 
+ * @author earizon 
  */
 public class MessageHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(MessageHandler.class);
 
     public MessageHandler() {
-        super("messages", new String[]  {  "messages" });
+        super("messages", "messages");
         accept(POST);
     }
 
@@ -34,15 +34,15 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
 
     @Override
     protected void handlePost(RoutingContext context) {
-        SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
+        RoleUser user = (RoleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-          throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         log.debug(context.getBodyAsString());
 
-       /*
+        /*
         * Received json message will be similar to: TODO: Recheck
         * {
         *   "ledger": "http://localhost:3000/",
@@ -57,10 +57,10 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         *               "id"    : "67599ddd-f3dc-403a-bdce-3e3b98c1f82e"
         *             }
         * }
-        */
+         */
         // FIXME: Recheck/Implement
         JsonObject jsonMessageReceived = getBodyAsJson(context);
-        String userName = user.getUsername();
+        String userName = user.getAuthInfo().getUsername();
         /*
          * function * sendMessage (message, requestingUser) {
          * 
@@ -77,13 +77,10 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         TransferWSEventHandler.notifyILPConnector(context, notification);
         String response = "OK";
         context.response()
-            .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-            .putHeader(HttpHeaders.CONTENT_LENGTH, ""+response.length())
-            .setStatusCode(HttpResponseStatus.CREATED.code())
-            .end(response);
+                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .putHeader(HttpHeaders.CONTENT_LENGTH, "" + response.length())
+                .setStatusCode(HttpResponseStatus.CREATED.code())
+                .end(response);
     }
 
 }
-
-
-
