@@ -26,8 +26,10 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.security.auth.x500.X500Principal;
@@ -70,7 +72,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
     public void start(final Future<Void> startFuture) throws Exception {
         vertx.executeBlocking(init -> {
             try {
-                initConfig(init);                
+                initConfig(init);
             } catch (Exception ex) {
                 log.error("Initializing configuration", ex);
                 init.fail(ex);
@@ -79,12 +81,12 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
             if (result.succeeded()) {
                 Router router = Router.router(vertx);
                 initRouter(router);
-                initServer(router, result.result());                                
+                initServer(router, result.result());
                 startFuture.complete();
             } else {
                 startFuture.fail(result.cause());
             }
-            
+
         });
 
     }
@@ -122,67 +124,52 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
                         .setCertValue(readRelativeFile(certFile))
                 );
             } else {
-                log.info("Generating a self-signed key pair and certificate");
-                /*
-                try {                
-                    KeyStore store = KeyStore.getInstance("JKS");
-                    store.load(null, null);
-                    CertAndKeyGen keypair = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
-                    X500Name x500Name = new X500Name("localhost", "IT", "unknown", "unknown", "unknown", "unknown");
-                    keypair.generate(1024);
-                    PrivateKey privKey = keypair.getPrivateKey();
-                    X509Certificate[] chain = new X509Certificate[1];
-                    chain[0] = keypair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
-                    store.setKeyEntry("selfsigned", privKey, "changeit".toCharArray(), chain);
-                    store.store(new FileOutputStream(".self_keystore"), "changeit".toCharArray());
-                    serverOptions.setKeyStoreOptions(new JksOptions().setPath(".seld_keystore").setPassword("changeit"));
-                    serverOptions.setSsl(true);
-                } catch (Exception ex) {
-                    log.error("Failed to generate a self-signed cert and other SSL configuration methods failed.", ex);
-                }*/
                 try {
-                    Security.addProvider(new BouncyCastleProvider());
-                    // generate a key pair
-                    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
-                    keyPairGenerator.initialize(4096, new SecureRandom());
-                    KeyPair keyPair = keyPairGenerator.generateKeyPair();
+                    File jksFile = new File(getCWD(), SELFSIGNED_JKS_FILENAME);
+                    if (!jksFile.exists() || jksFile.length() == 0) {
+                        log.info("Generating a self-signed key pair and certificate");
+                        Security.addProvider(new BouncyCastleProvider());
+                        // generate a key pair
+                        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+                        keyPairGenerator.initialize(4096, new SecureRandom());
+                        KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-                    // build a certificate generator
-                    X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-                    X500Principal dnName = new X500Principal("cn=example");
+                        // build a certificate generator
+                        X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
+                        X500Principal dnName = new X500Principal("cn=example");
 
-                    // add some options
-                    certGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
-                    certGen.setSubjectDN(new X509Name("dc=name"));
-                    certGen.setIssuerDN(dnName); // use the same
-                    // yesterday
-                    certGen.setNotBefore(new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000));
-                    // in 2 years
-                    certGen.setNotAfter(new Date(System.currentTimeMillis() + 2 * 365 * 24 * 60 * 60 * 1000));
-                    certGen.setPublicKey(keyPair.getPublic());
-                    certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-                    //certGen.addExtension(X509Extensions.ExtendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
-
-                    // finally, sign the certificate with the private key of the same KeyPair
-                    java.security.cert.X509Certificate cert = certGen.generate(keyPair.getPrivate(), "BC");
-
-                    //Setup JKS
-                    KeyStore store = KeyStore.getInstance("JKS");
-                    store.load(null, null); //Init jks
-                    //keyPair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
-                    store.setCertificateEntry("selfsigned", cert);
-                    File jksFile = new File(getCWD(),SELFSIGNED_JKS_FILENAME);
-                    log.debug("Storing KS to {}",jksFile);
-                    store.store(new FileOutputStream(jksFile), SELFSIGNED_JKS_PASSWORD.toCharArray());
+                        // add some options
+                        certGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
+                        certGen.setSubjectDN(new X509Name("dc=name"));
+                        certGen.setIssuerDN(dnName); // use the same
+                        // yesterday
+                        certGen.setNotBefore(new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000));
+                        // in 2 years
+                        certGen.setNotAfter(new Date(System.currentTimeMillis() + 2 * 365 * 24 * 60 * 60 * 1000));
+                        certGen.setPublicKey(keyPair.getPublic());
+                        certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
+                        // finally, sign the certificate with the private key of the same KeyPair
+                        X509Certificate cert = certGen.generate(keyPair.getPrivate(), "BC");
+                        X509Certificate[] chain = new X509Certificate[1];
+                        chain[0] = cert;
+                        //Setup JKS
+                        KeyStore store = KeyStore.getInstance("JKS");
+                        store.load(null, null); //Init jks                    
+                        store.setKeyEntry("selfsigned", keyPair.getPrivate(), SELFSIGNED_JKS_PASSWORD.toCharArray(), chain);
+                        log.debug("Storing KS to {}", jksFile);
+                        store.store(new FileOutputStream(jksFile), SELFSIGNED_JKS_PASSWORD.toCharArray());
+                    } else {
+                        log.info("Using pregenerated self-signed key/certificate {}", jksFile);
+                    }
                     serverOptions.setKeyStoreOptions(
                             new JksOptions()
                             .setPath(jksFile.getAbsolutePath())
                             .setPassword(SELFSIGNED_JKS_PASSWORD)
                     );
-                    serverOptions.setLogActivity(true);                          
+                    //TODO if(debug) serverOptions.setLogActivity(true);                          
                     //TODO set via config:
                     //serverOptions.setOpenSslEngineOptions(new OpenSSLEngineOptions());
-                    
+
                     serverOptions.setSsl(true);
                 } catch (Exception ex) {
                     log.error("Failed to generate a self-signed cert and other SSL configuration methods failed.", ex);
@@ -190,7 +177,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
                 }
             }
         }
-        if(result.failed()) {
+        if (result.failed()) {
             return;
         }
         serverPublicURL = new URL("http" + (pubSsl ? "s" : ""), pubHost, pubPort, prefixUri);
@@ -278,15 +265,15 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         }
     }
 
-    private String[] handlerPath(EndpointHandler handler) {
+    private List<String> handlerPath(EndpointHandler handler) {
         try {
             String[] uriList = handler.getUriList();
-            String[] result = new String[uriList.length];
-            for (int idx = 0; idx < uriList.length; idx++) {
-                String uri = uriList[idx];
+            List<String> result = new LinkedList<String>();
+            for (String uri : uriList) {
                 URL url = new URL(serverPublicURL, paths(prefixUri, uri));
                 handler.setUrl(url);
-                result[idx] = url.getPath();
+                result.add(url.getPath());
+                result.add(new URL(serverPublicURL, paths(prefixUri, uri.toUpperCase())).getPath());
             }
             return result;
         } catch (MalformedURLException ex) {

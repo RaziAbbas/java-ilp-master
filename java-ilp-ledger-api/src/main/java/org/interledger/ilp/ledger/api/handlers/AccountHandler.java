@@ -37,10 +37,7 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
     private final static String PARAM_DISABLED = "is_disabled";
 
     public AccountHandler() {
-        super("account", 
-              "accounts/:" + PARAM_NAME,
-              "ACCOUNTS/:" + PARAM_NAME
-        );
+        super("account","accounts/:" + PARAM_NAME);
         accept(GET, PUT);
     }
 
