@@ -110,7 +110,7 @@ public class VertxRunner {
 
         while (true) {
             try {
-                if (!deployLatch.await(10, TimeUnit.SECONDS)) {
+                if (!deployLatch.await(20, TimeUnit.SECONDS)) {
                     log.error("Timed out waiting to start");
                     System.exit(3);
                 }

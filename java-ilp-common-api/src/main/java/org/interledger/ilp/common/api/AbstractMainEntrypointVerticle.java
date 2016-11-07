@@ -1,10 +1,13 @@
 package org.interledger.ilp.common.api;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.AuthHandler;
@@ -12,22 +15,33 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerFormat;
 import io.vertx.ext.web.handler.LoggerHandler;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.security.auth.x500.X500Principal;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.handlers.DebugRequestHandler;
 import org.interledger.ilp.common.api.handlers.EndpointHandler;
 import org.interledger.ilp.common.api.handlers.IndexHandler;
 import org.interledger.ilp.common.config.Config;
-import org.interledger.ilp.core.DTTM;
-
 import static org.interledger.ilp.common.config.Key.*;
+import org.interledger.ilp.core.DTTM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,19 +57,36 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
     protected static final String DEFAULT_PREFIX_URI = "/";
     protected static final String KEY_INDEX_URLS = "urls";
 
+    protected static final String SELFSIGNED_JKS_FILENAME = ".selfsigned.jks";
+    protected static final String SELFSIGNED_JKS_PASSWORD = "changeit";
+
     private Config config;
     private HttpServer server;
-    private HttpServerOptions serverOptions;
     private URL serverPublicURL;
     private String prefixUri;
     private AuthHandler authHandler;
 
     @Override
-    public void start() throws Exception {
-        initConfig();
-        Router router = Router.router(vertx);
-        initRouter(router);
-        initServer(router, serverOptions);
+    public void start(final Future<Void> startFuture) throws Exception {
+        vertx.executeBlocking(init -> {
+            try {
+                initConfig(init);                
+            } catch (Exception ex) {
+                log.error("Initializing configuration", ex);
+                init.fail(ex);
+            }
+        }, (AsyncResult<HttpServerOptions> result) -> {
+            if (result.succeeded()) {
+                Router router = Router.router(vertx);
+                initRouter(router);
+                initServer(router, result.result());                                
+                startFuture.complete();
+            } else {
+                startFuture.fail(result.cause());
+            }
+            
+        });
+
     }
 
     @Override
@@ -68,7 +99,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
 
     protected abstract List<EndpointHandler> getEndpointHandlers(Config config);
 
-    private void initConfig() throws Exception {
+    private void initConfig(Future<HttpServerOptions> result) throws Exception {
         config = Config.create();
         prefixUri = sanitizePrefixUri(config.getString(DEFAULT_PREFIX_URI, SERVER, PREFIX, URI));
         String host = config.getString("localhost", SERVER, HOST);
@@ -77,18 +108,90 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         int pubPort = config.getInt(port, SERVER, PUBLIC, PORT);
         boolean ssl = config.getBoolean(SERVER, USE_HTTPS);
         boolean pubSsl = config.getBoolean(ssl, SERVER, PUBLIC, USE_HTTPS);
-        serverOptions = new HttpServerOptions().setHost(host).setPort(port);
+        HttpServerOptions serverOptions = new HttpServerOptions().setHost(host).setPort(port);
         if (ssl) {
             log.debug("Using SSL");
-            //FIXME http://vertx.io/docs/vertx-core/java/#ssl
-            String keyFile = config.getString(SERVER, TLS_KEY);
-            String certFile = config.getString(SERVER, TLS_CERT);
-            //Assume PEM encoding
-            serverOptions.setPemKeyCertOptions(
-                    new PemKeyCertOptions()
-                    .setKeyValue(readRelativeFile(keyFile))
-                    .setCertValue(readRelativeFile(certFile))
-            );
+            //SEE http://vertx.io/docs/vertx-core/java/#ssl
+            if (config.hasKey(SERVER, TLS_KEY)) {
+                String keyFile = config.getString(SERVER, TLS_KEY);
+                String certFile = config.getString(SERVER, TLS_CERT);
+                //Assume PEM encoding
+                serverOptions.setPemKeyCertOptions(
+                        new PemKeyCertOptions()
+                        .setKeyValue(readRelativeFile(keyFile))
+                        .setCertValue(readRelativeFile(certFile))
+                );
+            } else {
+                log.info("Generating a self-signed key pair and certificate");
+                /*
+                try {                
+                    KeyStore store = KeyStore.getInstance("JKS");
+                    store.load(null, null);
+                    CertAndKeyGen keypair = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
+                    X500Name x500Name = new X500Name("localhost", "IT", "unknown", "unknown", "unknown", "unknown");
+                    keypair.generate(1024);
+                    PrivateKey privKey = keypair.getPrivateKey();
+                    X509Certificate[] chain = new X509Certificate[1];
+                    chain[0] = keypair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
+                    store.setKeyEntry("selfsigned", privKey, "changeit".toCharArray(), chain);
+                    store.store(new FileOutputStream(".self_keystore"), "changeit".toCharArray());
+                    serverOptions.setKeyStoreOptions(new JksOptions().setPath(".seld_keystore").setPassword("changeit"));
+                    serverOptions.setSsl(true);
+                } catch (Exception ex) {
+                    log.error("Failed to generate a self-signed cert and other SSL configuration methods failed.", ex);
+                }*/
+                try {
+                    Security.addProvider(new BouncyCastleProvider());
+                    // generate a key pair
+                    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+                    keyPairGenerator.initialize(4096, new SecureRandom());
+                    KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+                    // build a certificate generator
+                    X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
+                    X500Principal dnName = new X500Principal("cn=example");
+
+                    // add some options
+                    certGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
+                    certGen.setSubjectDN(new X509Name("dc=name"));
+                    certGen.setIssuerDN(dnName); // use the same
+                    // yesterday
+                    certGen.setNotBefore(new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000));
+                    // in 2 years
+                    certGen.setNotAfter(new Date(System.currentTimeMillis() + 2 * 365 * 24 * 60 * 60 * 1000));
+                    certGen.setPublicKey(keyPair.getPublic());
+                    certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
+                    //certGen.addExtension(X509Extensions.ExtendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
+
+                    // finally, sign the certificate with the private key of the same KeyPair
+                    java.security.cert.X509Certificate cert = certGen.generate(keyPair.getPrivate(), "BC");
+
+                    //Setup JKS
+                    KeyStore store = KeyStore.getInstance("JKS");
+                    store.load(null, null); //Init jks
+                    //keyPair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
+                    store.setCertificateEntry("selfsigned", cert);
+                    File jksFile = new File(getCWD(),SELFSIGNED_JKS_FILENAME);
+                    log.debug("Storing KS to {}",jksFile);
+                    store.store(new FileOutputStream(jksFile), SELFSIGNED_JKS_PASSWORD.toCharArray());
+                    serverOptions.setKeyStoreOptions(
+                            new JksOptions()
+                            .setPath(jksFile.getAbsolutePath())
+                            .setPassword(SELFSIGNED_JKS_PASSWORD)
+                    );
+                    serverOptions.setLogActivity(true);                          
+                    //TODO set via config:
+                    //serverOptions.setOpenSslEngineOptions(new OpenSSLEngineOptions());
+                    
+                    serverOptions.setSsl(true);
+                } catch (Exception ex) {
+                    log.error("Failed to generate a self-signed cert and other SSL configuration methods failed.", ex);
+                    result.fail(ex);
+                }
+            }
+        }
+        if(result.failed()) {
+            return;
         }
         serverPublicURL = new URL("http" + (pubSsl ? "s" : ""), pubHost, pubPort, prefixUri);
         log.debug("serverPublicURL: {}", serverPublicURL);
@@ -98,14 +201,15 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
 
         //Extra configuration on child classes:
         config.apply(this);
+        result.complete(serverOptions);
     }
 
     public URL getServerPublicURL() {
         return serverPublicURL;
     }
-    
+
     protected void initRouter(Router router) {
-        log.debug("init router");
+        log.debug("Init router");
         int requestBodyLimit = config.getInt(2, SERVER, REQUEST, LIMIT);
         router.route()
                 .handler(BodyHandler.create().setBodyLimit(requestBodyLimit * 1024));
@@ -120,36 +224,35 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
     }
 
     protected void initServer(Router router, HttpServerOptions serverOptions) {
-        log.debug("Init server");        
+        log.debug("Init server");
         server = vertx.createHttpServer(serverOptions);
-        server.requestHandler  (router::accept);
+        server.requestHandler(router::accept);
         boolean useMockClock = true; // TODO: FIXME get from serverOptions.
         if (useMockClock) {
             DTTM.mockDate = "2015-06-16T00:00:00.000Z";
         }
 
         server.listen(listenHandler -> {
-                    if (listenHandler.succeeded()) {
-                        log.info("Server ready at {}:{} ({})",
-                                serverOptions.getHost(), server.actualPort(),
-                                serverPublicURL
-                        );
-                    } else {
-                        log.error("Server failed listening at port {}",
-                                server.actualPort());
-                        vertx.close(completion -> {
-                            System.exit(completion.succeeded() ? 1 : 2);
-                        });
-
-                    }
+            if (listenHandler.succeeded()) {
+                log.info("Server ready at {}:{} ({})",
+                        serverOptions.getHost(), server.actualPort(),
+                        serverPublicURL
+                );
+            } else {
+                log.error("Server failed listening at port {}",
+                        server.actualPort());
+                vertx.close(completion -> {
+                    System.exit(completion.succeeded() ? 1 : 2);
                 });
 
+            }
+        });
 
     }
 
     protected void initIndexHandler(Router router, IndexHandler indexHandler) {
         List<EndpointHandler> endpointHandlers = getEndpointHandlers(config);
-        publish( router, endpointHandlers);
+        publish(router, endpointHandlers);
         router.route(HttpMethod.GET, prefixUri).handler(indexHandler);
     }
 
@@ -160,7 +263,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
             for (String path : handlerPath(handler)) {
                 checkProtectedEndpoint(router, handler, path);
                 for (HttpMethod httpMethod : handler.getHttpMethods()) {
-                    log.debug("publishing {} endpoint {} at {}", httpMethod, handler.getClass().getName(), getEndpointUrl(path));                    
+                    log.debug("publishing {} endpoint {} at {}", httpMethod, handler.getClass().getName(), getEndpointUrl(path));
                     router.route(httpMethod, path).handler(handler);
                 }
             }
@@ -179,7 +282,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         try {
             String[] uriList = handler.getUriList();
             String[] result = new String[uriList.length];
-            for (int idx=0; idx < uriList.length; idx++) {
+            for (int idx = 0; idx < uriList.length; idx++) {
                 String uri = uriList[idx];
                 URL url = new URL(serverPublicURL, paths(prefixUri, uri));
                 handler.setUrl(url);
@@ -192,7 +295,7 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
     }
 
     private Buffer readRelativeFile(String fileName) throws IOException {
-        File cwd = Paths.get(".").toAbsolutePath().normalize().toFile();
+        File cwd = getCWD();
         log.debug("Loading file {}/{}", cwd, fileName);
         Buffer fileBuffer = vertx.fileSystem().readFileBlocking(new File(cwd, fileName).getCanonicalPath());
         log.debug("Loaded file {} with {} bytes", fileName, fileBuffer.length());
@@ -229,6 +332,10 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
             log.error(path, ex);
         }
         return null;
+    }
+
+    private File getCWD() {
+        return Paths.get(".").toAbsolutePath().normalize().toFile();
     }
 
 }
