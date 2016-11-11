@@ -7,9 +7,9 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
+import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.api.util.VertxUtils;
-import org.interledger.ilp.common.api.core.InterledgerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +24,6 @@ public abstract class RestEndpointHandler extends EndpointHandler {
 
     private final static String PARAM_ENCODE_PLAIN_JSON = "plainjson";
     private final static String MIME_JSON_WITH_ENCODING = "application/json; charset=utf-8";
-//    private final static String UNAUTHORIZED_ERROR_MSG = "Unknown or invalid account / password";
-//    private final static String FORBIDDEN_ERROR_MSG = "Forbidden";
 
     public RestEndpointHandler(String name) {
         this(name, name);

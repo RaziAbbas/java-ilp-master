@@ -1,14 +1,13 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import static io.vertx.core.http.HttpMethod.POST;
-
 import io.vertx.core.http.HttpHeaders;
+import static io.vertx.core.http.HttpMethod.POST;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 import org.interledger.ilp.common.api.ProtectedResource;
-import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
+import org.interledger.ilp.common.api.auth.RoleUser;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.InterledgerPacketHeader;
@@ -27,14 +26,15 @@ import org.slf4j.LoggerFactory;
 /**
  * TransferHandler handler
  *
- * @author earizon
  * REF: five-bells-ledger/src/controllers/transfers.js
+ * 
+ * @author earizon 
  */
 public class MessageHandler extends RestEndpointHandler implements ProtectedResource {
 
     private static final Logger log = LoggerFactory.getLogger(MessageHandler.class);
     public MessageHandler() {
-        super("messages", new String[]  {  "messages" });
+        super("messages", "messages");
         accept(POST);
     }
 
@@ -53,11 +53,11 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
-          throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
+            throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
         log.info("handlePost context.getBodyAsString():\n   "+context.getBodyAsString());
 
-       /*
+        /*
         * Received json message will be similar to: TODO: Recheck
         * postMessage (data.method == quote_request) is similar to:
         * {
@@ -140,6 +140,3 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
     }
 
 }
-
-
-
