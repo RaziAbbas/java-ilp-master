@@ -129,33 +129,35 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
     }
 
     private void handleAuthorizedGet(RoutingContext context, AuthInfo authInfo) {
+
+
         log.info("handleAuthorized {}", authInfo);
         LedgerAccount account = getAccountByName(context);
         JsonObject result;
         if (authInfo == null) {
-            result = accountToJsonObject(account);
+            result = accountToJsonObject(account, false);
         } else {
             RoleUser user = AuthManager.getInstance().getAuthUser(authInfo);
-            if (user.hasRole(RoleUser.ROLE_ADMIN)) {
-                result = JsonObjectBuilder
-                        .create().from(account)
-                        .put("ledger", LedgerFactory.getDefaultLedger().getInfo().getBaseUri())
-                        .get();
-            } else {
-                if(account.isDisabled()) {
-                    throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
-                } 
-                result = accountToJsonObject(account);
-            }
+            result = accountToJsonObject(account, user.hasRole(RoleUser.ROLE_ADMIN));
         }
         response(context, HttpResponseStatus.OK, result);
     }
 
-    private JsonObject accountToJsonObject(LedgerAccount account) {
-        return JsonObjectBuilder.create()
+    private JsonObject accountToJsonObject(LedgerAccount account, boolean isAdmin) {
+        isAdmin = true; // FIXME deleteme
+        JsonObjectBuilder build = JsonObjectBuilder.create()
                 .put("id", account.getUri())
                 .put("name", account.getName())
-                .put("ledger", LedgerFactory.getDefaultLedger().getInfo().getBaseUri())
-                .get();
+                .put("ledger", LedgerFactory.getDefaultLedger().getInfo().getBaseUri());
+        if (isAdmin){ 
+            build
+                .put("balance", account.getBalanceAsString())
+                .put("connector", "localhost:4000" /* FIXME Hardcoded*/)
+                .put("is_disabled", false /* FIXME Hardcoded*/)
+                .put("minimum_allowed_balance", "0" /* FIXME Hardcoded*/)
+                .put("id", account.getUri());
+        }
+
+        return build.get();
     }
 }

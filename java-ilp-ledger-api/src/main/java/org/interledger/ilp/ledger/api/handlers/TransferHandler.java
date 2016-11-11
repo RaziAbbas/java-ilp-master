@@ -21,6 +21,7 @@ import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.DTTM;
 import org.interledger.ilp.core.Debit;
+import org.interledger.ilp.core.InterledgerPacketHeader;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
@@ -129,14 +130,43 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 //        if (credits.size() > 1) {
 //            throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
 //        }
+        DTTM DTTM_expires = requestBody.getString("expires_at") != null
+                ? DTTM.c(requestBody.getString("expires_at"))
+                : DTTM.future; // TODO: RECHECK
+        ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
+                ? ConditionURI.build(requestBody.getString("execution_condition"))
+                : ConditionURI.EMPTY ;
         Credit[] creditList = new Credit[credits.size()];
 
         for (int idx=0; idx < credits.size(); idx ++ )  {
             JsonObject jsonCredit = credits.getJsonObject(idx);
-    //        {"account":"http://localhost/accounts/bob","amount":"30"},
+            /* {
+             *     "account":"http://localhost:3002/accounts/ilpconnector",
+             *     "amount":"1.01",
+             *     "memo":{
+             *          "ilp_header":{
+             *              "account":"ledger3.eur.alice.fe773626-81fb-4294-9a60-dc7b15ea841e",
+             *              "amount":"1",
+             *              "data":{"expires_at":"2016-11-10T15:51:27.134Z"}
+             *           }
+             *     }
+             * 
+             */
+            JsonObject jsonMemoILPHeader = jsonCredit.getJsonObject("memo").getJsonObject("ilp_header");
             AccountUri toURI = AccountUri.buildFromURI(jsonCredit.getString("account") /*accountURI */);
             MonetaryAmount credit_ammount = Money.of(Double.parseDouble(jsonCredit.getString("amount")), currencyUnit);
-            creditList[idx] = new Credit(toURI, credit_ammount);
+            
+            String ilp_ph_ilp_dst_address = jsonMemoILPHeader.getString("account");
+            String ilp_ph_amount = jsonMemoILPHeader.getString("amount");
+            ConditionURI ilp_ph_condition = URIExecutionCond;
+            DTTM ilp_ph_expires = DTTM.c(jsonMemoILPHeader.getJsonObject("data").getString("expires_at"));
+            if (! DTTM_expires.equals(ilp_ph_expires)){
+                // TODO: throw exception?
+            }
+
+            InterledgerPacketHeader memo_ph = new InterledgerPacketHeader(
+                    ilp_ph_ilp_dst_address,  ilp_ph_amount, ilp_ph_condition, DTTM_expires);
+            creditList[idx] = new Credit(toURI, credit_ammount, memo_ph);
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
         // TODO: IMPROVEMENT: isLocalTransaction check and related logic must be done in 
@@ -145,12 +175,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         String noteToSelf = ""; // Not used
         DTTM DTTM_proposed = DTTM.getNow();
         log.debug(transferID.transferID+" expires_at == null" + (requestBody.getString("expires_at") == null));
-        DTTM DTTM_expires = requestBody.getString("expires_at") != null
-                ? DTTM.c(requestBody.getString("expires_at"))
-                : DTTM.future; // TODO: RECHECK
-        ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
-                ? ConditionURI.build(requestBody.getString("execution_condition"))
-                : ConditionURI.EMPTY ;
+
         String cancelation_condition = requestBody.getString("cancellation_condition");
 
         ConditionURI URICancelationCond = (cancelation_condition != null)
@@ -164,7 +189,10 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
           status = TransferStatus.parse(requestBody.getString("state"));
           System.out.println("deleteme put transfer status "+status);
         }
-        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID,
+        // "memo":{"ilp_header":{"account":"ledger3.eur.alice.fe773626-81fb-4294-9a60-dc7b15ea841e","amount":"1","data":{"expires_at":"2016-11-10T15:51:27.134Z"}}}
+
+            
+        LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, 
                 debitList, creditList,
                 URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
                 data, noteToSelf, status);
@@ -182,11 +210,17 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         } else {
             tm.createNewRemoteILPTransfer(receivedTransfer);
         }
-        try {
+        try { // TODO: Next code for notification (next two loops) are duplicated in FulfillmentHandler
             String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat();
             log.info("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
-            TransferWSEventHandler.notifyILPConnector(context,
-                    notification);
+            
+            // Notify affected accounts: 
+            for (Debit  debit  : effectiveTransfer.getDebits() ) {
+                TransferWSEventHandler.notifyListener(context, debit.account.getAccountId(), notification);
+            }
+            for (Credit credit : effectiveTransfer.getCredits() ) {
+                TransferWSEventHandler.notifyListener(context, credit.account.getAccountId(), notification);
+            }
         } catch (Exception e) {
             log.warn("transaction created correctly but ilp-connector couldn't be notified due to " + e.toString());
             /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 

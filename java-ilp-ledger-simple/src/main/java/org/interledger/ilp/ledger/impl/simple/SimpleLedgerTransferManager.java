@@ -22,7 +22,7 @@ import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
-import org.javamoney.moneta.Money;
+//import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +67,6 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         if (result == null) {
             throw new InterledgerException(InterledgerException.RegisteredException.TransferNotFoundError, "This transfer does not exist");
         }
-        System.out.println(">>>>> deleteme getTransferById id: "+ result.getTransferID().transferID);
-        System.out.println(">>>>> deleteme result status     : "+ result.getTransferStatus().toString());
         if (result.getTransferStatus() == TransferStatus.REJECTED) {
             throw new InterledgerException(InterledgerException.RegisteredException.AlreadyRolledBackError, "This transfer has already been rejected");
         }
@@ -98,22 +96,22 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
 
     @Override
     public void createNewRemoteILPTransfer(LedgerTransfer newTransfer) {
-        System.out.println("deleteme >>>>> createNewRemoteILPTransfer");
+        log.debug("createNewRemoteILPTransfer");
 
         if (transferExists(newTransfer.getTransferID())) {
             throw new RuntimeException("trying to create new transfer "
                     + "but transferID '"+newTransfer.getTransferID()+"'already registrered. "
                     + "Check transfer with SimpleLedgerTransferManager.transferExists before invoquing this function");
         }
-        System.out.println("deleteme createNewRemoteILPTransfer newTransfer "+
+        log.debug("createNewRemoteILPTransfer newTransfer "+
                 newTransfer.getTransferID().transferID+", status: "+newTransfer.getTransferStatus().toString());
 
-        System.out.println("deleteme newTransfer.isLocal(): "+ newTransfer.isLocal());
+        log.debug("newTransfer.isLocal(): "+ newTransfer.isLocal());
 
         transferMap.put(newTransfer.getTransferID(), newTransfer);
         if (newTransfer.isLocal() && 
             newTransfer.getURIExecutionCondition().equals(ConditionURI.EMPTY)) {
-            System.out.println("createNewRemoteILPTransfer execute locally and forget");
+            log.debug("createNewRemoteILPTransfer execute locally and forget");
             // local transfer with no execution condition => execute and "forget" 
             executeLocalTransfer(newTransfer);
             return;

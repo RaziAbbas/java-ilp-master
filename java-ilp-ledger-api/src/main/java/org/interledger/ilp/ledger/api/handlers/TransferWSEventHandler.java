@@ -9,6 +9,7 @@ import io.vertx.core.http.ServerWebSocket;
 import io.vertx.ext.web.RoutingContext;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,8 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 
     private static final Logger log = LoggerFactory.getLogger(TransferWSEventHandler.class);
 
+    private final static String PARAM_NAME = "name";
+
     /*
      *  FIXME: Change mapping
      *       "ilpConnectorIP" <-> "WebSocket Handler ID"
@@ -48,7 +51,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
             = new HashMap<String, String>();
 
     public TransferWSEventHandler() {
-        super("transfer", "accounts/:account_name/transfers");
+        super("transfer", "accounts/:" + PARAM_NAME + "/transfers");
         accept(GET);
     }
 
@@ -58,28 +61,34 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 
     @Override
     protected void handleGet(RoutingContext context) {
+        String accountName = context.request().getParam(PARAM_NAME);
         // GET /accounts/alice/transfers -> Upgrade to websocket
         log.debug("TransferWSEventHandler Connected. Upgrading HTTP GET to WebSocket!");
         ServerWebSocket sws = context.request().upgrade();
-        /*
-         * When a Websocket is created it automatically registers an event 
-         * handler with the event bus - the ID of that handler is given by 
-         * this method. Given this ID, a different event loop can send a 
-         * binary frame to that event handler using the event bus and that 
-         * buffer will be received by this instance in its own event loop 
-         * and written to the underlying connection. This allows you to 
-         * write data to other WebSockets which are owned by different event loops.
+        /* 
+         * From vertx Docs:
+         *    """When a Websocket is created it automatically registers an event 
+         *    handler with the event bus - the ID of that handler is given by 
+         *    this method. Given this ID, a different event loop can send a 
+         *    binary frame to that event handler using the event bus and that 
+         *    buffer will be received by this instance in its own event loop 
+         *    and written to the underlying connection. This allows you to 
+         *    write data to other WebSockets which are owned by different event loops."""
          */
-        // sws.writeFinalTextFrame("Connected!");
-        registerServerWebSocket(sws);
+        /* REF:
+         * function * subscribeTransfer @ src/controllers/accounts: 
+         *   // Send a message upon connection
+         *   this.websocket.send(JSON.stringify({ type: 'connect' })) 
+         */
+        sws.writeFinalTextFrame("{\"type\" : \"connect\" }"); // TODO: recheck this line
+        registerServerWebSocket(accountName, sws);
     }
 
-    private static void registerServerWebSocket(ServerWebSocket sws) {
-        String ilpConnectorIP = sws.remoteAddress().host()+":"+sws.remoteAddress().port();
+    private static void registerServerWebSocket(String accountName, ServerWebSocket sws) {
         String handlerID = sws.textHandlerID(); // | binaryHandlerID
-        log.info("registering connection ip<->ws handlerID: " + ilpConnectorIP + "<->"+handlerID);
+        log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    registering WS connection: "+accountName);
 
-        server2WSHandlerID.put(ilpConnectorIP, handlerID);
+        server2WSHandlerID.put(accountName, handlerID);
         sws.frameHandler/* bytes read from the connector */(/*WebSocketFrame*/frame -> {
                             log.debug("ilpConnector input frame -> frame.textData()   " + frame.textData());
                             log.debug("ilpConnector input frame -> frame.binaryData() " + frame.binaryData());
@@ -89,12 +98,13 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
         sws.closeHandler(new Handler<Void>() {
             @Override
             public void handle(final Void event) {
-                log.info("un-registering connection from ilp Server: '" + ilpConnectorIP + "'");
-                server2WSHandlerID.remove(ilpConnectorIP);
+//                log.info("un-registering connection from ilp Server: '" + ilpConnectorIP + "'");
+                log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    un-registering WS connection: "+accountName);
+                server2WSHandlerID.remove(accountName);
             }
         });
 
-        sws.handler/*data sent from the internal vertX components through the event-Bus */( /* Handler<Buffer> */ data -> {
+        sws.handler/* @bookmark1 data sent from the internal vertX components through the event-Bus */( /* Handler<Buffer> */ data -> {
             String sData = data.toString();
             log.debug("received '"+sData+"' from internal *Manager:");
             sws.writeFinalTextFrame(sData);
@@ -114,16 +124,14 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
      * @param context
      * @param message
      */
-    public static void notifyILPConnector(RoutingContext context, String message) {
+    public static void notifyListener(RoutingContext context, String account, String message) {
         // Send notification to all existing webSockets
-
-        for (String key : server2WSHandlerID.keySet()) {
-            String wsID = server2WSHandlerID.get(key);
-            log.debug("{");
-            log.debug("sending message '"+message+"' to handlerID: "+wsID);
-            log.debug("}"); 
-            context.vertx().eventBus().send(wsID, message);
-        }
+        log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    notifyListener account:"+account);
+        String wsID = server2WSHandlerID.get(account);
+        log.debug("{");
+        log.debug("sending message '"+message+"' to handlerID: "+wsID);
+        log.debug("}");
+        context.vertx().eventBus().send(wsID, message); // will be sent to handler "@bookmark1"
     }
 
 }

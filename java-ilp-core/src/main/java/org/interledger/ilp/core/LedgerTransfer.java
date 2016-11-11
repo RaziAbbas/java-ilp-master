@@ -2,13 +2,6 @@ package org.interledger.ilp.core;
 
 public interface LedgerTransfer {
 
-    /**
-     * Get the packet header for this transfer
-     *
-     * @return the Interledger Packet Header
-     */
-    InterledgerPacketHeader getHeader(); // FIXME: Really needed?
-    
     /*
      * Get the transfer Unique ID
      */

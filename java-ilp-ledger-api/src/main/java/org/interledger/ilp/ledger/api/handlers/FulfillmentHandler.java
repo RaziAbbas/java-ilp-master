@@ -16,6 +16,8 @@ import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.ConditionURI;
+import org.interledger.ilp.core.Credit;
+import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.FulfillmentURI;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
@@ -149,8 +151,21 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())
             .setStatusCode(!ffExisted ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.OK.code())
             .end(fulfillmentURI);
-        String notification = ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat();
-        TransferWSEventHandler.notifyILPConnector(context, notification);
+        try {
+            String notification = ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat();
+            // Notify affected accounts:
+            for (Debit  debit  : transfer.getDebits() ) {
+                TransferWSEventHandler.notifyListener(context, debit.account.getAccountId(), notification);
+            }
+            for (Credit credit : transfer.getCredits() ) {
+                TransferWSEventHandler.notifyListener(context, credit.account.getAccountId(), notification);
+            }
+        } catch (Exception e) {
+            log.warn("Fulfillment registrered correctly but ilp-connector couldn't be notified due to " + e.toString());
+            /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
+             *     send to the connector once the (websocket) connection is restablished.
+             */
+        }
     }
 
     @Override

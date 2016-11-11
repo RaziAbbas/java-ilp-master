@@ -7,8 +7,8 @@ package org.interledger.ilp.core;
  *    Were /accounts/ is always an string constant
  */
 public class AccountUri {
-    private final String uri; // FIXME: Replace string by java.io.URL
-    private final String ledgerUri;
+    private final String uri; // FIXME:? Replace string by java.io.URL
+    private final String ledgerUri; // TODO: recheck. duplicated info in uri/ledgerUri? 
     private final String accountId;
     final private static String  ACCOUNTS = "/accounts";
      

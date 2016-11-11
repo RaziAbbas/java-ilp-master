@@ -15,7 +15,7 @@ import javax.money.MonetaryAmount;
 public interface LedgerAccount {
 
     @JsonProperty("id")
-    String getUri(); // TODO: Convert String to org.interledger.ilp.core.AccountUri?
+    String getUri(); // FIXME: Convert String to org.interledger.ilp.core.AccountUri
 
     String getName();
     

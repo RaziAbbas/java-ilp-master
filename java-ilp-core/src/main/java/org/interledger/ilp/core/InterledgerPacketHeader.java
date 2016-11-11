@@ -1,17 +1,13 @@
 package org.interledger.ilp.core;
 
-import java.util.Date;
-
-import org.interledger.cryptoconditions.Condition;
-
 /**
  * Immutable Interledger Packet Header
  *
  */
 public class InterledgerPacketHeader {
 
-    public InterledgerPacketHeader(String destinationAddress, String amount,
-            Condition condition, Date expiry) {
+    public InterledgerPacketHeader(String /* FIXME:Improvement Replace String with ILP related type */ destinationAddress , String amount,
+            ConditionURI condition, DTTM expiry) {
         this.destinationAddress = destinationAddress;
         this.amount = amount;
         this.condition = condition;
@@ -31,8 +27,8 @@ public class InterledgerPacketHeader {
 
     private String destinationAddress;
     private String amount;
-    private Condition condition;
-    private Date expiry;
+    private ConditionURI condition;
+    private DTTM expiry;
 
     /**
      * The ILP Address of the destination account
@@ -57,7 +53,7 @@ public class InterledgerPacketHeader {
      *
      * @return the condition
      */
-    public Condition getCondition() {
+    public ConditionURI getCondition() {
         return condition;
     }
 
@@ -67,7 +63,7 @@ public class InterledgerPacketHeader {
      *
      * @return the expiry
      */
-    public Date getExpiry() {
+    public DTTM getExpiry() {
         return expiry;
     }
 

@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import io.vertx.ext.web.Router;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.interledger.ilp.ledger.api.handlers.TransfersHandler;
 import org.interledger.ilp.ledger.api.handlers.UnitTestSupportHandler;
 import org.interledger.ilp.ledger.api.handlers.TransferStateHandler;
 import org.interledger.ilp.ledger.api.handlers.FulfillmentHandler;
+import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +139,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         //   The conector five-bells-plugin of the js-ilp-connector expect a 
         //   map urls { health:..., transfer: ..., 
         String base = ledgerInfo.getBaseUri();
-        // [ '', '', '', '', '', 'message' ]
 
             // Required by wallet
             services.put("health"              , base + "health"                   );
@@ -155,6 +156,32 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
             services.put("message"             , base + "messages"                 );
 
         indexHandler.put("urls", services);
+        
+        Config config = ((SimpleLedger)LedgerFactory.getDefaultLedger()).getConfig();
+        String public_key = config.getString(SERVER, ED25519, PUBLIC_KEY);
+        indexHandler.put("condition_sign_public_key", public_key);
+        
+        // FIXME:(NOW) TODO: Connector data hardcoded. 
+        // Replace with data "comming" from TransferWSEventHandler (registerServerWebSocket, unregister...)
+        /* In five-bells-ledger we have something like:
+         * "connectors":[
+         *   {"id":"http://localhost:3002/accounts/alice","name":"alice","connector":"localhost:4000"},
+         *   {"id":"http://localhost:3002/accounts/ilpconnector","name":"ilpconnector","connector":"localhost:4000"},
+         *   ...
+         * ]
+         */
+        List<Map<String,String>> connectors = new ArrayList<Map<String,String>>();
+        Map<String, String > connector1 = new HashMap<String, String >();
+            connector1.put("id", "http://localhost:3001/accounts/ilpconnector");
+            connector1.put("name", "ilpconnector");
+            connector1.put("connector", "localhost:4000");
+        Map<String, String > connector2 = new HashMap<String, String >();
+            connector2.put("id", "http://localhost:3001/accounts/alice");
+            connector2.put("name", "alice");
+            connector2.put("connector", "localhost:4000");
+         connectors.add(connector1);
+         connectors.add(connector2);
+         indexHandler.put("connectors", connectors);
     }
 
     private void configureDevelopmentEnvirontment(Config config) {

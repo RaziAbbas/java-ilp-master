@@ -14,7 +14,6 @@ import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
-import org.interledger.ilp.core.InterledgerPacketHeader;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerPartialEntry;
 import org.interledger.ilp.core.LedgerTransfer;
@@ -30,7 +29,6 @@ import org.javamoney.moneta.Money;
 public class SimpleLedgerTransfer implements LedgerTransfer {
     // TODO: IMPROVEMENT. Mix of local/remote transactions not contemplated. Either all debit_list are remote or local
     
-    final InterledgerPacketHeader ph = null; // FIXME. Really needed?
     // TODO:(0) Use URI instead of string
     final TransferID transferID;
     final LedgerAccount fromAccount;
@@ -58,7 +56,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     DTTM DTTM_executed = DTTM.future;
     DTTM DTTM_rejected = DTTM.future;
 
-    public SimpleLedgerTransfer(TransferID transferID, 
+    public SimpleLedgerTransfer(TransferID transferID,
         Debit[] debit_list, Credit[] credit_list, 
         ConditionURI URIExecutionCond, 
         ConditionURI URICancelationCond, DTTM DTTM_expires, DTTM DTTM_proposed,
@@ -116,11 +114,6 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     }
 
     @Override
-    public InterledgerPacketHeader getHeader() {
-        return ph;
-    }
-
-    @Override
     public TransferID getTransferID() {
         return transferID;
     }
@@ -149,9 +142,9 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     //       exec/cancel fulfillment. Ummm, What happens for non-conditional transactions?
     @Override
     public void setTransferStatus(TransferStatus transferStatus) {
-        final String errorState = "new state '"+transferStatus.toString()+"' "
-                + "not compliant with Transfer State Machine. Current state: "
-                + this.transferStatus.toString();
+//        final String errorState = "new state '"+transferStatus.toString()+"' "
+//                + "not compliant with Transfer State Machine. Current state: "
+//                + this.transferStatus.toString();
         // TODO: COMMENT on ILP Ledger list. 
         // next checks were commented to make five-bells-ledger tests pass
         //    anyway it looks sensible to have them in place.
@@ -269,8 +262,8 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         JsonObject jo = new JsonObject();
         jo.put("id", credit_list[0].account.getLedgerUri() + "/transfers/"+this.transferID);
         jo.put("state", this.getTransferStatus().toString());
-        jo.put("credits", entryList2Json(credit_list)); // FIXME: Simplify remove creditsToJson if possible
-        jo.put("debits" , entryList2Json( debit_list)); // FIXME: Simplify remove  debitsToJson if possible
+        jo.put("credits", entryList2Json(credit_list));
+        jo.put("debits" , entryList2Json( debit_list));
         {
             JsonObject timeline = new JsonObject();
             timeline.put("proposed_at", this.DTTM_proposed.toString());
@@ -293,7 +286,11 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             related_resources.put("execution_condition_fulfillment", URI_FF);
             jo.put("related_resources", related_resources);
         }
-        return jo.encode();
+
+        JsonObject jo2 = new JsonObject();
+        jo2.put("type", "transfer");
+        jo2.put("resource", jo);
+        return jo2.encode();
     }
 
     public JsonObject toJSONWalletFormat() {
@@ -329,13 +326,30 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
         JsonArray ja = new JsonArray();
         for (LedgerPartialEntry entry : input_list) {
-            // FIXME: This code to calculate amount is PLAIN WRONG. Just to pass five-bells-ledger
+            // FIXME: This code to calculate amount is PLAIN WRONG. Just to pass five-bells-ledger tests
             long amount = entry. amount.getNumber().longValue();
             JsonObject jo = new JsonObject();
             jo.put("account", entry.account.getUri());
             jo.put( "amount", ""+amount);
             if (entry instanceof Debit) {
                 jo.put("authorized", ((Debit) entry).getAuthorized());
+            } else if (entry instanceof Credit ) {
+                // Add memo:
+                //  "memo":{
+                //      "ilp_header":{
+                //          "account":"ledger3.eur.alice.fe773626-81fb-4294-9a60-dc7b15ea841e",
+                //          "amount":"1",
+                //          "data":{"expires_at":"2016-11-10T15:51:27.134Z"}}
+                //  }}
+                JsonObject memo = new JsonObject(), ilp_header = new JsonObject(), data = new JsonObject();
+                ilp_header.put("account", ((Credit)entry).ph.getDestinationAddress());
+                ilp_header.put("amount",  ((Credit)entry).ph.getAmount());
+                ilp_header.put("amount",  ((Credit)entry).ph.getAmount());
+                data.put("expires_at", ((Credit)entry).ph.getExpiry().toString());
+                ilp_header.put("data", data);
+                memo.put("ilp_header", ilp_header);
+                jo.put("memo", memo);
+
             }
             ja.add(jo);
         }
