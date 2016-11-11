@@ -49,7 +49,10 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
          *  const validationResult = validator.create('Message')(message)$
          *  if (validationResult.valid !== true) { $... }
          */
-        SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
+        // SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
+
+        
+        RoleUser user = (RoleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
         if (!isAdmin && !transferMatchUser) {
@@ -98,13 +101,14 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         // FIXME: Recheck
         JsonObject jsonMessageReceived = getBodyAsJson(context);
 
+
         // For backwards compatibility. (Ref: messages.js @ five-bells-ledger)
         if (jsonMessageReceived.getString("account") !=null && 
             jsonMessageReceived.getString("from") == null && 
             jsonMessageReceived.getString("to") == null) {
             jsonMessageReceived.put("to",jsonMessageReceived.getString("account"));
             LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
-            jsonMessageReceived.put("from", ledgerInfo.getBaseUri() + "accounts/" + user.getUsername());
+            jsonMessageReceived.put("from", ledgerInfo.getBaseUri() + "accounts/" + user.getAuthInfo().getUsername());
         }
         JsonObject data = jsonMessageReceived.getJsonObject("data");
         JsonObject data_data = data.getJsonObject("data");
