@@ -1,6 +1,6 @@
 package org.interledger.ilp.core;
 
-//import static org.junit.Assert.*;
+import static org.junit.Assert.*;
 //import org.junit.Before;
 //import org.junit.Ignore;
 import org.junit.Test;
@@ -9,12 +9,22 @@ public class DTTMTest {
     // TODO: Add more test (compare objects, ...)
     @Test
     public void testCreateDTTM() {
-        DTTM.c("9999-99-23T23:59:59.999Z");
+        String input;
+        DTTM parsedDate;
+        input = "2999-12-31T23:59:59.999Z";
+        parsedDate = DTTM.c(input);
+        assertEquals(input+".equals("+parsedDate.toString()+")", input , parsedDate.toString());
+
+        input = "2016-11-14T14:27:09.825Z";
+        parsedDate = DTTM.c(input);
+        assertEquals(input+".equals("+parsedDate.toString()+")", input , parsedDate.toString());
     }
     
     @Test(expected=RuntimeException.class)
     public void testCreateDTTMWrongFormat() {
         DTTM.c("23:59:59.999");
     }
+    
+    
     
 }
