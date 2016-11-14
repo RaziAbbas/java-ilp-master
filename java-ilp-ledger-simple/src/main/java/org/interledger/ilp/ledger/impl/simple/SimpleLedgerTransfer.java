@@ -274,22 +274,24 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         }
         jo.put("expires_at", this.DTTM_expires.toString());
 
-
-        if (  this.getTransferStatus() == TransferStatus.EXECUTED 
-            ||this.getTransferStatus() == TransferStatus.REJECTED ) {
-            //  REF: sendNotifications @
-            //       five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
-            JsonObject related_resources = new JsonObject();
-            String URI_FF = (this.getTransferStatus() == TransferStatus.EXECUTED)
-                    ? this.  getURIExecutionFulfillment().URI
-                    : this.getURICancellationFulfillment().URI;
-            related_resources.put("execution_condition_fulfillment", URI_FF);
-            jo.put("related_resources", related_resources);
-        }
-
         JsonObject jo2 = new JsonObject();
         jo2.put("type", "transfer");
         jo2.put("resource", jo);
+        boolean addRelatedResources = 
+                   this.getTransferStatus().equals(TransferStatus.EXECUTED)
+                || this.getTransferStatus().equals(TransferStatus.REJECTED);
+        
+        System.out.println("deleteme: addRelatedResources: " + addRelatedResources);
+        if (  addRelatedResources ) {
+                //  REF: sendNotifications @
+                //       five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
+                JsonObject related_resources = new JsonObject();
+                String URI_FF = (this.getTransferStatus() == TransferStatus.EXECUTED)
+                        ? this.  getURIExecutionFulfillment().URI
+                        : this.getURICancellationFulfillment().URI;
+                related_resources.put("execution_condition_fulfillment", URI_FF);
+                jo2.put("related_resources", related_resources);
+            }
         return jo2.encode();
     }
 
@@ -345,11 +347,10 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
                 ilp_header.put("account", ((Credit)entry).ph.getDestinationAddress());
                 ilp_header.put("amount",  ((Credit)entry).ph.getAmount());
                 ilp_header.put("amount",  ((Credit)entry).ph.getAmount());
-                data.put("expires_at", ((Credit)entry).ph.getExpiry().toString());
+                data.put("expires_at", ((Credit)entry).ph.getExpiry().toString()/*DTTM_expires.toString()*/); // TODO: Recheck.
                 ilp_header.put("data", data);
                 memo.put("ilp_header", ilp_header);
                 jo.put("memo", memo);
-
             }
             ja.add(jo);
         }
