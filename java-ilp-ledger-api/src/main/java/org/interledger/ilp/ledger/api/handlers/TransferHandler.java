@@ -130,6 +130,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 //        if (credits.size() > 1) {
 //            throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
 //        }
+        
         DTTM DTTM_expires = requestBody.getString("expires_at") != null
                 ? DTTM.c(requestBody.getString("expires_at"))
                 : DTTM.future; // TODO: RECHECK
@@ -161,7 +162,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             ConditionURI ilp_ph_condition = URIExecutionCond;
             DTTM ilp_ph_expires = DTTM.c(jsonMemoILPHeader.getJsonObject("data").getString("expires_at"));
             if (! DTTM_expires.equals(ilp_ph_expires)){
-                // TODO: throw exception?
+                ilp_ph_expires = DTTM_expires;// TODO: Recheck
             }
 
             InterledgerPacketHeader memo_ph = new InterledgerPacketHeader(
