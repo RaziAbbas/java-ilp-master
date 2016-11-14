@@ -215,9 +215,9 @@ public abstract class AbstractMainEntrypointVerticle extends AbstractVerticle {
         server = vertx.createHttpServer(serverOptions);
         server.requestHandler(router::accept);
         boolean useMockClock = true; // TODO: FIXME get from serverOptions.
-        if (useMockClock) {
-            DTTM.mockDate = "2015-06-16T00:00:00.000Z";
-        }
+//        if (useMockClock) {
+//            DTTM.mockDate = "2015-06-16T00:00:00.000Z";
+//        }
 
         server.listen(listenHandler -> {
             if (listenHandler.succeeded()) {
