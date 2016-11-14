@@ -19,7 +19,7 @@ import org.interledger.ilp.ledger.account.LedgerAccountManager;
  */
 public class SimpleLedgerAccountManager implements LedgerAccountManager {
     private Map<String, LedgerAccount> accountMap;
-    private static final String ILP_HOLD_ACCOUNT = "@@ILP_HOLDS@@"; 
+    private static final String ILP_HOLD_ACCOUNT = "@@HOLD@@"; 
 
     public SimpleLedgerAccountManager() {
         accountMap = new TreeMap<String, LedgerAccount>();
@@ -63,7 +63,7 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
         List<LedgerAccount> accounts = new ArrayList<>();
         accountMap.values()
                 .stream()
-                .filter((LedgerAccount a) -> !a.getName().equals(ILP_HOLD_ACCOUNT))
+                // .filter((LedgerAccount a) -> !a.getName().equals(ILP_HOLD_ACCOUNT))
                 .forEach(accounts::add);
         return accounts;
     }
