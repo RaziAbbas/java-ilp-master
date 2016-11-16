@@ -142,10 +142,12 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
 
     private JsonObject accountToJsonObject(LedgerAccount account, boolean isAdmin) {
         isAdmin = true; // FIXME deleteme
+        String ledger = LedgerFactory.getDefaultLedger().getInfo().getBaseUri();
+        if (ledger.endsWith("/")) { ledger = ledger.substring(0, ledger.length()-1); }
         JsonObjectBuilder build = JsonObjectBuilder.create()
                 .put("id", account.getUri())
                 .put("name", account.getName())
-                .put("ledger", LedgerFactory.getDefaultLedger().getInfo().getBaseUri());
+                .put("ledger", ledger);
         if (isAdmin){ 
             build
                 .put("balance", account.getBalanceAsString())
