@@ -152,7 +152,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             .setStatusCode(!ffExisted ? HttpResponseStatus.CREATED.code() : HttpResponseStatus.OK.code())
             .end(fulfillmentURI);
         try {
-            String notification = ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat();
+            String notification = ((SimpleLedgerTransfer) transfer).toMessageStringifiedFormat().encode();
             // Notify affected accounts:
             for (Debit  debit  : transfer.getDebits() ) {
                 TransferWSEventHandler.notifyListener(context, debit.account.getAccountId(), notification);

@@ -81,6 +81,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         this.URICancelationCond = URICancelationCond;
         this.DTTM_expires       = DTTM_expires      ;
         this.DTTM_proposed      = DTTM_proposed     ;
+        this.DTTM_prepared      = DTTM.getNow()     ;
         if (transferStatus.equals(TransferStatus.PROPOSED) && !URIExecutionCond.equals(ConditionURI.EMPTY)){
             transferStatus = TransferStatus.PREPARED;
         }
@@ -254,7 +255,8 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     // NOTE: The JSON returned to the ILP connector and the Wallet must not necesarelly match
     // since the data about the transfer needed by the wallet and the connector differ.
     // That's why two different JSON encoders exist
-    public String toILPJSONStringifiedFormat() {
+
+    public JsonObject toILPJSONStringifiedFormat() {
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
 
         // REF: convertToExternalTransfer@
@@ -265,14 +267,15 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         String id = ledger + "/transfers/"+ transferID.transferID;
         jo.put("id", id);
         jo.put("ledger", ledger);
-        jo.put("state", this.getTransferStatus().toString());
-        jo.put("credits", entryList2Json(credit_list));
         jo.put("debits" , entryList2Json( debit_list));
+        jo.put("credits", entryList2Json(credit_list));
         jo.put("execution_condition", this.getURIExecutionCondition().URI);
+        jo.put("state", this.getTransferStatus().toString());
 //        if (!this.getURICancellationCondition().URI.equals(ConditionURI.NOT_PROVIDED)) {
 //            jo.put("cancellation_condition", this.getURICancellationCondition().URI);
 //        }
         // FIXME: Cancelation_condition?
+        jo.put("expires_at", this.DTTM_expires.toString());
         {
             JsonObject timeline = new JsonObject();
             timeline.put("proposed_at", this.DTTM_proposed.toString());
@@ -281,8 +284,11 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
             if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
             jo.put("timeline", timeline);
         }
-        jo.put("expires_at", this.DTTM_expires.toString());
+        return jo;
+    }
 
+    public JsonObject toMessageStringifiedFormat() {
+        JsonObject jo = toILPJSONStringifiedFormat();
         JsonObject jo2 = new JsonObject();
         jo2.put("type", "transfer");
         jo2.put("resource", jo);
@@ -290,7 +296,6 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
                    this.getTransferStatus().equals(TransferStatus.EXECUTED)
                 || this.getTransferStatus().equals(TransferStatus.REJECTED);
         
-        System.out.println("deleteme: addRelatedResources: " + addRelatedResources);
         if ( addRelatedResources ) {
                 //  REF: sendNotifications @
                 //       five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
@@ -301,38 +306,9 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
                 related_resources.put("execution_condition_fulfillment", URI_FF);
                 jo2.put("related_resources", related_resources);
             }
-        return jo2.encode();
+        return jo2;
     }
 
-//    public JsonObject toJSONWalletFormat() {
-////      LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
-//      
-//      JsonObject jo = new JsonObject();
-////      String id = ledgerInfo.getBaseUri() + "transfers/"+ transferID.transferID;
-//      jo.put("id", id);
-//      jo.put("state", this.getTransferStatus().toString());
-////      String ledger = ledgerInfo.getBaseUri();
-////      if (ledger.endsWith("/")) { ledger = ledger.substring(0, ledger.length()-1); }
-////      jo.put("ledger", ledger);
-////      jo.put("credits", entryList2Json(credit_list));
-////      jo.put("debits" , entryList2Json( debit_list));
-////      {
-////          JsonObject timeline = new JsonObject();
-////          timeline.put("proposed_at", this.DTTM_proposed.toString());
-////          if (this.DTTM_prepared != DTTM.future) { timeline.put("prepared_at", this.DTTM_prepared.toString()); }
-////          if (this.DTTM_executed != DTTM.future) { timeline.put("executed_at", this.DTTM_executed.toString()); }
-////          if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
-////          jo.put("timeline", timeline);
-////      }
-//      // if (!this.getURIExecutionCondition().URI.equals(ConditionURI.EMPTY)) {
-//      jo.put(   "execution_condition", this.  getURIExecutionCondition().URI);
-//      // }
-//      // if (!this.getURICancellationCondition().URI.equals(ConditionURI.EMPTY)) {
-//          jo.put("cancellation_condition", this.getURICancellationCondition().URI);
-//      // }
-//      // jo.put("expires_at", this.DTTM_expires.toString());
-//      return jo;
-//    }
 
     private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
         JsonArray ja = new JsonArray();
@@ -352,10 +328,12 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
                 //          "amount":"1",
                 //          "data":{"expires_at":"2016-11-10T15:51:27.134Z"}}
                 //  }}
+                System.out.println(">>>deleteme (Credit)entry).ph.getExpiry().toString()"+((Credit)entry).ph.getExpiry().toString());
+                System.out.println(">>>deleteme DTTM_expires.toString()"+DTTM_expires.toString());
                 JsonObject memo = new JsonObject(), ilp_header = new JsonObject(), data = new JsonObject();
                 ilp_header.put("account", ((Credit)entry).ph.getDestinationAddress());
                 ilp_header.put("amount",  ""+((Credit)entry).ph.getAmount());// TODO: Recheck
-                data.put("expires_at", ((Credit)entry).ph.getExpiry().toString()/*DTTM_expires.toString()*/);  // TODO: Recheck.
+                data.put("expires_at", /*((Credit)entry).ph.getExpiry().toString()*/DTTM_expires.toString());  // TODO: Recheck.
                 ilp_header.put("data", data);
                 memo.put("ilp_header", ilp_header);
                 jo.put("memo", memo);
