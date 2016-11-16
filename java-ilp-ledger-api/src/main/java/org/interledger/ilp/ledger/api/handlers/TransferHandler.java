@@ -133,9 +133,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 //            throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
 //        }
         
-        DTTM DTTM_expires = requestBody.getString("expires_at") != null
-                ? DTTM.c(requestBody.getString("expires_at"))
-                : DTTM.future; // TODO: RECHECK
+        DTTM DTTM_expires = DTTM.c(requestBody.getString("expires_at"));
+        if (DTTM_expires == null) throw new RuntimeException("expires_at not provided");
+
         ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
                 ? ConditionURI.build(requestBody.getString("execution_condition"))
                 : ConditionURI.EMPTY ; // TODO: Execution Condition = EMPTY if not provided, Cancellation condition == Not provided.
@@ -164,7 +164,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             ConditionURI ilp_ph_condition = URIExecutionCond;
             DTTM ilp_ph_expires = DTTM.c(jsonMemoILPHeader.getJsonObject("data").getString("expires_at"));
             if (! DTTM_expires.equals(ilp_ph_expires)){
-                ilp_ph_expires = DTTM_expires;// TODO: Recheck
+                // ilp_ph_expires = DTTM_expires;// TODO: Recheck
+                DTTM_expires = ilp_ph_expires;// TODO: Recheck
             }
 
             InterledgerPacketHeader memo_ph = new InterledgerPacketHeader(
@@ -214,7 +215,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             tm.createNewRemoteILPTransfer(receivedTransfer);
         }
         try { // TODO: Next code for notification (next two loops) are duplicated in FulfillmentHandler
-            String notification = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat();
+            String notification = ((SimpleLedgerTransfer) effectiveTransfer).toMessageStringifiedFormat().encode();
             log.info("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
             
             // Notify affected accounts: 
@@ -230,7 +231,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
              *     send to the connector once the (websocket) connection is restablished.
              */
         }
-        String response = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat();// .encode();
+        String response = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat().encode();// .encode();
 
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -253,7 +254,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransfer transfer = tm.getTransferById(transferID);
 
         response(context, HttpResponseStatus.OK,
-                buildJSON("result", ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat())  );// .encode();
+                buildJSON("result", ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat().encode())  );// .encode();
     }
 }
 
