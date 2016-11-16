@@ -125,7 +125,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         LedgerInfo ledgerInfo = ledger.getInfo();
         indexHandler
                 .put("ilp_prefix", ilpPrefix)
-                .put("ilp_prefix", ilpPrefix)
                 .put("currency_code", ledgerInfo.getCurrencyCode())
                 .put("currency_symbol", ledgerInfo.getCurrencySymbol())
                 .put("precision", ledgerInfo.getPrecision())
@@ -160,28 +159,20 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         Config config = ((SimpleLedger)LedgerFactory.getDefaultLedger()).getConfig();
         String public_key = config.getString(SERVER, ED25519, PUBLIC_KEY);
         indexHandler.put("condition_sign_public_key", public_key);
-        
-        // FIXME:(NOW) TODO: Connector data hardcoded. 
-        // Replace with data "comming" from TransferWSEventHandler (registerServerWebSocket, unregister...)
-        /* In five-bells-ledger we have something like:
-         * "connectors":[
-         *   {"id":"http://localhost:3002/accounts/alice","name":"alice","connector":"localhost:4000"},
-         *   {"id":"http://localhost:3002/accounts/ilpconnector","name":"ilpconnector","connector":"localhost:4000"},
-         *   ...
-         * ]
-         */
+ 
+        String[] list = new String[]{"alice", "ilpconnector"};// FIXME:(NOW) TODO: Connector accounts data hardcoded. 
         List<Map<String,String>> connectors = new ArrayList<Map<String,String>>();
-        Map<String, String > connector1 = new HashMap<String, String >();
-            connector1.put("id", "http://localhost:3001/accounts/ilpconnector");
-            connector1.put("name", "ilpconnector");
-            connector1.put("connector", "localhost:4000");
-        Map<String, String > connector2 = new HashMap<String, String >();
-            connector2.put("id", "http://localhost:3001/accounts/alice");
-            connector2.put("name", "alice");
-            connector2.put("connector", "localhost:4000");
-         connectors.add(connector1);
-         connectors.add(connector2);
-         indexHandler.put("connectors", connectors);
+        for (int idx = 0; idx < list.length ; idx++){
+            String accountName = list[idx];
+            
+            Map<String, String > connector1 = new HashMap<String, String >();
+                connector1.put("id", base +"/accounts/"+accountName);
+                connector1.put("name", accountName);
+                connector1.put("connector", "localhost:4000");
+             connectors.add(connector1);
+        }
+        indexHandler.put("connectors", connectors);
+
     }
 
     private void configureDevelopmentEnvirontment(Config config) {
