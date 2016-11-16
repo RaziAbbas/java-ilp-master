@@ -28,8 +28,6 @@ import org.javamoney.moneta.Money;
 
 public class SimpleLedgerTransfer implements LedgerTransfer {
     // TODO: IMPROVEMENT. Mix of local/remote transactions not contemplated. Either all debit_list are remote or local
-    
-    // TODO:(0) Use URI instead of string
     final TransferID transferID;
     final LedgerAccount fromAccount;
     final Credit[] credit_list;
@@ -257,13 +255,24 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
     // since the data about the transfer needed by the wallet and the connector differ.
     // That's why two different JSON encoders exist
     public String toILPJSONStringifiedFormat() {
+        LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+
         // REF: convertToExternalTransfer@
         // https://github.com/interledger/five-bells-ledger/blob/master/src/models/converters/transfers.js
         JsonObject jo = new JsonObject();
-        jo.put("id", credit_list[0].account.getLedgerUri() + "/transfers/"+this.transferID);
+        String ledger = ledgerInfo.getBaseUri();
+        if (ledger.endsWith("/")) { ledger = ledger.substring(0, ledger.length()-1); }
+        String id = ledger + "/transfers/"+ transferID.transferID;
+        jo.put("id", id);
+        jo.put("ledger", ledger);
         jo.put("state", this.getTransferStatus().toString());
         jo.put("credits", entryList2Json(credit_list));
         jo.put("debits" , entryList2Json( debit_list));
+        jo.put("execution_condition", this.getURIExecutionCondition().URI);
+//        if (!this.getURICancellationCondition().URI.equals(ConditionURI.NOT_PROVIDED)) {
+//            jo.put("cancellation_condition", this.getURICancellationCondition().URI);
+//        }
+        // FIXME: Cancelation_condition?
         {
             JsonObject timeline = new JsonObject();
             timeline.put("proposed_at", this.DTTM_proposed.toString());
@@ -282,7 +291,7 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
                 || this.getTransferStatus().equals(TransferStatus.REJECTED);
         
         System.out.println("deleteme: addRelatedResources: " + addRelatedResources);
-        if (  addRelatedResources ) {
+        if ( addRelatedResources ) {
                 //  REF: sendNotifications @
                 //       five-bells-ledger/src/lib/notificationBroadcasterWebsocket.js
                 JsonObject related_resources = new JsonObject();
@@ -295,44 +304,44 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
         return jo2.encode();
     }
 
-    public JsonObject toJSONWalletFormat() {
-      LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
-      
-      JsonObject jo = new JsonObject();
-      String id = ledgerInfo.getBaseUri() + "transfers/"+ transferID.transferID;
-      jo.put("id", id);
-      jo.put("state", this.getTransferStatus().toString());
-      String ledger = ledgerInfo.getBaseUri();
-      if (ledger.endsWith("/")) { ledger = ledger.substring(0, ledger.length()-1); }
-      jo.put("ledger", ledger);
-      jo.put("credits", entryList2Json(credit_list));
-      jo.put("debits" , entryList2Json( debit_list));
-      {
-          JsonObject timeline = new JsonObject();
-          timeline.put("proposed_at", this.DTTM_proposed.toString());
-          if (this.DTTM_prepared != DTTM.future) { timeline.put("prepared_at", this.DTTM_prepared.toString()); }
-          if (this.DTTM_executed != DTTM.future) { timeline.put("executed_at", this.DTTM_executed.toString()); }
-          if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
-          jo.put("timeline", timeline);
-      }
-      if (!this.getURIExecutionCondition().URI.equals(ConditionURI.EMPTY)) {
-          jo.put(   "execution_condition", this.  getURIExecutionCondition().URI);
-      }
-      if (!this.getURICancellationCondition().URI.equals(ConditionURI.EMPTY)) {
-          jo.put("cancellation_condition", this.getURICancellationCondition().URI);
-      }
-      // jo.put("expires_at", this.DTTM_expires.toString());
-      return jo;
-    }
+//    public JsonObject toJSONWalletFormat() {
+////      LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
+//      
+//      JsonObject jo = new JsonObject();
+////      String id = ledgerInfo.getBaseUri() + "transfers/"+ transferID.transferID;
+//      jo.put("id", id);
+//      jo.put("state", this.getTransferStatus().toString());
+////      String ledger = ledgerInfo.getBaseUri();
+////      if (ledger.endsWith("/")) { ledger = ledger.substring(0, ledger.length()-1); }
+////      jo.put("ledger", ledger);
+////      jo.put("credits", entryList2Json(credit_list));
+////      jo.put("debits" , entryList2Json( debit_list));
+////      {
+////          JsonObject timeline = new JsonObject();
+////          timeline.put("proposed_at", this.DTTM_proposed.toString());
+////          if (this.DTTM_prepared != DTTM.future) { timeline.put("prepared_at", this.DTTM_prepared.toString()); }
+////          if (this.DTTM_executed != DTTM.future) { timeline.put("executed_at", this.DTTM_executed.toString()); }
+////          if (this.DTTM_rejected != DTTM.future) { timeline.put("rejected_at", this.DTTM_rejected.toString()); }
+////          jo.put("timeline", timeline);
+////      }
+//      // if (!this.getURIExecutionCondition().URI.equals(ConditionURI.EMPTY)) {
+//      jo.put(   "execution_condition", this.  getURIExecutionCondition().URI);
+//      // }
+//      // if (!this.getURICancellationCondition().URI.equals(ConditionURI.EMPTY)) {
+//          jo.put("cancellation_condition", this.getURICancellationCondition().URI);
+//      // }
+//      // jo.put("expires_at", this.DTTM_expires.toString());
+//      return jo;
+//    }
 
     private JsonArray entryList2Json(LedgerPartialEntry[] input_list) {
         JsonArray ja = new JsonArray();
         for (LedgerPartialEntry entry : input_list) {
             // FIXME: This code to calculate amount is PLAIN WRONG. Just to pass five-bells-ledger tests
-            long amount = entry. amount.getNumber().longValue();
             JsonObject jo = new JsonObject();
             jo.put("account", entry.account.getUri());
-            jo.put( "amount", ""+amount);
+            String sAmount = "" + entry. amount.getNumber();
+            jo.put( "amount", sAmount);
             if (entry instanceof Debit) {
                 jo.put("authorized", ((Debit) entry).getAuthorized());
             } else if (entry instanceof Credit ) {
@@ -345,9 +354,8 @@ public class SimpleLedgerTransfer implements LedgerTransfer {
                 //  }}
                 JsonObject memo = new JsonObject(), ilp_header = new JsonObject(), data = new JsonObject();
                 ilp_header.put("account", ((Credit)entry).ph.getDestinationAddress());
-                ilp_header.put("amount",  ((Credit)entry).ph.getAmount());
-                ilp_header.put("amount",  ((Credit)entry).ph.getAmount());
-                data.put("expires_at", ((Credit)entry).ph.getExpiry().toString()/*DTTM_expires.toString()*/); // TODO: Recheck.
+                ilp_header.put("amount",  ""+((Credit)entry).ph.getAmount());// TODO: Recheck
+                data.put("expires_at", ((Credit)entry).ph.getExpiry().toString()/*DTTM_expires.toString()*/);  // TODO: Recheck.
                 ilp_header.put("data", data);
                 memo.put("ilp_header", ilp_header);
                 jo.put("memo", memo);

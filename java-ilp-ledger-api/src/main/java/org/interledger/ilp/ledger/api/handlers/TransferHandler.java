@@ -71,8 +71,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         if (!isAdmin && !transferMatchUser) {
           throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
-        log.debug(this.getClass().getName() + "handlePut invoqued ");
-        log.info(context.getBodyAsString());
+        log.trace(this.getClass().getName() + "handlePut invoqued ");
+        log.trace(context.getBodyAsString());
         /* REQUEST:
          *     PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 HTTP/1.1
          *     Authorization: Basic YWxpY2U6YWxpY2U=
@@ -120,9 +120,11 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 
         for (int idx=0; idx < debits.size(); idx ++ )  {
             JsonObject jsonDebit = debits.getJsonObject(idx);
+            log.debug("check123 jsonDebit: " + jsonDebit.encode());
         // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
             AccountUri fromURI = AccountUri.buildFromURI(jsonDebit.getString("account") /*account URI*/);
             MonetaryAmount debit_ammount = Money.of(Double.parseDouble(jsonDebit.getString("amount")), currencyUnit);
+            log.debug("check123 debit_ammount (must match jsonDebit ammount: " + debit_ammount.toString());
             debitList[idx] = new Debit(fromURI, debit_ammount);
         }
         // REF: JsonArray ussage: http://www.programcreek.com/java-api-examples/index.php?api=io.vertx.core.json.JsonArray
@@ -136,7 +138,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                 : DTTM.future; // TODO: RECHECK
         ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
                 ? ConditionURI.build(requestBody.getString("execution_condition"))
-                : ConditionURI.EMPTY ;
+                : ConditionURI.EMPTY ; // TODO: Execution Condition = EMPTY if not provided, Cancellation condition == Not provided.
         Credit[] creditList = new Credit[credits.size()];
 
         for (int idx=0; idx < credits.size(); idx ++ )  {
@@ -181,14 +183,14 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 
         ConditionURI URICancelationCond = (cancelation_condition != null)
                 ? ConditionURI.build(cancelation_condition)
-                : ConditionURI.EMPTY ;
+                : ConditionURI.NOT_PROVIDED ;
         TransferStatus status = TransferStatus.PROPOSED; // By default
         if (requestBody.getString("state") != null) {
           // TODO: Must status change be allowed or must we force it with
           //     to PROPOSED and just change it with Execution|Cancellation Fulfillments
           // For now it's allowed (to make it compliant with five-bells-ledger tests) 
           status = TransferStatus.parse(requestBody.getString("state"));
-          System.out.println("deleteme put transfer status "+status);
+          log.debug("transfer status " + status);
         }
         // "memo":{"ilp_header":{"account":"ledger3.eur.alice.fe773626-81fb-4294-9a60-dc7b15ea841e","amount":"1","data":{"expires_at":"2016-11-10T15:51:27.134Z"}}}
 
@@ -197,9 +199,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                 debitList, creditList,
                 URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
                 data, noteToSelf, status);
-        
+
         boolean isNewTransfer = !tm.transferExists(transferID);
-        System.out.println("is new transfer?: " + isNewTransfer);
+        log.debug("is new transfer?: " + isNewTransfer);
         LedgerTransfer effectiveTransfer = (isNewTransfer) ? receivedTransfer : tm.getTransferById(transferID);
         if (!isNewTransfer) {
             // Check that received json data match existing transaction.
@@ -228,7 +230,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
              *     send to the connector once the (websocket) connection is restablished.
              */
         }
-        String response = ((SimpleLedgerTransfer) effectiveTransfer).toJSONWalletFormat().encode();
+        String response = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat();// .encode();
 
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -251,7 +253,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransfer transfer = tm.getTransferById(transferID);
 
         response(context, HttpResponseStatus.OK,
-                buildJSON("result", ((SimpleLedgerTransfer) transfer).toJSONWalletFormat().encode()));
+                buildJSON("result", ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat())  );// .encode();
     }
 }
 
