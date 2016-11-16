@@ -61,7 +61,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         // FIXME: If debit's account owner != request credentials throw exception.
         // PUT /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
-        log.info(this.getClass().getName() + "handlePut invoqued ");
+        log.trace(this.getClass().getName() + "handlePut invoqued ");
         // boolean isFulfillment = false, isRejection   = false;
 //        if (context.request().path().endsWith("/fulfillment")){
 //            isFulfillment = true;
@@ -114,14 +114,14 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                     "Transfer is not conditional");
         }
         String   fulfillmentURI = context.getBodyAsString();
-        System.out.println("deleteme fulfillmentURI: "+fulfillmentURI);
+        log.trace("fulfillmentURI: "+fulfillmentURI);
         Fulfillment          ff = FulfillmentFactory.getFulfillmentFromURI(fulfillmentURI);
         MessagePayload message = new MessagePayload(new byte[]{});
         boolean ffExisted = false;
-        System.out.println("deleteme transfer.getURIExecutionCondition().URI:"+transfer.getURIExecutionCondition().URI.toString());
-        System.out.println("deleteme transfer.getURICancellationCondition().URI:"+transfer.getURICancellationCondition().URI.toString());
-        System.out.println("deleteme request fulfillmentURI:"+fulfillmentURI);
-        System.out.println("deleteme request ff.getCondition().toURI():"+ff.getCondition().toURI());
+        log.trace("transfer.getURIExecutionCondition().URI:"+transfer.getURIExecutionCondition().URI.toString());
+        log.trace("transfer.getURICancellationCondition().URI:"+transfer.getURICancellationCondition().URI.toString());
+        log.trace("request fulfillmentURI:"+fulfillmentURI);
+        log.trace("request ff.getCondition().toURI():"+ff.getCondition().toURI());
 
         if (/*isFulfillment && */transfer.getURIExecutionCondition().URI.equals(ff.getCondition().toURI()) ) {
             ffExisted = transfer.getURIExecutionFulfillment().URI.equals(fulfillmentURI);
@@ -144,7 +144,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             throw new InterledgerException(InterledgerException.RegisteredException.UnmetConditionError, "Fulfillment does not match any condition");
             // throw new InterledgerException(InterledgerException.RegisteredException.InvalidFulfillmentError);
         }
-        System.out.println("deleteme ffExisted:"+ffExisted);
+        log.trace("ffExisted:"+ffExisted);
 
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
@@ -172,7 +172,7 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
     protected void handleGet(RoutingContext context) {
         // GET /transfers/25644640-d140-450e-b94b-badbe23d3389/fulfillment 
         //                                                    /rejection
-        log.info(this.getClass().getName() + " handleGet invoqued ");
+        log.trace(this.getClass().getName() + " handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
@@ -184,6 +184,13 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             isFulfillment = true;
         } else if (context.request().path().endsWith("/rejection")){
             isFulfillment = false;
+            /*
+             * FIXME: rejection is not symetrical with fulfillments.
+             *    INFO: 127.0.0.1 - - [Wed, 16 Nov 2016 09:05:21 GMT] "PUT /transfers/eec954ec-005e-460a-8dd6-829161da05ac/rejection HTTP/1.1" 200 19 "-" "-"
+             *    Handle exception java.lang.IllegalArgumentException: serializedFulfillment 'transfer timed out.' must start with 'cf:'
+             *    java.lang.IllegalArgumentException: serializedFulfillment 'transfer timed out.' must start with 'cf:'
+             *    at org.interledger.cryptoconditions.FulfillmentFactory.getFulfillmentFromURI(FulfillmentFactory.java:24)
+             */
         } else {
             throw new RuntimeException("path doesn't match /fulfillment | /rejection");
         }

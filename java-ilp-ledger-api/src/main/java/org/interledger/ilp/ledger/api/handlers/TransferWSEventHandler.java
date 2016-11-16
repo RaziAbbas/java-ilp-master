@@ -86,7 +86,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 
     private static void registerServerWebSocket(String accountName, ServerWebSocket sws) {
         String handlerID = sws.textHandlerID(); // | binaryHandlerID
-        log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    registering WS connection: "+accountName);
+        log.trace("registering WS connection: "+accountName);
 
         server2WSHandlerID.put(accountName, handlerID);
         sws.frameHandler/* bytes read from the connector */(/*WebSocketFrame*/frame -> {
@@ -99,7 +99,7 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
             @Override
             public void handle(final Void event) {
 //                log.info("un-registering connection from ilp Server: '" + ilpConnectorIP + "'");
-                log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    un-registering WS connection: "+accountName);
+                log.trace("un-registering WS connection: "+accountName);
                 server2WSHandlerID.remove(accountName);
             }
         });
@@ -126,11 +126,11 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
      */
     public static void notifyListener(RoutingContext context, String account, String message) {
         // Send notification to all existing webSockets
-        log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    notifyListener account:"+account);
+        log.debug("{\n"
+                + "notifyListener to account:"+account + ", message: "+message +"\n"
+                + "}");
         String wsID = server2WSHandlerID.get(account);
-        log.debug("{");
-        log.debug("sending message '"+message+"' to handlerID: "+wsID);
-        log.debug("}");
+
         context.vertx().eventBus().send(wsID, message); // will be sent to handler "@bookmark1"
     }
 

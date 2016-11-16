@@ -67,7 +67,7 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
          *          {"account":"http://localhost/accounts/alice","amount":"10","authorized":true}],
          *        "credits":[{"account":"http://localhost/accounts/bob","amount":"10"}]}]
          */
-        log.info(this.getClass().getName() + "handleGet invoqued ");
+        log.trace(this.getClass().getName() + "handleGet invoqued ");
         SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
@@ -79,7 +79,7 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
         List<LedgerTransfer> transferList = tm.getTransfersByExecutionCondition(executionCondition);
         JsonArray ja = new JsonArray();
         for (LedgerTransfer transfer : transferList) {
-            ja.add(((SimpleLedgerTransfer)transfer).toJSONWalletFormat().encode());
+            ja.add(((SimpleLedgerTransfer)transfer).toILPJSONStringifiedFormat());
         }
         String response = ja.encode();
         context.response()

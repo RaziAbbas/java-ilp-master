@@ -28,7 +28,6 @@ public class AccountsHandler extends RestEndpointHandler implements ProtectedRes
     @Override
     protected void handleGet(RoutingContext context) {
         User user = context.user();
-        System.out.println("AccountsHandler user:" + user);
         checkAuth(context, "admin");
     }
 
