@@ -24,9 +24,7 @@ public class DTTM {
 
     private DTTM(String DTTMformatedString) {
         try {
-            System.out.println("deleteme DTTM constructor DTTMformatedString:"+DTTMformatedString);
             this.date = sdf.parse(DTTMformatedString);
-            System.out.println("deleteme DTTM constructor this.DTTM.toString():"+this.toString());
         } catch (ParseException e) {
             throw new RuntimeException("'" + DTTMformatedString + "' "
                     + "couldn't be parsed as a date-time with format '" + pattern + "'");
