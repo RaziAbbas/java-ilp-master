@@ -23,6 +23,9 @@ public class DTTM {
     }
 
     private DTTM(String DTTMformatedString) {
+        if (DTTMformatedString==null){
+            throw new RuntimeException("DTTM string constructor null");
+        }
         try {
             this.date = sdf.parse(DTTMformatedString);
         } catch (ParseException e) {
@@ -31,6 +34,7 @@ public class DTTM {
         }
     }
     
+    // TODO: Remove this static constructor. doesn't look to be useful
     public static DTTM c(String DTTM) {
         return new DTTM(DTTM);
     }
