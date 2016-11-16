@@ -10,15 +10,10 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.RoleUser;
 import org.interledger.ilp.common.api.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
-import org.interledger.ilp.core.InterledgerPacketHeader;
 import org.interledger.ilp.core.LedgerInfo;
-import org.interledger.ilp.core.LedgerTransfer;
-import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
-import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
-import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +53,7 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         if (!isAdmin && !transferMatchUser) {
             throw new InterledgerException(InterledgerException.RegisteredException.ForbiddenError);
         }
-        log.info("handlePost context.getBodyAsString():\n   "+context.getBodyAsString());
+        log.debug("handlePost context.getBodyAsString():\n   "+context.getBodyAsString());
 
         /*
         * Received json message will be similar to: TODO: Recheck
@@ -97,6 +92,16 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         *           }
         *       }
         * }
+        *   {"ledger":"http://localhost:3001/","from":"http://localhost:3001/accounts/alice",
+        *   "to":"http://localhost:3001/accounts/ilpconnector",
+        *   "data":{"method":"quote_request",
+        *   "data":{
+        *       "source_address":"ledger1.eur.alice",
+        *       "destination_address":"ledger3.eur.alice.5d920eb8-2c89-46e8-8b02-3f027924181b",
+        *       "destination_amount":"1"
+        *   },
+        *   "id":"71dde319-4 dd53-4749-807f-12dbcc598878"}}$
+
         */
         // FIXME: Recheck
         JsonObject jsonMessageReceived = getBodyAsJson(context);
@@ -110,8 +115,8 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
             LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
             jsonMessageReceived.put("from", ledgerInfo.getBaseUri() + "accounts/" + user.getAuthInfo().getUsername());
         }
-        JsonObject data = jsonMessageReceived.getJsonObject("data");
-        JsonObject data_data = data.getJsonObject("data");
+//        JsonObject data = jsonMessageReceived.getJsonObject("data");
+//        JsonObject data_data = data.getJsonObject("data");
 
         String recipient = jsonMessageReceived.getString("to");
         log.debug("deleteme: recipient:"+recipient+" , recipient.lastIndexOf('/')"+recipient.lastIndexOf('/'));
