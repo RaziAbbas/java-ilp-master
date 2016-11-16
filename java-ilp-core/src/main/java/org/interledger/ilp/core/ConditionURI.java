@@ -7,6 +7,7 @@ public class ConditionURI {
     final private static String EMPTY_CONDITION = "cc:0:3::10"; // FIXME
     public final String URI;
     public static final ConditionURI EMPTY = new ConditionURI(EMPTY_CONDITION);
+    public static final ConditionURI NOT_PROVIDED = new ConditionURI("cc:-1::0");
 
     // FIXME Make private and force using factory.
     private ConditionURI(String URI) {
