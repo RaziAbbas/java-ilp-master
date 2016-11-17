@@ -32,7 +32,6 @@ import static org.interledger.ilp.common.config.Key.*;
 /**
  * TransferHandler handler
  *
- * @author earizon
  */
 public class TransferStateHandler extends RestEndpointHandler implements ProtectedResource {
 
@@ -79,9 +78,9 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
     @Override
     protected void handleGet(RoutingContext context) {
         /*
-         * *************************
+         * *****************************
          * * GET transfer by UUID & type
-         * *************************
+         * *****************************
          * GET /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204/state?type=sha256 HTTP/1.1
          * HTTP/1.1 200 OK
          * {"type":"sha256","message":{"id":"http://localhost/transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204","state":"proposed","token":"xy9kB4n/nWd+MsI84WeK2qg/tLfDr/4SIe5xO9OAz9PTmAwKOUzzJxY1+7c7e3rs0iQ0jy57L3U1Xu8852qlCg=="},"signer":"http://localhost","digest":"P6K2HEaZxAthBeGmbjeyPau0BIKjgkaPqW781zmSvf4="}

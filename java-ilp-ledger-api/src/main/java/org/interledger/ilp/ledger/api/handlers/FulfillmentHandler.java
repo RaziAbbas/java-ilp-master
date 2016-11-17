@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Fulfillment (and rejection) handler
- *
- * @author earizon
  * 
  * REF: five-bells-ledger/src/controllers/transfers.js
  */
@@ -63,13 +61,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         // PUT /transfers/4e36fe38-8171-4aab-b60e-08d4b56fbbf1/rejection
         log.trace(this.getClass().getName() + "handlePut invoqued ");
         // boolean isFulfillment = false, isRejection   = false;
-//        if (context.request().path().endsWith("/fulfillment")){
-//            isFulfillment = true;
-//        } else if (context.request().path().endsWith("/rejection")){
-//            isRejection = true;
-//        } else {
-//            throw new RuntimeException("path doesn't match /fulfillment | /rejection");
-//        }
         /**********************
          * PUT/GET fulfillment (FROM ILP-CONNECTOR)
          *********************
@@ -142,7 +133,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             }
         } else {
             throw new InterledgerException(InterledgerException.RegisteredException.UnmetConditionError, "Fulfillment does not match any condition");
-            // throw new InterledgerException(InterledgerException.RegisteredException.InvalidFulfillmentError);
         }
         log.trace("ffExisted:"+ffExisted);
 
@@ -162,9 +152,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
             }
         } catch (Exception e) {
             log.warn("Fulfillment registrered correctly but ilp-connector couldn't be notified due to " + e.toString());
-            /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
-             *     send to the connector once the (websocket) connection is restablished.
-             */
         }
     }
 
@@ -185,11 +172,12 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
         } else if (context.request().path().endsWith("/rejection")){
             isFulfillment = false;
             /*
-             * FIXME: rejection is not symetrical with fulfillments.
-             *    INFO: 127.0.0.1 - - [Wed, 16 Nov 2016 09:05:21 GMT] "PUT /transfers/eec954ec-005e-460a-8dd6-829161da05ac/rejection HTTP/1.1" 200 19 "-" "-"
-             *    Handle exception java.lang.IllegalArgumentException: serializedFulfillment 'transfer timed out.' must start with 'cf:'
-             *    java.lang.IllegalArgumentException: serializedFulfillment 'transfer timed out.' must start with 'cf:'
-             *    at org.interledger.cryptoconditions.FulfillmentFactory.getFulfillmentFromURI(FulfillmentFactory.java:24)
+             * FIXME: rejection request doesn't look to be symmetrical with fulfillments.
+             *    INFO: 127.0.0.1 - - [Wed, 16 Nov 2016 09:05:21 GMT] 
+             *    "PUT /transfers/eec954ec-005e-460a-8dd6-829161da05ac/rejection HTTP/1.1" 200 19 "-" "-"
+             *       Handle exception java.lang.IllegalArgumentException: serializedFulfillment 'transfer timed out.' must start with 'cf:'
+             *       java.lang.IllegalArgumentException: serializedFulfillment 'transfer timed out.' must start with 'cf:'
+             *       at org.interledger.cryptoconditions.FulfillmentFactory.getFulfillmentFromURI(FulfillmentFactory.java:24)
              */
         } else {
             throw new RuntimeException("path doesn't match /fulfillment | /rejection");
@@ -210,7 +198,6 @@ public class FulfillmentHandler extends RestEndpointHandler implements Protected
                 InterledgerException.RegisteredException.MissingFulfillmentError,
                 "This transfer has not yet been fulfilled");
         }
-        
         context.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
             .putHeader(HttpHeaders.CONTENT_LENGTH, ""+fulfillmentURI.length())

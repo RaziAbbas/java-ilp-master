@@ -8,8 +8,6 @@ import io.vertx.ext.web.RoutingContext;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
 import org.interledger.ilp.ledger.transfer.LedgerTransferManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Single Account handler
@@ -18,7 +16,6 @@ import org.slf4j.LoggerFactory;
  */
 public class UnitTestSupportHandler extends RestEndpointHandler {
 
-//    private static final Logger log = LoggerFactory.getLogger(UnitTestSupportHandler.class);
     private final static String action  = "action";
 
     public UnitTestSupportHandler() {

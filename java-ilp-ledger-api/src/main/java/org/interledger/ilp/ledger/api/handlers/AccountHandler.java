@@ -126,8 +126,6 @@ public class AccountHandler extends RestEndpointHandler  implements ProtectedRes
     }
 
     private void handleAuthorizedGet(RoutingContext context, AuthInfo authInfo) {
-
-
         log.debug("handleAuthorized {}", authInfo);
         LedgerAccount account = getAccountByName(context);
         JsonObject result;

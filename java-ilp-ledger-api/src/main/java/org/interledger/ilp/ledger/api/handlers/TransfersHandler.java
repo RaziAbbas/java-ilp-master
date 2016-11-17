@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 /**
  * TransferHandler handler
  *
- * @author earizon
  * REF: five-bells-ledger/src/controllers/transfers.js
  */
 public class TransfersHandler extends RestEndpointHandler implements ProtectedResource {
@@ -41,10 +40,6 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
         accept(GET);
     }
 
-//    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
-//        this.ledgerAccountManager = ledgerAccountManager;
-//        return this;
-//    }
     public static TransfersHandler create() {
         return new TransfersHandler(); // TODO: return singleton?
     }
@@ -52,10 +47,6 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
     @Override
     protected void handleGet(RoutingContext context) {
         /* 
-         * FIXME: TODO
-         *  *************************
-         *  * GET transfer by Condition
-         *  *************************
          *  GET /transfers/byExecutionCondition/cc:0:3:vmvf6B7EpFalN...I:7 HTTP/1.1
          *      HTTP/1.1 200 OK
          *      [{"ledger":"http://localhost",
@@ -89,17 +80,6 @@ public class TransfersHandler extends RestEndpointHandler implements ProtectedRe
             .end(response);
     }
 
-    /*
-By executionCondition:
-function * getTransfersByExecutionCondition (executionCondition) {
-  const transfers = yield db.getTransfersByExecutionCondition(executionCondition)
-  if (_.isEmpty(transfers)) {
-    throw new NotFoundError('Unknown execution condition')
-  }
-
-  return Promise.all(transfers.map(converters.convertToExternalTransfer))
-}
-     */
 }
 
 

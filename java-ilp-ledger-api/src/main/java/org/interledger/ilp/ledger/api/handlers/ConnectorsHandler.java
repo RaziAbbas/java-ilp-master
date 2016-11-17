@@ -12,9 +12,9 @@ import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 public class ConnectorsHandler extends RestEndpointHandler {
 
     public ConnectorsHandler() {
-        super("connectors");        
+        super("connectors");
     }
-    
+
     public static EndpointHandler create() {
         return new ConnectorsHandler();
     }

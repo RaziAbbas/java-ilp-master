@@ -1,11 +1,8 @@
 package org.interledger.ilp.ledger.api.handlers;
 
 // TESTING FROM COMMAND LINE: https://blogs.oracle.com/PavelBucek/entry/websocket_command_line_client
-// 
-//import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 
 import static io.vertx.core.http.HttpMethod.GET;
 import io.vertx.core.http.ServerWebSocket;
@@ -13,14 +10,10 @@ import io.vertx.ext.web.RoutingContext;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 
 /**
  * @author earizon TransferWSEventHandler handler Wrapper to HTTP GET request to
@@ -37,26 +30,12 @@ import org.slf4j.LoggerFactory;
  * context.vertx().eventBus().send(wsID, "PUT
  * transferID:"+transferID.transferID);
  */
-// FIXME: implements ProtectedResource required? 
-//    Note: earizon: I didn't find an easy way to add authentication to the connecting WS "client"
+// FIXME: implements ProtectedResource required?
 public class TransferWSEventHandler extends RestEndpointHandler/* implements ProtectedResource */ {
 
     private static final Logger log = LoggerFactory.getLogger(TransferWSEventHandler.class);
 
     private final static String PARAM_NAME = "name";
-
-    /*
-     *  FIXME: Change mapping
-     *       "ilpConnectorIP" <-> "WebSocket Handler ID"
-     *    to
-     *              "account" <-> "WebSocket Handler ID"
-     *         Change also:
-     *       notifyILPConnector(RoutingContext context, String message)
-     *    to
-     *       notifyILPConnector(RoutingContext context, LedgerAccount[] affectedAccounts, String message)
-     */
-//    private static Map<String /*account name*/, String /*ws ServerID*/> server2WSHandlerID
-//            = new HashMap<String, String>();
 
     public TransferWSEventHandler() {
         super("transfer", "accounts/:" + PARAM_NAME + "/transfers");
@@ -97,12 +76,10 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
 
         log.debug("registering WS connection: "+accountName);
 
-//        server2WSHandlerID.put(accountName, handlerID);
         sws.frameHandler/* bytes read from the connector */(/*WebSocketFrame*/frame -> {
-                            log.debug("ilpConnector input frame -> frame.textData()   " + frame.textData());
-                            log.debug("ilpConnector input frame -> frame.binaryData() " + frame.binaryData());
-                        });
-//      if (bCloseSocket) { websocket.close(); } 
+               log.debug("ilpConnector input frame -> frame.textData()   " + frame.textData());
+               log.debug("ilpConnector input frame -> frame.binaryData() " + frame.binaryData());
+           });
 
         EventBus eventBus = context.vertx().eventBus();
 
@@ -116,20 +93,10 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
         sws.closeHandler(new Handler<Void>() {
             @Override
             public void handle(final Void event) {
-//                log.info("un-registering connection from ilp Server: '" + ilpConnectorIP + "'");
                 log.debug("un-registering WS connection: "+accountName);
-//                server2WSHandlerID.remove(accountName);
                 mc.unregister();
             }
         });
-
-
-//        sws.handler/* @bookmark1 data sent from the internal vertX components through the event-Bus */( /* Handler<Buffer> */ data -> {
-//            String sData = data.toString();
-//            log.warn("received '"+sData+"' from internal *Manager:");
-//            sws.writeFinalTextFrame(sData);
-//            log.debug("message forwarded to websocket peer through websocket");
-//        });
 
         sws.exceptionHandler(/*Handler<Throwable>*/ throwable -> {
             StringWriter writer = new StringWriter();
@@ -139,15 +106,8 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
             String stackTrace = writer.toString();
             log.warn("There was an exception in the ws "+accountName + ":"+throwable.toString()+ "\n" +stackTrace );
         });
-
     }
 
-//    public static String getServerWebSocketHandlerID(String connectorIP) {
-//        if (!server2WSHandlerID.containsKey(connectorIP)) {
-//            throw new RuntimeException("No ws connection exists to ilp-connector "+connectorIP);
-//        }
-//        return server2WSHandlerID.get(connectorIP);
-//    }
     /**
      * Send transacction status update to the ILP connector
      *
@@ -157,8 +117,6 @@ public class TransferWSEventHandler extends RestEndpointHandler/* implements Pro
     public static void notifyListener(RoutingContext context, String account, String message) {
         // Send notification to all existing webSockets
         log.debug("notifyListener to account:"+account + ", message:'''" + message + "'''\n");
-//        String wsID = server2WSHandlerID.get(account);
-//        context.vertx().eventBus().send(wsID, message); // will be sent to handler "@bookmark1"
         context.vertx().eventBus().send("message-"+account, message); // will be sent to handler "@bookmark1"
         
     }

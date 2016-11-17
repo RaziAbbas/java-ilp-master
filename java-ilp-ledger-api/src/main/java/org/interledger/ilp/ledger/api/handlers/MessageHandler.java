@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
  *
  * REF: five-bells-ledger/src/controllers/transfers.js
  * 
- * @author earizon 
  */
 public class MessageHandler extends RestEndpointHandler implements ProtectedResource {
 
@@ -40,13 +39,11 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
     @Override
     protected void handlePost(RoutingContext context) {
         /*
-         *  TODO: FIXME: Create validation infrastructure for Messages, similar to the JS code:
+         *  TODO: IMPROVEMENT: Create validation infrastructure for JSON Messages, 
+         *  similar to the JS code:
          *  const validationResult = validator.create('Message')(message)$
          *  if (validationResult.valid !== true) { $... }
          */
-        // SimpleAuthProvider.SimpleUser user = (SimpleAuthProvider.SimpleUser) context.user();
-
-        
         RoleUser user = (RoleUser) context.user();
         boolean isAdmin = user.hasRole("admin");
         boolean transferMatchUser = true; // FIXME: TODO: implement
@@ -56,7 +53,7 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         log.debug("handlePost context.getBodyAsString():\n   "+context.getBodyAsString());
 
         /*
-        * Received json message will be similar to: TODO: Recheck
+        * Received json message will be similar to:
         * postMessage (data.method == quote_request) is similar to:
         * {
         *   "ledger": "http://localhost:3000/",
@@ -101,11 +98,8 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
         *       "destination_amount":"1"
         *   },
         *   "id":"71dde319-4 dd53-4749-807f-12dbcc598878"}}$
-
         */
-        // FIXME: Recheck
         JsonObject jsonMessageReceived = getBodyAsJson(context);
-
 
         // For backwards compatibility. (Ref: messages.js @ five-bells-ledger)
         if (jsonMessageReceived.getString("account") !=null && 
@@ -115,9 +109,6 @@ public class MessageHandler extends RestEndpointHandler implements ProtectedReso
             LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
             jsonMessageReceived.put("from", ledgerInfo.getBaseUri() + "accounts/" + user.getAuthInfo().getUsername());
         }
-//        JsonObject data = jsonMessageReceived.getJsonObject("data");
-//        JsonObject data_data = data.getJsonObject("data");
-
         String recipient = jsonMessageReceived.getString("to");
         log.debug("deleteme: recipient:"+recipient+" , recipient.lastIndexOf('/')"+recipient.lastIndexOf('/'));
                recipient = recipient.substring(recipient.lastIndexOf('/')+1);

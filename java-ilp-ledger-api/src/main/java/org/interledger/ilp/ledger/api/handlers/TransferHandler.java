@@ -47,7 +47,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
     // GET|PUT /transfers/3a2a1d9e-8640-4d2d-b06c-84f2cd613204 
 
     public TransferHandler() {
-        // REF: https://github.com/interledger/five-bells-ledger/blob/master/src/lib/app.js
+        // REF: https://github.com/interledgerjs/five-bells-ledger/blob/master/src/lib/app.js
         super("transfer", new String[] 
             {
                 "transfers/:" + transferUUID,
@@ -55,10 +55,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         accept(GET,POST, PUT);
     }
 
-//    public TransferHandler with(LedgerAccountManager ledgerAccountManager) {
-//        this.ledgerAccountManager = ledgerAccountManager;
-//        return this;
-//    }
     public static TransferHandler create() {
         return new TransferHandler(); // TODO: return singleton?
     }
@@ -102,18 +98,11 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         JsonObject requestBody = getBodyAsJson(context);
         TransferID transferID = new TransferID(context.request().getParam(transferUUID));
         
-        // TODO: Check equestBody.getString("ledger") match ledger host/port
+        // TODO: Check requestBody.getString("ledger") match ledger host/port
 
-//        String state = "proposed"; 
-//        if (requestBody.getString("state") != null &&
-//            "proposed".equals(requestBody.getString("state")) ) {
-//            log.warn("state must be 'proposed' for new transactions");
-//        }
+        // TODO: Check state is  'proposed' for new transactions?
 
         JsonArray debits = requestBody.getJsonArray("debits");
-//        if (debits.size() > 1) {
-//            throw new RuntimeException("Transactions from multiple source debits not implemented");
-//        }
         Debit[] debitList = new Debit[debits.size()];
         LedgerInfo ledgerInfo = LedgerFactory.getDefaultLedger().getInfo();
         CurrencyUnit currencyUnit /*local ledger currency */ = Monetary.getCurrency(ledgerInfo.getCurrencyCode());
@@ -129,10 +118,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         }
         // REF: JsonArray ussage: http://www.programcreek.com/java-api-examples/index.php?api=io.vertx.core.json.JsonArray
         JsonArray credits = requestBody.getJsonArray("credits");
-//        if (credits.size() > 1) {
-//            throw new RuntimeException("Transactions to multiple destination credit accounts not implemented");
-//        }
-        
+
         DTTM DTTM_expires = DTTM.c(requestBody.getString("expires_at"));
         if (DTTM_expires == null) throw new RuntimeException("expires_at not provided");
 
@@ -143,28 +129,26 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
 
         for (int idx=0; idx < credits.size(); idx ++ )  {
             JsonObject jsonCredit = credits.getJsonObject(idx);
-            /* {
-             *     "account":"http://localhost:3002/accounts/ilpconnector",
-             *     "amount":"1.01",
-             *     "memo":{
-             *          "ilp_header":{
-             *              "account":"ledger3.eur.alice.fe773626-81fb-4294-9a60-dc7b15ea841e",
-             *              "amount":"1",
-             *              "data":{"expires_at":"2016-11-10T15:51:27.134Z"}
-             *           }
+            /* { "account":"http://localhost:3002/accounts/ilpconnector",
+             *   "amount":"1.01",
+             *   "memo":{
+             *     "ilp_header":{
+             *       "account":"ledger3.eur.alice.fe773626-81fb-4294-9a60-dc7b15ea841e",
+             *       "amount":"1",
+             *       "data":{"expires_at":"2016-11-10T15:51:27.134Z"}
              *     }
-             * 
+             *   }
+             * }
              */
             JsonObject jsonMemoILPHeader = jsonCredit.getJsonObject("memo").getJsonObject("ilp_header");
             AccountUri toURI = AccountUri.buildFromURI(jsonCredit.getString("account") /*accountURI */);
             MonetaryAmount credit_ammount = Money.of(Double.parseDouble(jsonCredit.getString("amount")), currencyUnit);
-            
+
             String ilp_ph_ilp_dst_address = jsonMemoILPHeader.getString("account");
             String ilp_ph_amount = jsonMemoILPHeader.getString("amount");
             ConditionURI ilp_ph_condition = URIExecutionCond;
             DTTM ilp_ph_expires = DTTM.c(jsonMemoILPHeader.getJsonObject("data").getString("expires_at"));
             if (! DTTM_expires.equals(ilp_ph_expires)){
-                // ilp_ph_expires = DTTM_expires;// TODO: Recheck
                 DTTM_expires = ilp_ph_expires;// TODO: Recheck
             }
 
@@ -173,10 +157,8 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             creditList[idx] = new Credit(toURI, credit_ammount, memo_ph);
         }
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        // TODO: IMPROVEMENT: isLocalTransaction check and related logic must be done in 
-        // LedgerTransferManager using the private isLocalTransaction(LedgerTransfer transfer)
-        String data = ""; // Not used
-        String noteToSelf = ""; // Not used
+        String data = ""; // Not yet used
+        String noteToSelf = ""; // Not yet used
         DTTM DTTM_proposed = DTTM.getNow();
         log.debug(transferID.transferID+" expires_at == null" + (requestBody.getString("expires_at") == null));
 
@@ -187,15 +169,13 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
                 : ConditionURI.NOT_PROVIDED ;
         TransferStatus status = TransferStatus.PROPOSED; // By default
         if (requestBody.getString("state") != null) {
-          // TODO: Must status change be allowed or must we force it with
-          //     to PROPOSED and just change it with Execution|Cancellation Fulfillments
-          // For now it's allowed (to make it compliant with five-bells-ledger tests) 
+          // TODO: Must status change be allowed or must we force it to be 'prepared'?
+          // (only Execution|Cancellation Fulfillments will change the state)
+          // At this moment it's allowed (to make it compliant with five-bells-ledger tests) 
           status = TransferStatus.parse(requestBody.getString("state"));
           log.debug("transfer status " + status);
         }
-        // "memo":{"ilp_header":{"account":"ledger3.eur.alice.fe773626-81fb-4294-9a60-dc7b15ea841e","amount":"1","data":{"expires_at":"2016-11-10T15:51:27.134Z"}}}
 
-            
         LedgerTransfer receivedTransfer = new SimpleLedgerTransfer(transferID, 
                 debitList, creditList,
                 URIExecutionCond, URICancelationCond, DTTM_expires, DTTM_proposed,
@@ -214,10 +194,9 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         } else {
             tm.createNewRemoteILPTransfer(receivedTransfer);
         }
-        try { // TODO: Next code for notification (next two loops) are duplicated in FulfillmentHandler
+        try { // TODO: Refactor Next code for notification (next two loops) are duplicated in FulfillmentHandler
             String notification = ((SimpleLedgerTransfer) effectiveTransfer).toMessageStringifiedFormat().encode();
             log.info("send transfer update to ILP Connector through websocket: \n:" + notification + "\n");
-            
             // Notify affected accounts: 
             for (Debit  debit  : effectiveTransfer.getDebits() ) {
                 TransferWSEventHandler.notifyListener(context, debit.account.getAccountId(), notification);
@@ -227,9 +206,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             }
         } catch (Exception e) {
             log.warn("transaction created correctly but ilp-connector couldn't be notified due to " + e.toString());
-            /* FIXME:(improvement) The message must be added to a pool of pending event notifications to 
-             *     send to the connector once the (websocket) connection is restablished.
-             */
         }
         String response = ((SimpleLedgerTransfer) effectiveTransfer).toILPJSONStringifiedFormat().encode();// .encode();
 
@@ -254,9 +230,6 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         LedgerTransfer transfer = tm.getTransferById(transferID);
 
         response(context, HttpResponseStatus.OK,
-                buildJSON("result", ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat().encode())  );// .encode();
+                buildJSON("result", ((SimpleLedgerTransfer) transfer).toILPJSONStringifiedFormat().encode())  );
     }
 }
-
-
-

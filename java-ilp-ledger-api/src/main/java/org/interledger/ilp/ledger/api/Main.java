@@ -50,12 +50,9 @@ import org.slf4j.LoggerFactory;
  */
 public class Main extends AbstractMainEntrypointVerticle implements Configurable {
 
-    // TODO: FIXME This server must implement the Wallet expected (REST and WebSocket?)
-    //   interface as well as the js-ilp-connector (js-ilp-plugin-bells\src\lib\plugin.js) one.
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     private static final String DEFAULT_LEDGER_NAME = "ledger-simple";
-//    private static final String MIN_ALLOWED_BALANCE_INFINITY = "-infinity";
 
     private String ilpPrefix;
     private Ledger ledger;
@@ -69,7 +66,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
         connector
     }
 
-    // TODO: Move to the ledger-simple. The main is not part of the (reusable) API.
     public static void main(String[] args) {
         VertxRunner.run(Main.class);
 
@@ -150,8 +146,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
             services.put("transfer"            , base + "transfers/:id"            );
             services.put("transfer_fulfillment", base + "transfers/:id/fulfillment");
             services.put("transfer_rejection"  , base + "transfers/:id/rejection"  );
-            // Required by ilp plugin connector
-            
             services.put("message"             , base + "messages"                 );
 
         indexHandler.put("urls", services);
@@ -172,7 +166,6 @@ public class Main extends AbstractMainEntrypointVerticle implements Configurable
              connectors.add(connector1);
         }
         indexHandler.put("connectors", connectors);
-
     }
 
     private void configureDevelopmentEnvirontment(Config config) {

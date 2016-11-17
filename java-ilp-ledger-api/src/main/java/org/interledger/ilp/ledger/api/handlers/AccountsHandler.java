@@ -31,13 +31,6 @@ public class AccountsHandler extends RestEndpointHandler implements ProtectedRes
         checkAuth(context, "admin");
     }
 
-//    @Override
-//    protected void handleUnAuthorized(RoutingContext context) {
-//        User user = context.user();
-//        System.out.println("AccountsHandler forbidden user:" + user);
-//        super.handleUnAuthorized(context); //Sends a forbidden result
-//    }
-
     @Override
     protected void handleAuthorized(RoutingContext context) {
         JsonObject request = VertxUtils.getBodyAsJson(context);

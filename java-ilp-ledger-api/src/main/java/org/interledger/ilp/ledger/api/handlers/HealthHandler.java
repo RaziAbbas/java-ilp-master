@@ -25,11 +25,6 @@ public class HealthHandler extends RestEndpointHandler {
         return new HealthHandler();
     }
 
-    /**
-     * //TBD
-     *
-     * @param context
-     */
     @Override
     protected void handleGet(RoutingContext context) {
         response(context,HttpResponseStatus.OK,buildJSONWith("status","OK"));
