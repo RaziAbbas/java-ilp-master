@@ -23,14 +23,16 @@
         </encoder>
     </appender>
     
-    <logger name="io.netty" level="INFO"/>
+    <logger name="io.netty" level="WARN"/>
     <logger name="org.interledger" level="INFO"/>
-    <logger name="org.interledger.ilp.common.api.handlers.DebugRequestHandler" level="INFO"/>
-    <logger name="org.interledger.ilp.common.api.handlers.RestEndpointHandler" level="INFO"/>
+    <logger name="org.interledger.ilp.common.api.handlers.DebugRequestHandler"    level="INFO"/>
+    <logger name="org.interledger.ilp.common.api.handlers.RestEndpointHandler"    level="INFO"/>
+    <logger name="org.interledger.ilp.ledger.api.handlers.TransferWSEventHandler" level="TRACE"/>
+    <logger name="org.interledger.ilp.ledger.api.handlers.TransferHandler"        level="TRACE"/>
 
-    <root level="DEBUG">          
+    <root level="WARN">          
         <appender-ref ref="STDOUT" />
         <!--<appender-ref ref="FILE" />-->
-    </root>  
+    </root>
   
 </configuration>
