@@ -8,7 +8,7 @@ import io.vertx.ext.web.RoutingContext;
 
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.RoleUser;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;

@@ -17,7 +17,7 @@ import org.interledger.ilp.core.Debit;
 import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
 import org.interledger.ilp.core.TransferStatus;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;
 import org.interledger.ilp.core.FulfillmentURI;

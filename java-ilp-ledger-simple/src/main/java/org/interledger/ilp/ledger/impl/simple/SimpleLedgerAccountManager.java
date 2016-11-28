@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.interledger.ilp.core.AccountUri;
 import org.interledger.ilp.core.LedgerInfo;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;
 import org.interledger.ilp.ledger.account.LedgerAccountManager;

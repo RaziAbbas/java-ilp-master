@@ -9,7 +9,7 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.AuthInfo;
 import org.interledger.ilp.common.api.auth.AuthManager;
 import org.interledger.ilp.common.api.auth.RoleUser;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.util.NumberConversionUtil;

@@ -13,7 +13,7 @@ import org.interledger.cryptoconditions.FulfillmentFactory;
 import org.interledger.cryptoconditions.types.MessagePayload;
 import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;

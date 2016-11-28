@@ -1,7 +1,7 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import org.apache.commons.lang.StringUtils;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 
 /**
  * Simple local account address parser

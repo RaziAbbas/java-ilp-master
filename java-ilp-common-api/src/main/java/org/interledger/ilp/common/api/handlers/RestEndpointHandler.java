@@ -7,7 +7,7 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.common.api.util.JsonObjectBuilder;
 import org.interledger.ilp.common.api.util.VertxUtils;
 import org.slf4j.Logger;
@@ -57,13 +57,13 @@ public abstract class RestEndpointHandler extends EndpointHandler {
             }
         } catch (InterledgerException ex ) {
             log.error("{} -> {}\n", ex.getException() , ex.getDescription());
-            response(context, ex.getException().getHTTPErrorCode(), buildJSON(ex.getException().getsID(), ex.getDescription()));
+            response(context, HttpResponseStatus.valueOf(ex.getException().getHTTPErrorCode()), buildJSON(ex.getException().getsID(), ex.getDescription()));
         } catch (RestEndpointException rex) {
             log.error("RestEndpointException {} -> {}\n", rex.getResponseStatus(), rex.getResponse(), rex.toString());
             response(context, rex.getResponseStatus(), rex.getResponse());
         } catch (Throwable t) {
             log.error("Handle exception " + t.toString(), t);
-            response(context, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+            response(context, HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.toString(), t);
         }
     }
 
@@ -130,16 +130,16 @@ public abstract class RestEndpointHandler extends EndpointHandler {
     }
 
     protected void response(RoutingContext context, HttpResponseStatus responseStatus) {
-        response(context, responseStatus, (Throwable) null);
+        response(context, responseStatus.code(), responseStatus.toString(), (Throwable) null);
     }
 
-    protected void response(RoutingContext context, HttpResponseStatus responseStatus, Throwable t) {
+    protected void response(RoutingContext context, int responseStatus, String reasonPhrase, Throwable t) {
         log.debug("Response error", t);
         response(context,
-                responseStatus,
-                buildJSON(responseStatus.reasonPhrase().toString(),
+                HttpResponseStatus.valueOf(responseStatus),
+                buildJSON(reasonPhrase,
                         //TODO filter messages for dev/prod environments
-                        t == null ? responseStatus.reasonPhrase() : t.getMessage()
+                        t == null ? reasonPhrase : t.getMessage()
                 )
         );
     }

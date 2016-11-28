@@ -5,7 +5,7 @@ import java.util.Date;
 import org.interledger.cryptoconditions.Condition;
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.LedgerTransferStatus;
-import org.interledger.ilp.common.api.core.InterledgerException;
+import org.interledger.ilp.core.InterledgerException;
 
 /*
  * ILPTransfer entities are created for ILP aware transfer.
