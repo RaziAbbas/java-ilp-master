@@ -21,7 +21,7 @@ STEP 2: Launching five-bells-ledger ledger2.eur and ledger3.eur on ports 3002, 3
      node libraries.
      
      Next shell script can be used as template / reference (not mandatory). 
-     If not port is indicated it launches two ledgers in backup listening at port 3002/3003 
+     If not port is indicated it launches two ledgers in background listening at port 3002/3003 
      and creates some test users (alice, bob, ilpconnector)
       | #!/bin/bash -x
       | # set -e
@@ -110,7 +110,7 @@ STEP 3: Launch ilp-connector connected to three ledgers:
 
 STEP 4: simple client executing transaction between ledgers:
       Next node.js script (combined example @ https://github.com/interledgerjs/ilp) can 
-      be used to test transaction between ledger (comment/uncomment/modify ledgers at will for senders/receivers):
+      be used to test transaction between ledgers (comment/uncomment/modify ledgers at will for senders/receivers):
       | 'use strict'
       | 
       | require('stackup')
