@@ -12,17 +12,17 @@ public class DTTMTest {
         String input;
         DTTM parsedDate;
         input = "2999-12-31T23:59:59.999Z";
-        parsedDate = DTTM.c(input);
+        parsedDate = new DTTM(input);
         assertEquals(input+".equals("+parsedDate.toString()+")", input , parsedDate.toString());
 
         input = "2016-11-14T14:27:09.825Z";
-        parsedDate = DTTM.c(input);
+        parsedDate = new DTTM(input);
         assertEquals(input+".equals("+parsedDate.toString()+")", input , parsedDate.toString());
     }
     
     @Test(expected=RuntimeException.class)
     public void testCreateDTTMWrongFormat() {
-        DTTM.c("23:59:59.999");
+        new DTTM("23:59:59.999");
     }
     
     

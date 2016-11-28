@@ -5,9 +5,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * DateTime with Zone ISO-8601 standard wrapper
+ * <p>
+ * Immutable thread-safe minimum implementation of ISO-8601
+ * with some extra support for ILP protocol (FUTURE DateTimeZone constant) 
+ * <p>
+ * Java 1.8+ provides the standard java.time.ZonedDateTime but 
+ * with extra functionality.
+ *
+ */
 public class DTTM {
 
-    public final Date date;
+    private final Date date;
     // https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
     final private static String pattern = "yyyy'-'MM'-'dd'T'HH:mm:ss.SSS'Z'";
     static SimpleDateFormat sdf;
@@ -22,34 +32,28 @@ public class DTTM {
         this.date = date;
     }
 
-    private DTTM(String DTTMformatedString) {
-        if (DTTMformatedString==null){
+    public DTTM(String DTTMformatedString) {
+        if (DTTMformatedString==null) {
             throw new RuntimeException("DTTM string constructor null");
         }
         try {
             this.date = sdf.parse(DTTMformatedString);
         } catch (ParseException e) {
             throw new RuntimeException("'" + DTTMformatedString + "' "
-                    + "couldn't be parsed as a date-time with format '" + pattern + "'");
+                + "couldn't be parsed as a date-time with format '" + pattern + "'");
         }
-    }
-    
-    // TODO: Remove this static constructor. doesn't look to be useful
-    public static DTTM c(String DTTM) {
-        return new DTTM(DTTM);
     }
 
     public static DTTM getNow() {
         return new DTTM(new Date());
     }
-    
+
     @Override
     public String toString() {
         String result = sdf.format(date);
-        return result;//  ;
-        
+        return result;
     }
-    
+
     @Override
     public boolean equals(Object other) {
         if (other == null) return false;

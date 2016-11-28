@@ -119,8 +119,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
         // REF: JsonArray ussage: http://www.programcreek.com/java-api-examples/index.php?api=io.vertx.core.json.JsonArray
         JsonArray credits = requestBody.getJsonArray("credits");
 
-        DTTM DTTM_expires = DTTM.c(requestBody.getString("expires_at"));
-        if (DTTM_expires == null) throw new RuntimeException("expires_at not provided");
+        DTTM DTTM_expires = new DTTM(requestBody.getString("expires_at"));
 
         ConditionURI URIExecutionCond = (requestBody.getString("execution_condition") != null)
                 ? ConditionURI.build(requestBody.getString("execution_condition"))
@@ -147,7 +146,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             String ilp_ph_ilp_dst_address = jsonMemoILPHeader.getString("account");
             String ilp_ph_amount = jsonMemoILPHeader.getString("amount");
             ConditionURI ilp_ph_condition = URIExecutionCond;
-            DTTM ilp_ph_expires = DTTM.c(jsonMemoILPHeader.getJsonObject("data").getString("expires_at"));
+            DTTM ilp_ph_expires = new DTTM(jsonMemoILPHeader.getJsonObject("data").getString("expires_at"));
             if (! DTTM_expires.equals(ilp_ph_expires)){
                 DTTM_expires = ilp_ph_expires;// TODO: Recheck
             }
