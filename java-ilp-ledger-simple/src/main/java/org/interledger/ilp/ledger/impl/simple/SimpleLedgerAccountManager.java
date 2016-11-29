@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerFactory;
@@ -40,8 +40,8 @@ public class SimpleLedgerAccountManager implements LedgerAccountManager {
     }
 
     @Override
-    public AccountUri getAccountUri(LedgerAccount account) {
-        return new AccountUri(getLedgerInfo().getBaseUri() , account.getName()); 
+    public AccountURI getAccountUri(LedgerAccount account) {
+        return new AccountURI(getLedgerInfo().getBaseUri() , account.getName()); 
     }    
 
     @Override

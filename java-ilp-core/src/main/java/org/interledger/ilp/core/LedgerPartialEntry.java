@@ -8,9 +8,9 @@ import javax.money.MonetaryAmount;
  * clear whether its a Debit or a Credit
  */
 public abstract class LedgerPartialEntry {
-    public final AccountUri account;
+    public final AccountURI account;
     public final MonetaryAmount amount;
-    public LedgerPartialEntry(AccountUri uri, MonetaryAmount amount){
+    public LedgerPartialEntry(AccountURI uri, MonetaryAmount amount){
         this.account = uri;
         this.amount = amount;
     }

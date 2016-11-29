@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.Collection;
 
 import org.interledger.ilp.common.config.Config;
-import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
@@ -29,8 +29,8 @@ public class SimpleLedgerAccountManagerTest {
     final static String URI_LEDGER_A = "ledger1.example";
     final static String URI_LEDGER_B = "ledger2.example";
 
-    AccountUri aliceURI = new AccountUri("https://"+URI_LEDGER_A, "alice");
-    AccountUri bobURI = new AccountUri("https://"+URI_LEDGER_B, "bob");
+    AccountURI aliceURI = new AccountURI("https://"+URI_LEDGER_A, "alice");
+    AccountURI bobURI = new AccountURI("https://"+URI_LEDGER_B, "bob");
     
 
     @BeforeClass

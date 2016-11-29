@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.DTTM;
@@ -50,7 +50,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
 
     private static SimpleLedgerTransferManager singleton = new SimpleLedgerTransferManager();
 
-    private static final AccountUri HOLDS_URI = AccountUri.buildFromURI(
+    private static final AccountURI HOLDS_URI = AccountURI.buildFromURI(
             LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().
                 getHOLDAccountILP().getUri());
 
@@ -125,7 +125,7 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         // newTransfer.setTransferStatus(TransferStatus.PROPOSED);
     }
 
-    private void executeLocalTransfer(AccountUri sender, AccountUri recipient, MonetaryAmount amount) {
+    private void executeLocalTransfer(AccountURI sender, AccountURI recipient, MonetaryAmount amount) {
         // FIXME: LOG local transfer execution.
         LedgerAccountManager accManager = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton();
         accManager.getAccountByName(sender   .getAccountId()).debit (amount);
@@ -140,16 +140,16 @@ public class SimpleLedgerTransferManager implements LedgerTransferManager /* FIX
         if (debit_list.length > 1) {
             // STEP 1: Pass all debits to first account.
             for (int idx=1; idx < debit_list.length ; idx++) {
-                AccountUri sender = debit_list[idx].account;
-                AccountUri recipient = debit_list[0].account;
+                AccountURI sender = debit_list[idx].account;
+                AccountURI recipient = debit_list[0].account;
                 MonetaryAmount amount = debit_list[idx].amount;
                 executeLocalTransfer(sender, recipient, amount);
             }
         }
         // STEP 2: Pay crediters from first account:
-        AccountUri sender = debit_list[0].account;
+        AccountURI sender = debit_list[0].account;
         for (Credit credit : transfer.getCredits()) {
-            AccountUri recipient = credit.account;
+            AccountURI recipient = credit.account;
             MonetaryAmount amount = credit.amount;
             executeLocalTransfer(sender, recipient, amount);
         }

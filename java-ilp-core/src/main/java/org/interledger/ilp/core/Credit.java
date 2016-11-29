@@ -5,7 +5,7 @@ import javax.money.MonetaryAmount;
 public class Credit extends LedgerPartialEntry {
     public final InterledgerPacketHeader ph;
 
-    public Credit(AccountUri uri, MonetaryAmount amount, InterledgerPacketHeader ph){
+    public Credit(AccountURI uri, MonetaryAmount amount, InterledgerPacketHeader ph){
         super(uri, amount);
         this.ph = ph;
     }

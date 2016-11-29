@@ -6,13 +6,13 @@ package org.interledger.ilp.core;
  *       ledgerUri         accountId
  *    Were /accounts/ is always an string constant
  */
-public class AccountUri {
+public class AccountURI {
     private final String uri; // FIXME:? Replace string by java.io.URL
     private final String ledgerUri; // TODO: recheck. duplicated info in uri/ledgerUri? 
     private final String accountId;
     final private static String  ACCOUNTS = "/accounts";
      
-    public AccountUri(String ledgerUri, String accountId) {
+    public AccountURI(String ledgerUri, String accountId) {
         if (ledgerUri == null) { throw new RuntimeException("ledgerUri null at AccountUri constructor"); }
         if (accountId == null) { throw new RuntimeException("accountId null at AccountUri constructor"); }
         if(ledgerUri.indexOf(ACCOUNTS) >= 0) {
@@ -24,7 +24,7 @@ public class AccountUri {
         this.uri = ledgerUri + ACCOUNTS + "/" + accountId; 
     }
     
-    public static AccountUri buildFromURI(String uri) {
+    public static AccountURI buildFromURI(String uri) {
         // Parse sAccount = http..../accounts/alice
         int idx = uri.indexOf(ACCOUNTS);
         if (idx < 0 ) {
@@ -32,7 +32,7 @@ public class AccountUri {
         }
         String ledgerUri = uri.substring( 0, idx);
         String accountId = uri.substring( idx + ACCOUNTS.length() + 1);
-        return new AccountUri(ledgerUri, accountId);
+        return new AccountURI(ledgerUri, accountId);
     }
 
     public String getUri() {
@@ -51,8 +51,8 @@ public class AccountUri {
     public boolean equals(Object other) {
         if (other == null) return false;
         if (other == this) return true;
-        if (!(other instanceof AccountUri))return false;
-        return uri.equals(((AccountUri)other).uri);
+        if (!(other instanceof AccountURI))return false;
+        return uri.equals(((AccountURI)other).uri);
     }
 
     @Override

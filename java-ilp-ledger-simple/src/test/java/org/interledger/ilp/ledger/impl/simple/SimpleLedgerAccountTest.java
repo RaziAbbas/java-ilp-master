@@ -3,7 +3,7 @@ package org.interledger.ilp.ledger.impl.simple;
 import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.common.config.Config;
-import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerFactory;
@@ -29,8 +29,8 @@ public class SimpleLedgerAccountTest {
     SimpleLedgerAccount instance;
     final String sTestURI = "http://ledgerTest";
     final String sOtherURI = "http://ledgerOther";
-    AccountUri testURI = new AccountUri(sTestURI, "test");
-    AccountUri otherURI = new AccountUri(sOtherURI, "others");
+    AccountURI testURI = new AccountURI(sTestURI, "test");
+    AccountURI otherURI = new AccountURI(sOtherURI, "others");
 
     @BeforeClass
     public static void init() throws Exception {

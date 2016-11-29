@@ -5,7 +5,7 @@ import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
 import javax.money.NumberValue;
 import org.interledger.ilp.common.util.NumberConversionUtil;
-import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.MoneyUtils;
 import org.interledger.ilp.ledger.account.LedgerAccount;
@@ -18,7 +18,7 @@ import org.javamoney.moneta.Money;
  */
 public class SimpleLedgerAccount implements LedgerAccount {
 
-    private AccountUri accountUri;
+    private AccountURI accountUri;
     private final String name;
     private final String currencyCode;
     private MonetaryAmount balance;
@@ -201,7 +201,7 @@ public class SimpleLedgerAccount implements LedgerAccount {
         return MoneyUtils.toMonetaryAmount(amount, currencyCode);
     }
 
-    private AccountUri getAccountUri() {
+    private AccountURI getAccountUri() {
         if (accountUri == null) {
             accountUri = LedgerAccountManagerFactory.getLedgerAccountManagerSingleton().getAccountUri(this);
         }

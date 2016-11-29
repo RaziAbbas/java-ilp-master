@@ -16,7 +16,7 @@ import org.interledger.ilp.common.api.ProtectedResource;
 import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
-import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.AccountURI;
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.Credit;
 import org.interledger.ilp.core.DTTM;
@@ -111,7 +111,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
             JsonObject jsonDebit = debits.getJsonObject(idx);
             log.debug("check123 jsonDebit: " + jsonDebit.encode());
         // debit0 will be similar to {"account":"http://localhost/accounts/alice","amount":"50"}
-            AccountUri fromURI = AccountUri.buildFromURI(jsonDebit.getString("account") /*account URI*/);
+            AccountURI fromURI = AccountURI.buildFromURI(jsonDebit.getString("account") /*account URI*/);
             MonetaryAmount debit_ammount = Money.of(Double.parseDouble(jsonDebit.getString("amount")), currencyUnit);
             log.debug("check123 debit_ammount (must match jsonDebit ammount: " + debit_ammount.toString());
             debitList[idx] = new Debit(fromURI, debit_ammount);
@@ -140,7 +140,7 @@ public class TransferHandler extends RestEndpointHandler implements ProtectedRes
              * }
              */
             JsonObject jsonMemoILPHeader = jsonCredit.getJsonObject("memo").getJsonObject("ilp_header");
-            AccountUri toURI = AccountUri.buildFromURI(jsonCredit.getString("account") /*accountURI */);
+            AccountURI toURI = AccountURI.buildFromURI(jsonCredit.getString("account") /*accountURI */);
             MonetaryAmount credit_ammount = Money.of(Double.parseDouble(jsonCredit.getString("amount")), currencyUnit);
 
             String ilp_ph_ilp_dst_address = jsonMemoILPHeader.getString("account");

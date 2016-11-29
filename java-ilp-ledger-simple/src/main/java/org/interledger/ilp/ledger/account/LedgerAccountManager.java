@@ -1,7 +1,7 @@
 package org.interledger.ilp.ledger.account;
 
 import java.util.Collection;
-import org.interledger.ilp.core.AccountUri;
+import org.interledger.ilp.core.AccountURI;
 
 /**
  * Defines an account manager.
@@ -22,7 +22,7 @@ public interface LedgerAccountManager {
 
     Collection<LedgerAccount> getAccounts(int page, int pageSize);
 
-    AccountUri getAccountUri(LedgerAccount account);
+    AccountURI getAccountUri(LedgerAccount account);
 
     LedgerAccount getHOLDAccountILP();
 }
