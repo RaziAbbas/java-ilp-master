@@ -1,5 +1,7 @@
 package org.interledger.ilp.core;
 
+import org.interledger.ilp.core.ledger.model.LedgerInfo;
+
 public interface Ledger {
 
     /**

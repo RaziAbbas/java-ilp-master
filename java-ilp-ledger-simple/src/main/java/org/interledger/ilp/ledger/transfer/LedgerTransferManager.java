@@ -3,8 +3,8 @@ package org.interledger.ilp.ledger.transfer;
 
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.FulfillmentURI;
-import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
+import org.interledger.ilp.core.ledger.model.LedgerTransfer;
 
 public  interface LedgerTransferManager {
     LedgerTransfer getTransferById(TransferID transferId);

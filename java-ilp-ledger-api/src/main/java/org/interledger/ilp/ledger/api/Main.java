@@ -22,7 +22,7 @@ import org.interledger.ilp.common.config.core.Configurable;
 import org.interledger.ilp.common.config.core.ConfigurationException;
 import org.interledger.ilp.common.util.NumberConversionUtil;
 import org.interledger.ilp.core.Ledger;
-import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.LedgerInfoBuilder;

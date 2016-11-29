@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import org.interledger.ilp.common.config.Config;
 import org.interledger.ilp.core.AccountUri;
-import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.Currencies;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;

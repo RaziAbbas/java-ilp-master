@@ -13,10 +13,10 @@ import org.interledger.ilp.common.api.auth.impl.SimpleAuthProvider;
 import org.interledger.ilp.core.InterledgerException;
 import org.interledger.ilp.common.api.handlers.RestEndpointHandler;
 import org.interledger.ilp.common.config.Config;
-import org.interledger.ilp.core.LedgerInfo;
-import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
-import org.interledger.ilp.core.TransferStatus;
+import org.interledger.ilp.core.ledger.model.LedgerInfo;
+import org.interledger.ilp.core.ledger.model.LedgerTransfer;
+import org.interledger.ilp.core.ledger.model.TransferStatus;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedger;
 import org.interledger.ilp.ledger.impl.simple.SimpleLedgerTransferManager;
@@ -95,7 +95,7 @@ public class TransferStateHandler extends RestEndpointHandler implements Protect
         String transferId = context.request().getParam(transferUUID);
         TransferID transferID = new TransferID(transferId);
         LedgerTransferManager tm = SimpleLedgerTransferManager.getSingleton();
-        TransferStatus status = TransferStatus.NONEXISTENT;
+        TransferStatus status = TransferStatus.PROPOSED; // default value
         if (tm.transferExists(transferID)) { 
             LedgerTransfer transfer = tm.getTransferById(transferID);
             status = transfer.getTransferStatus();

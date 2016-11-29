@@ -14,11 +14,11 @@ import javax.money.MonetaryAmount;
 
 import org.interledger.ilp.core.ConditionURI;
 import org.interledger.ilp.core.DTTM;
-import org.interledger.ilp.core.LedgerInfo;
 import org.interledger.ilp.core.LedgerPartialEntry;
-import org.interledger.ilp.core.LedgerTransfer;
 import org.interledger.ilp.core.TransferID;
-import org.interledger.ilp.core.TransferStatus;
+import org.interledger.ilp.core.ledger.model.LedgerInfo;
+import org.interledger.ilp.core.ledger.model.LedgerTransfer;
+import org.interledger.ilp.core.ledger.model.TransferStatus;
 import org.interledger.ilp.ledger.LedgerAccountManagerFactory;
 import org.interledger.ilp.ledger.LedgerFactory;
 import org.interledger.ilp.ledger.account.LedgerAccount;

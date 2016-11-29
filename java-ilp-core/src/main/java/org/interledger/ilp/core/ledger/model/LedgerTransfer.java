@@ -1,4 +1,11 @@
-package org.interledger.ilp.core;
+package org.interledger.ilp.core.ledger.model;
+
+import org.interledger.ilp.core.ConditionURI;
+import org.interledger.ilp.core.Credit;
+import org.interledger.ilp.core.DTTM;
+import org.interledger.ilp.core.Debit;
+import org.interledger.ilp.core.FulfillmentURI;
+import org.interledger.ilp.core.TransferID;
 
 public interface LedgerTransfer {
 

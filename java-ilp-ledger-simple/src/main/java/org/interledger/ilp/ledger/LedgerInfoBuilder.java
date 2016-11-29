@@ -2,9 +2,12 @@ package org.interledger.ilp.ledger;
 
 import java.net.URL;
 import java.util.Currency;
+import java.util.List;
+
 import javax.money.CurrencyUnit;
 import org.apache.commons.lang.StringUtils;
-import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.core.ledger.model.ConnectorInfo;
+import org.interledger.ilp.core.ledger.model.LedgerInfo;
 
 /**
  * LedgerInfo builder
@@ -119,6 +122,24 @@ public class LedgerInfoBuilder {
         @Override
         public String getBaseUri() {
             return baseUri;
+        }
+
+        @Override
+        public String getConditionSignPublicKey() {
+            // FIXME Implement TODO
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public String getNotificationSignPublicKey() {
+            // FIXME Implement TODO
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public List<ConnectorInfo> getConnectors() {
+            // FIXME Implement TODO
+            throw new RuntimeException("Not implemented");
         }
 
     }

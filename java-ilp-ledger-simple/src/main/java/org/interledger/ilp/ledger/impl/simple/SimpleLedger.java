@@ -1,7 +1,7 @@
 package org.interledger.ilp.ledger.impl.simple;
 
 import org.interledger.ilp.core.Ledger;
-import org.interledger.ilp.core.LedgerInfo;
+import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.common.config.Config;
 
 /**

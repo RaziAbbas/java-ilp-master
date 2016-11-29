@@ -1,8 +1,7 @@
-package org.interledger.ilp.core;
+package org.interledger.ilp.core.ledger.model;
 
 
 public enum TransferStatus {
-    NONEXISTENT(-1), // transferStates.TRANSFER_STATE_NONEXISTENT
     PROPOSED(0),
     PREPARED(1),
     EXECUTED(2),
@@ -62,5 +61,4 @@ public enum TransferStatus {
             throw new IllegalArgumentException("Invalid status " + statusCode);
         }
     }
-
 }

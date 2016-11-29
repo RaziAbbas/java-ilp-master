@@ -1,4 +1,6 @@
-package org.interledger.ilp.core;
+package org.interledger.ilp.core.ledger.model;
+
+import java.util.List;
 
 /**
  * Metadata describing the ledger.
@@ -40,5 +42,13 @@ public interface LedgerInfo {
     
     
     String getBaseUri();
+
+    //TODO: Decode public key
+    String getConditionSignPublicKey();
+
+    //TODO: Decode public key
+    String getNotificationSignPublicKey();
+
+    List<ConnectorInfo> getConnectors();
 
 }
