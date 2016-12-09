@@ -28,7 +28,6 @@ public final class InterledgerException extends RuntimeException {
          * peers known whether the problem is on their request or in the internal
          * processing of such request.
          */
-        // FIXME: This enum must be in the core package.
         InternalError             (INTERNAL_SERVER_ERROR, "InternalErrorError"),
         InsufficientAmountError   (INTERNAL_SERVER_ERROR, "InsufficientAmountError"),
         InsufficientPrecisionError(INTERNAL_SERVER_ERROR, "InsufficientPrecisionError"),
