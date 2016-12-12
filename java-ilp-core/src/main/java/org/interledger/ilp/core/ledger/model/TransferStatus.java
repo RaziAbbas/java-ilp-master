@@ -4,7 +4,7 @@ package org.interledger.ilp.core.ledger.model;
 public enum TransferStatus {
     PROPOSED(0),
     PREPARED(1),
-    EXECUTED(2),
+    EXECUTED(2), // TODO Add CANCELLED. (Executed with an explicit cancellation fulfillment vs rejected due to error/timeout)
     REJECTED(3);
 
     private final int statusCode;
