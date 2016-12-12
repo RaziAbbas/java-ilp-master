@@ -1,4 +1,6 @@
 package org.interledger.ilp.core;
+
+// TODO: Refactor. Once created a generic ILPAddress supporting ilp/URI/email format this class will NOT be needed anymore
 /*
  * This class supposes an AccountUri has the format
  *    https://ledger/accounts/alice
