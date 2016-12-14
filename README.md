@@ -14,7 +14,7 @@ Some note about sub-projects:
   $ git submodule init
   $ git submodule update
 ```
-* ledger-rest-websocket-api: Basic code for the Java ILP ledger simple implementation compliant with the rest API and Websocket API found at:
+* ledger-rest-websocket: Basic code for the Java ILP ledger simple implementation compliant with the rest API and Websocket API found at:
     - https://github.com/interledgerjs/five-bells-ledger
 
   This also means it must be compliant with the ilp-connector plugin found at:
@@ -57,11 +57,11 @@ To create the eclipse .project / .classpath files:
 
 ### Step 3: Execute java-ilp-ledger 
 With Eclipse/Netbeans:
-   Run/debug ledger-rest-websocket-api/src/main/java/org/interledger/ilp/ledger/api/Main.java as a java application.
+   Run/debug ledger-rest-websocket/src/main/java/org/interledger/ilp/ledger/api/Main.java as a java application.
 
 With gradle: 
 ```
-     $ gradle :ledger-rest-websocket-api:launchServer
+     $ gradle :ledger-rest-websocket:launchServer
 ```
 
 #### Gradle:

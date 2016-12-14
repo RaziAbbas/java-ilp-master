@@ -25,7 +25,7 @@ dependencies {
         "java-ilp-core",
         "java-ilp-common",
         "java-ilp-common-api",
-        "ledger-rest-websocket-api"
+        "ledger-rest-websocket"
     ].each { dep -> 
         def name = ":$dep"        
         println "Compile $name"        
@@ -47,7 +47,7 @@ task writePom << {
                 module "java-ilp-core"
                 module "java-ilp-common"
                 module "java-ilp-common-api"
-                module "ledger-rest-websocket-api"
+                module "ledger-rest-websocket"
             }
             properties {
                 "project.build.sourceEncoding" "UTF-8"
