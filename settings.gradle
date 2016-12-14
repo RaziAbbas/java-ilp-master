@@ -1,2 +1,2 @@
 rootProject.name = 'java-ilp-master'
-include ':java-crypto-conditions' ,':java-ilp-core' ,':java-ilp-common' ,':java-ilp-common-api' ,':ledger-rest-websocket'
+include ':java-crypto-conditions' ,':java-ilp-core' ,':java-ilp-common' ,':vertx-support' ,':ledger-rest-websocket'

@@ -24,7 +24,7 @@ dependencies {
     [   "java-crypto-conditions", \
         "java-ilp-core",
         "java-ilp-common",
-        "java-ilp-common-api",
+        "vertx-support",
         "ledger-rest-websocket"
     ].each { dep -> 
         def name = ":$dep"        
@@ -46,7 +46,7 @@ task writePom << {
                 module "java-crypto-conditions"
                 module "java-ilp-core"
                 module "java-ilp-common"
-                module "java-ilp-common-api"
+                module "vertx-support"
                 module "ledger-rest-websocket"
             }
             properties {

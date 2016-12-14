@@ -20,8 +20,9 @@ Some note about sub-projects:
   This also means it must be compliant with the ilp-connector plugin found at:
      - https://github.com/interledgerjs/ilp-plugin-bells
  
-* java-ilp-core: Core interfaces / entities.
-* java-ilp-common / java-ilp-common-api: Common conf.  
+* java-ilp-core:   Core interfaces / entities.
+* java-ilp-common: support library for configurable configurations
+* vertx-support:   Useful wrappers around Vertx-API
 
 ## Usage
 
