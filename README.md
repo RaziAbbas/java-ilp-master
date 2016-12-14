@@ -21,7 +21,7 @@ Some note about sub-projects:
      - https://github.com/interledgerjs/ilp-plugin-bells
  
 * java-ilp-core:   Core interfaces / entities.
-* java-ilp-common: support library for configurable configurations
+* service-config-support: support library for configurable configurations
 * vertx-support:   Useful wrappers around Vertx-API
 
 ## Usage

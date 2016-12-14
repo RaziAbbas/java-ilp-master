@@ -23,7 +23,7 @@ task wrapper(type: Wrapper) {
 dependencies {    
     [   "java-crypto-conditions", \
         "java-ilp-core",
-        "java-ilp-common",
+        "service-config-support",
         "vertx-support",
         "ledger-rest-websocket"
     ].each { dep -> 
@@ -45,7 +45,7 @@ task writePom << {
             modules {
                 module "java-crypto-conditions"
                 module "java-ilp-core"
-                module "java-ilp-common"
+                module "service-config-support"
                 module "vertx-support"
                 module "ledger-rest-websocket"
             }
