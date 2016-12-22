@@ -52,6 +52,8 @@ buildscript {
 }
 
 protobuf {
+  // REF: https://github.com/google/protobuf-gradle-plugin
+  // generatedFilesBaseDir = "protoc_generated" KO. Doesn't looks to work
   protoc {
     artifact = "com.google.protobuf:protoc:3.1.0"
   }
