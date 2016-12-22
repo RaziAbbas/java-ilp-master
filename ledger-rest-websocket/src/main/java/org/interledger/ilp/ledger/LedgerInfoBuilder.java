@@ -5,7 +5,8 @@ import java.util.Currency;
 import java.util.List;
 
 import javax.money.CurrencyUnit;
-import org.apache.commons.lang.StringUtils;
+
+import org.interledger.ilp.common.util.StringUtils;
 import org.interledger.ilp.core.ledger.model.ConnectorInfo;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 

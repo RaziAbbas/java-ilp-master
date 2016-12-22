@@ -1,6 +1,6 @@
 package org.interledger.ilp.ledger.impl.simple;
 
-import org.apache.commons.lang.StringUtils;
+import org.interledger.ilp.common.util.StringUtils;
 import org.interledger.ilp.core.InterledgerException;
 
 /**
@@ -28,7 +28,7 @@ public class SimpleLedgerAddressParser implements LedgerAddressParser {
     
     @Override
     public void parse(String address) {
-        if(StringUtils.isEmpty(address)) {
+        if(StringUtils.isBlank(address)) {
             throw new InterledgerException(InterledgerException.RegisteredException.InternalError, "empty address");
         }
         if(!address.contains(separator)) {
@@ -37,11 +37,11 @@ public class SimpleLedgerAddressParser implements LedgerAddressParser {
         try {
             String parts[] = address.trim().split(separator);
             accountName = parts[0];
-            if(StringUtils.isEmpty(accountName)) {
+            if(StringUtils.isBlank(accountName)) {
                 throw new IllegalArgumentException("empty account name");
             }
             ledgerName = parts[1];
-            if(StringUtils.isEmpty(ledgerName)) {
+            if(StringUtils.isBlank(ledgerName)) {
                 throw new IllegalArgumentException("empty ledger name");
             }            
         }catch(Exception ex) {
