@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     compile     project(':java-ilp-core')
-    compile     project(':java-ilp-common')
+    compile     project(':service-config-support')
     compile     "org.apache.commons:commons-lang3:${commons_lang3_version}"
     compile     "ch.qos.logback:logback-classic:${logback_classic_version}"
     compile     "io.vertx:vertx-web:${vertx_web_version}"

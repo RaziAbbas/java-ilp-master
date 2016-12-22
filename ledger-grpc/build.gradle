@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'eclipse'
+apply plugin: 'com.google.protobuf'
 
 group = 'org.interledger'
 version = java_ilp_ledger_api_version
@@ -8,6 +9,8 @@ description = "Interledger Java Reference Ledger API"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+// REF: https://github.com/grpc/grpc-java/blob/master/README.md
 
 jar {
     manifest {
@@ -23,27 +26,45 @@ repositories {
 }
 
 dependencies {
+    // REF: https://github.com/google/protobuf-gradle-plugin/blob/master/exampleProject/build.gradle
+    protobuf files("../../ilp-plugin-grpc-bells/ilp_protocol.proto")
     compile     project(':service-config-support')
     compile     project(':vertx-support')
     compile     project(':java-ilp-core')
+
+    // gRPC dependencies {
+    compile 'io.grpc:grpc-netty:1.0.1'
+    compile 'io.grpc:grpc-protobuf:1.0.1'
+    compile 'io.grpc:grpc-stub:1.0.1'
+    // }
     testCompile "junit:junit:${junit_version}"
     testCompile "org.hamcrest:hamcrest-core:${hamcrest_core_version}"
 }
 
-task launchServer(type: JavaExec) {
-  classpath = sourceSets.main.runtimeClasspath
-
-  main = 'org.interledger.ilp.ledger.api.Main'
-
-  // arguments to pass to the application
-  // args 'appArg1'
+buildscript {
+  // REF: https://github.com/google/protobuf-gradle-plugin/blob/master/exampleProject/build.gradle
+  repositories {
+    maven { url "https://plugins.gradle.org/m2/" }
+  }
+  dependencies {
+    classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.0'
+  }
 }
 
-task launchTestWebSocket(type: JavaExec) {
-  classpath = sourceSets.main.runtimeClasspath
-
-  main = 'org.interledger.ilp.ledger.api.TestWebSocket'
-
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc:3.1.0"
+  }
+  plugins {
+    grpc {
+      artifact = 'io.grpc:protoc-gen-grpc-java:1.0.1'
+    }
+  }
+  generateProtoTasks {
+    all()*.plugins {
+      grpc {}
+    }
+  }
 }
 
 //Maven compatibility task:
@@ -88,4 +109,16 @@ task writePom << {
             
         }        
     }.writeTo("pom.xml")
+}
+
+eclipse {
+    classpath {
+        file {
+            withXml {
+                def node = it.asNode()
+                node.appendNode('classpathentry', [kind: 'src', path: './build/generated/source/proto/main/grpc'])
+                node.appendNode('classpathentry', [kind: 'src', path: './build/generated/source/proto/main/java'])
+            }
+        }
+    }
 }

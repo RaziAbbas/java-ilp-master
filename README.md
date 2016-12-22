@@ -14,8 +14,9 @@ Some note about sub-projects:
   $ git submodule init
   $ git submodule update
 ```
-* ledger-rest-websocket: Basic code for the Java ILP ledger simple implementation compliant with the rest API and Websocket API found at:
+* ledger-rest-websocket: PoC Java ILP ledger implementation compliant with the rest API and Websocket API found at:
     - https://github.com/interledgerjs/five-bells-ledger
+* ledger-grpc :  (alpha-version) PoC Java ILP ledger implementation using gRPC as communication channel with the Connector
 
   This also means it must be compliant with the ilp-connector plugin found at:
      - https://github.com/interledgerjs/ilp-plugin-bells
@@ -23,6 +24,7 @@ Some note about sub-projects:
 * java-ilp-core:   Core interfaces / entities.
 * service-config-support: support library for configurable configurations
 * vertx-support:   Useful wrappers around Vertx-API
+
 
 ## Usage
 

@@ -19,21 +19,6 @@ task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
 }
 
-/*
-dependencies {    
-    [   "java-crypto-conditions", \
-        "java-ilp-core",
-        "service-config-support",
-        "vertx-support",
-        "ledger-rest-websocket"
-    ].each { dep -> 
-        def name = ":$dep"        
-        println "Compile $name"        
-        compile project(name)        
-        println "Compiled $name"
-    }
-}*/
-
 //Maven compatibility task:
 task writePom << {
     pom {
