@@ -5,7 +5,7 @@ script:
   - ./gradlew clean install check
 #FIXME check style warns:
 #  - mvn clean install checkstyle:check
-  - mvn clean install 
+# - mvn clean install 
 jdk:
   - oraclejdk8
 # https://travis-ci.org does not support it yet :/
