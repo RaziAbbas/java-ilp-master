@@ -2,6 +2,8 @@
 language: java
 install: true
 script:
+
+  - if [ ! -d ledger-grpc/ILP_gRPC_API ] ; then pushd .; cd ledger-grpc && git clone https://github.com/everis-innolab/ILP_gRPC_API ; popd ; fi
   - ./gradlew clean install check
 #FIXME check style warns:
 #  - mvn clean install checkstyle:check
