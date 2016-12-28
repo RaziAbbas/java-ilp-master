@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
     // REF: https://github.com/google/protobuf-gradle-plugin/blob/master/exampleProject/build.gradle
-    protobuf files("../../ilp-plugin-grpc-bells/ilp_protocol.proto")
+    protobuf files("./ILP_gRPC_API/ilp_protocol.proto")
     compile     project(':service-config-support')
     compile     project(':vertx-support')
     compile     project(':java-ilp-core')
